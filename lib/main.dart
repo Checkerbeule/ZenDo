@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/dailyToDoList.dart';
+import 'package:zen_do/todo_list_page.dart';
 import 'package:zen_do/model/todo.dart';
+import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/model/todo_scope.dart';
 
 void main() {
   runApp(const ZenDoApp());
@@ -26,17 +28,15 @@ class ZenDoApp extends StatelessWidget {
 }
 
 class ZenDoAppState extends ChangeNotifier {
-  Set<ToDo> toDos = {};
+  TodoList dailyToDoList = TodoList(TodoScope.daily);
+  TodoList weeklyToDoList = TodoList(TodoScope.weekly);
+  TodoList yearlyToDoList = TodoList(TodoScope.yearly);
+  TodoList backlog = TodoList(TodoScope.backlog);
 
-  void addToDo(var todo) {
-    toDos.add(todo);
+  void notify() {
     notifyListeners();
   }
 
-  void removeTodo(var todo) {
-    toDos.remove(todo);
-    notifyListeners();
-  }
 }
 
 class ZenDoHomePage extends StatelessWidget {
@@ -44,12 +44,14 @@ class ZenDoHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ZenDoAppState state = context.watch<ZenDoAppState>();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text('ZenDo'),
       ),
-      body: DailyToDoList(),
+      body: TodoListPage(list: state.dailyToDoList),
     );
   }
 }
