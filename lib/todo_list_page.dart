@@ -20,14 +20,14 @@ class _TodoListPageState extends State<TodoListPage> {
   Widget build(BuildContext context) {
     var appState = context.watch<ZenDoAppState>();
 
-    return Scaffold(
+    return Scaffold( // TODO remove Scaffold and move FloatingActionButton to Listview
       body: ListView(
         shrinkWrap: true,
         children: [
           if (widget.list.todos.isEmpty)
             ListTile(
               title: Text(
-                'Keine Aufgaben vorhanden.\nAlles erledigt!',
+                'Keine offenen Aufgaben vorhanden.',
                 textAlign: TextAlign.center,
               ),
             )
