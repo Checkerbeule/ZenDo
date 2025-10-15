@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/model/todo_scope.dart';
 import 'package:zen_do/todo_list_page.dart';
@@ -29,8 +30,19 @@ class ZenDoApp extends StatelessWidget {
 class ZenDoAppState extends ChangeNotifier {
   TodoList dailyToDoList = TodoList(TodoScope.daily);
   TodoList weeklyToDoList = TodoList(TodoScope.weekly);
+  TodoList monthlyToDoList = TodoList(
+    TodoScope.monthly,
+  ); // TODO implement onptional monthly list
   TodoList yearlyToDoList = TodoList(TodoScope.yearly);
   TodoList backlog = TodoList(TodoScope.backlog);
+
+  late ListManager listManager = ListManager({
+    dailyToDoList,
+    weeklyToDoList,
+    //monthlyToDoList,
+    yearlyToDoList,
+    backlog,
+  });
 
   void notify() {
     notifyListeners();
@@ -50,6 +62,7 @@ class _ZenDoHomePageState extends State<ZenDoHomePage> {
   @override
   Widget build(BuildContext context) {
     ZenDoAppState state = context.watch<ZenDoAppState>();
+    var listManager = state.listManager;
 
     return Scaffold(
       body: IndexedStack(
@@ -57,36 +70,31 @@ class _ZenDoHomePageState extends State<ZenDoHomePage> {
         children: [
           DefaultTabController(
             initialIndex: 0,
-            length: 4,
+            length: listManager.listCount,
             child: Scaffold(
               appBar: AppBar(
                 backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 title: const Text('ZenDo Listen'),
-                bottom: const TabBar(
+                bottom: TabBar(
                   tabs: [
-                    Tab(icon: Icon(Icons.today), text: 'Täglich'),
-                    Tab(icon: Icon(Icons.calendar_month), text: 'Wöchentlich'),
-                    Tab(icon: Icon(Icons.calendar_today), text: 'Jährlich'),
-                    Tab(
-                      icon: Icon(Icons.format_list_bulleted),
-                      text: 'Backlog',
-                    ),
+                    for (var list in listManager.allLists)
+                      Tab(icon: Icon(list.scope.icon), text: list.scope.name),
                   ],
                 ),
               ),
               body: TabBarView(
                 physics: const NeverScrollableScrollPhysics(),
                 children: <Widget>[
-                  TodoListPage(list: state.dailyToDoList),
-                  TodoListPage(list: state.weeklyToDoList),
-                  TodoListPage(list: state.yearlyToDoList),
-                  TodoListPage(list: state.backlog),
+                  for (var list in listManager.allLists)
+                    TodoListPage(list: list),
                 ],
               ),
             ),
           ),
-          const Center(child: Text('Habit Page')),
-          const Center(child: Text('Einstellungen')),
+          const Center(child: Text('Habit Page')), //TODO implement Habit Page
+          const Center(
+            child: Text('Einstellungen'),
+          ), //TODO implement Settings Page
         ],
       ),
       bottomNavigationBar: NavigationBar(
