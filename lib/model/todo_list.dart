@@ -43,4 +43,12 @@ class TodoList {
   void removeAllExpired() {
     todos.removeWhere((todo) => expiredTodos.contains(todo));
   }
+
+  @override
+  operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is TodoList &&
+      other.scope == scope;
+  }
 }
