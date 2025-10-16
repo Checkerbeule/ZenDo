@@ -23,7 +23,7 @@ class ListManager {
     // sort by duration ascending
     activeLists.sort((a, b) => a.scope.duration.compareTo(b.scope.duration));
 
-    for (int i = 1; i < activeLists.length; i++) {
+    for (int i = activeLists.length; i > 0; i--) {
       final currentList = activeLists[i];
       final previousList = activeLists[i - 1];
 
