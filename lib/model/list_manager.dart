@@ -4,13 +4,22 @@ import 'package:zen_do/model/todo_list.dart';
 Logger logger = Logger(level: Level.debug);
 
 class ListManager {
-  Set<TodoList> todoLists;
+  List<TodoList> lists = [];
 
-  ListManager(this.todoLists);
+  ListManager(Iterable<TodoList> lists) {
+    for(var l in lists) {
+      if (!this.lists.contains(l)) {
+        this.lists.add(l);
+      } else {
+        logger.d('List with scope ${l.scope} could not be added to ListManager because it is already contained!');
+      }
+    }
+    this.lists.sort((a, b) => a.scope.duration.compareTo(b.scope.duration));
+  }
 
   void transferExpiredTodos() {
     // use only lists with enabled autotransfer
-    final activeLists = todoLists.where((l) => l.scope.autoTransfer).toList();
+    final activeLists = lists.where((l) => l.scope.autoTransfer).toList();
     // sort by duration ascending
     activeLists.sort((a, b) => a.scope.duration.compareTo(b.scope.duration));
 
@@ -34,18 +43,24 @@ class ListManager {
   }
 
   int get listCount {
-    return todoLists.length;
+    return lists.length;
   }
 
-  Set<TodoList> get allLists {
-    return todoLists;
+  List<TodoList> get allLists {
+    return lists;
   }
 
   bool removeList(TodoList list) {
-    return todoLists.remove(list);
+    return lists.remove(list);
   }
 
   bool addList(TodoList list) {
-    return todoLists.add(list);
-  } 
+    if (!lists.contains(list)) {
+      lists.add(list);
+      lists.sort((a, b) => a.scope.duration.compareTo(b.scope.duration));
+      return true;
+    }
+    logger.d('List with scope ${list.scope} could not be added to ListManager because it is already contained!');
+    return false;
+  }
 }
