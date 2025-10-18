@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/model/list_manager.dart';
+import 'package:zen_do/model/list_scope.dart';
+import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
-import 'package:zen_do/model/todo_scope.dart';
+import 'package:zen_do/persistance/persistance_helper.dart';
 import 'package:zen_do/todo_list_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(TodoAdapter());
+  Hive.registerAdapter(TodoListAdapter());
+  Hive.registerAdapter(ListScopeAdapter());
+
   runApp(const ZenDoApp());
 }
 
@@ -28,22 +39,6 @@ class ZenDoApp extends StatelessWidget {
 }
 
 class ZenDoAppState extends ChangeNotifier {
-  TodoList dailyToDoList = TodoList(TodoScope.daily);
-  TodoList weeklyToDoList = TodoList(TodoScope.weekly);
-  TodoList monthlyToDoList = TodoList(
-    TodoScope.monthly,
-  ); // TODO implement onptional monthly list
-  TodoList yearlyToDoList = TodoList(TodoScope.yearly);
-  TodoList backlog = TodoList(TodoScope.backlog);
-
-  late ListManager listManager = ListManager({
-    dailyToDoList,
-    weeklyToDoList,
-    //monthlyToDoList,
-    yearlyToDoList,
-    backlog,
-  });
-
   void notify() {
     notifyListeners();
   }
@@ -58,45 +53,70 @@ class ZenDoHomePage extends StatefulWidget {
 
 class _ZenDoHomePageState extends State<ZenDoHomePage> {
   int pageIndex = 0;
+  ListManager? listManager;
+
+  @override
+  void initState() {
+    super.initState();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    final lists = await PersistanceHelper.loadAll();
+    listManager = ListManager(lists);
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    ZenDoAppState state = context.watch<ZenDoAppState>();
-    var listManager = state.listManager;
-
     return Scaffold(
-      body: IndexedStack(
-        index: pageIndex,
-        children: [
-          DefaultTabController(
-            initialIndex: 0,
-            length: listManager.listCount,
-            child: Scaffold(
+      body: listManager == null
+          ? Scaffold(
               appBar: AppBar(
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 title: const Text('ZenDo Listen'),
-                bottom: TabBar(
-                  tabs: [
-                    for (var list in listManager.allLists)
-                      Tab(icon: Icon(list.scope.icon), text: list.scope.name),
-                  ],
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              ),
+              body: Center(child: CircularProgressIndicator()),
+            )
+          : IndexedStack(
+              index: pageIndex,
+              children: [
+                DefaultTabController(
+                  initialIndex: 0,
+                  length: listManager!.listCount,
+                  child: Scaffold(
+                    appBar: AppBar(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.inversePrimary,
+                      title: const Text('ZenDo Listen'),
+                      bottom: TabBar(
+                        tabs: [
+                          for (var list in listManager!.allLists)
+                            Tab(
+                              icon: Icon(list.scope.icon),
+                              text: list.scope.label,
+                            ),
+                        ],
+                      ),
+                    ),
+                    body: TabBarView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: <Widget>[
+                        for (var list in listManager!.allLists)
+                          TodoListPage(list: list),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              body: TabBarView(
-                physics: const NeverScrollableScrollPhysics(),
-                children: <Widget>[
-                  for (var list in listManager.allLists)
-                    TodoListPage(list: list),
-                ],
-              ),
+                const Center(
+                  child: Text('Habit Page'),
+                ), //TODO implement Habit Page
+                const Center(
+                  child: Text('Einstellungen'),
+                ), //TODO implement Settings Page
+              ],
             ),
-          ),
-          const Center(child: Text('Habit Page')), //TODO implement Habit Page
-          const Center(
-            child: Text('Einstellungen'),
-          ), //TODO implement Settings Page
-        ],
-      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: pageIndex,
         onDestinationSelected: (int index) {
