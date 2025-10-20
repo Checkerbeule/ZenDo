@@ -1,5 +1,4 @@
 import 'package:hive/hive.dart';
-import 'package:zen_do/model/list_scope.dart';
 
 part 'todo.g.dart';
 

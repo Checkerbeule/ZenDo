@@ -2,13 +2,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-import 'package:mockito/annotations.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/persistance/persistance_helper.dart';
 
-@GenerateMocks([Box])
 void main() {
   group('PersistanceHelper.saveList', () {
     late Box<TodoList> box;
