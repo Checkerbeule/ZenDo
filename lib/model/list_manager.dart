@@ -19,26 +19,26 @@ class ListManager {
     _lists.sort((a, b) => a.compareTo(b));
   }
 
-  void transferExpiredTodos() {
+  void transferExpiredTodos() { //TODO fix
     // use only lists with enabled autotransfer
     final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
-    // sort by duration ascending
-    activeLists.sort((a, b) => a.compareTo(b));
 
-    for (int i = activeLists.length; i > 0; i--) {
-      final currentList = activeLists[i];
-      final previousList = activeLists[i - 1];
+    if (activeLists.length > 1) {
+      for (int i = activeLists.length - 1; i > 0; i--) {
+        final currentList = activeLists[i];
+        final previousList = activeLists[i - 1];
 
-      final expiredTodos = currentList.expiredTodos;
-      final addedTodos = previousList.addAll(expiredTodos);
-      currentList.deleteAll(addedTodos);
+        final expiredTodos = currentList.getExpiredTodos(previousList.scope.duration);
+        final addedTodos = previousList.addAll(expiredTodos);
+        currentList.deleteAll(addedTodos);
 
-      final difference = expiredTodos.length - addedTodos.length;
-      if (difference > 0) {
-        logger.d(
-          '$difference Todos could not be transfered from ${currentList.scope} to ${previousList.scope}!'
-          'The list migth allready contain Todos with the same titles.',
-        );
+        final difference = expiredTodos.length - addedTodos.length;
+        if (difference > 0) {
+          logger.d(
+            '$difference Todos could not be transfered from ${currentList.scope} to ${previousList.scope}!'
+            'The list migth allready contain Todos with the same titles.',
+          );
+        }
       }
     }
   }

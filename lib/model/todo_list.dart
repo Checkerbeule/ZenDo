@@ -18,14 +18,22 @@ class TodoList implements Comparable<TodoList> {
 
   TodoList(this.scope);
 
+  /// Adds the [todo] to the list.
+  /// Calculates the expirationDate based on the ListScope.
+  /// Uses [PersistanceHelper] to store the list with the added [todo]
   bool addTodo(Todo todo) {
     final bool added = todos.add(todo);
     if (added) {
+      _setExpirationDate(todo);
       PersistanceHelper.saveList(this);
     }
     return added;
   }
 
+  /// Use this method to transferExpiredTodos with the [ListManager].
+  /// Adds all [todosToAdd] to the list.
+  /// Does not calculate the expirationDate.
+  /// Uses [PersistanceHelper] to store the list with the added [todosToAdd].
   List<Todo> addAll(Iterable<Todo> todosToAdd) {
     List<Todo> addedTodos = [];
     for (final todo in todosToAdd) {
@@ -58,6 +66,7 @@ class TodoList implements Comparable<TodoList> {
     final bool removed = todos.remove(todo);
     if (removed) {
       doneTodos.add(todo);
+      todo.completionDate = DateTime.now();
       PersistanceHelper.saveList(this);
     }
   }
@@ -66,6 +75,7 @@ class TodoList implements Comparable<TodoList> {
     bool inserted = todos.add(todo);
     if (inserted) {
       doneTodos.remove(todo);
+      todo.completionDate = null;
       PersistanceHelper.saveList(this);
     }
     return inserted;
@@ -75,11 +85,23 @@ class TodoList implements Comparable<TodoList> {
     return doneTodos.length;
   }
 
-  List<Todo> get expiredTodos {
-    final now = DateTime.now();
-    return todos
-        .where((todo) => now.difference(todo.creationDate) > scope.duration)
-        .toList();
+  List<Todo> getExpiredTodos(Duration durationOfNextListScope) {
+    return todos.where((todo) {
+      return todo.expirationDate == null
+          ? false
+          : todo.toBeTransferred(durationOfNextListScope);
+    }).toList();
+  }
+
+  void _setExpirationDate(Todo todo) {
+    if (scope != ListScope.backlog) {
+      final now = DateTime.now();
+      todo.expirationDate = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).add(scope.duration);
+    }
   }
 
   @override
