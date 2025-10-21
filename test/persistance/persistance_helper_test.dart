@@ -5,7 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
-import 'package:zen_do/persistance/persistance_helper.dart';
+import 'package:zen_do/persistance/persistence_helper.dart';
 
 void main() {
   group('PersistanceHelper.saveList', () {
@@ -46,8 +46,8 @@ void main() {
       final todo = Todo(title, description);
       list.addTodo(todo);
 
-      await PersistanceHelper.saveList(list);
-      final loadedList = await PersistanceHelper.loadList(scope);
+      await PersistenceHelper.saveList(list);
+      final loadedList = await PersistenceHelper.loadList(scope);
 
       expect(loadedList.scope, ListScope.daily);
       expect(loadedList.todos.length, 1);
@@ -61,22 +61,22 @@ void main() {
 
       final initialTodo = Todo('initial todo');
       list.addTodo(initialTodo);
-      await PersistanceHelper.saveList(list);
+      await PersistenceHelper.saveList(list);
 
       final updatedTitle = 'updated';
       final updatedTodo = Todo(updatedTitle);
       list.deleteTodo(initialTodo);
       list.addTodo(updatedTodo);
-      await PersistanceHelper.saveList(list);
+      await PersistenceHelper.saveList(list);
 
-      final loadedList = await PersistanceHelper.loadList(scope);
+      final loadedList = await PersistenceHelper.loadList(scope);
 
       expect(loadedList.todos.length, 1);
       expect(loadedList.todos.first.title, updatedTitle);
     });
 
     test('loadAll and retreive ${ListScope.values.length}', () async {
-      final loadedLists = await PersistanceHelper.loadAll();
+      final loadedLists = await PersistenceHelper.loadAll();
 
       expect(loadedLists.length, ListScope.values.length);
     });

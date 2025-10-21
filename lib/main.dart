@@ -2,24 +2,63 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
-import 'package:zen_do/persistance/persistance_helper.dart';
+import 'package:zen_do/persistance/persistence_helper.dart';
 import 'package:zen_do/todo_list_page.dart';
+
+Logger logger = Logger(level: Level.debug);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
-
   Hive.registerAdapter(TodoAdapter());
   Hive.registerAdapter(TodoListAdapter());
   Hive.registerAdapter(ListScopeAdapter());
 
+  await Workmanager().initialize(callbackDispatcher);
+
   runApp(const ZenDoApp());
+
+  await Workmanager().registerPeriodicTask(
+    "dailyTodoTransfer",
+    "transferExpiredTodos",
+    frequency: const Duration(hours: 24),
+    initialDelay: _durationUntilNextMidnight(),
+  );
+}
+
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    switch (task) {
+      case "transferExpiredTodos":
+        await ListManager.autoTransferExpiredTodos();
+        break;
+      default:
+        logger.e('Unknown task $task');
+        break;
+    }
+
+    return Future.value(true);
+  });
+}
+
+Duration _durationUntilNextMidnight() {
+  final now = DateTime.now();
+  final nextMidnight = DateTime(
+    now.year,
+    now.month,
+    now.day + 1,
+    0,
+    5,
+  ); // 00:05 Uhr
+  return nextMidnight.difference(now);
 }
 
 class ZenDoApp extends StatelessWidget {
@@ -62,15 +101,15 @@ class _ZenDoHomePageState extends State<ZenDoHomePage> {
     super.initState();
     _initData();
     AppLifecycleListener(
-      onHide: () => unawaited(PersistanceHelper.close()),
-      onInactive: () => unawaited(PersistanceHelper.close()),
-      onPause: () => unawaited(PersistanceHelper.close()),
-      onDetach: () => unawaited(PersistanceHelper.close()),
+      onHide: () => unawaited(PersistenceHelper.close()),
+      onInactive: () => unawaited(PersistenceHelper.close()),
+      onPause: () => unawaited(PersistenceHelper.close()),
+      onDetach: () => unawaited(PersistenceHelper.close()),
     );
   }
 
   Future<void> _initData() async {
-    final lists = await PersistanceHelper.loadAll();
+    final lists = await PersistenceHelper.loadAll();
     listManager = ListManager(lists);
     setState(() {});
   }

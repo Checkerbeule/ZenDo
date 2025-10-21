@@ -3,7 +3,7 @@ import 'package:logger/logger.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo_list.dart';
 
-class PersistanceHelper {
+class PersistenceHelper {
   static Logger logger = Logger(level: Level.debug);
 
   static HiveInterface hive = Hive;
@@ -42,10 +42,10 @@ class PersistanceHelper {
     }
 
     if (_listBox?.isOpen ?? false) {
-      logger.d('[PersistenceHelper] Closing Hive box...');
+      logger.d('[PersistenceHelper] Closing Hive boxes...');
       await _listBox!.close();
       _listBox = null;
-      logger.d('[PersistenceHelper] Hive closed.');
+      logger.d('[PersistenceHelper] all boxes closed.');
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:logger/logger.dart';
 import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/persistance/persistence_helper.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -19,7 +20,20 @@ class ListManager {
     _lists.sort((a, b) => a.compareTo(b));
   }
 
-  void transferExpiredTodos() { //TODO fix
+  static Future<void> autoTransferExpiredTodos() async {
+    logger.d('AutoTransfer of expired todos started...');
+    try {
+      var lists = await PersistenceHelper.loadAll();
+      final manager = ListManager(lists);
+      manager.transferExpiredTodos();
+      await PersistenceHelper.close();
+      logger.d('AutoTransfer of expired todos finished!');
+    } catch (e, s) {
+      logger.e("Error in daily transfer: $e\n$s");
+    }
+  }
+
+  void transferExpiredTodos() {
     // use only lists with enabled autotransfer
     final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
 
@@ -28,7 +42,9 @@ class ListManager {
         final currentList = activeLists[i];
         final previousList = activeLists[i - 1];
 
-        final expiredTodos = currentList.getExpiredTodos(previousList.scope.duration);
+        final expiredTodos = currentList.getExpiredTodos(
+          previousList.scope.duration,
+        );
         final addedTodos = previousList.addAll(expiredTodos);
         currentList.deleteAll(addedTodos);
 

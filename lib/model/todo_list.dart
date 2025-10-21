@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:hive/hive.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/persistance/persistance_helper.dart';
+import 'package:zen_do/persistance/persistence_helper.dart';
 
 part 'todo_list.g.dart';
 
@@ -22,12 +22,12 @@ class TodoList implements Comparable<TodoList> {
 
   /// Adds the [todo] to the list.
   /// Calculates the expirationDate based on the ListScope.
-  /// Uses [PersistanceHelper] to store the list with the added [todo]
+  /// Uses [PersistenceHelper] to store the list with the added [todo]
   bool addTodo(Todo todo) {
     final bool added = todos.add(todo);
     if (added) {
       _setExpirationDate(todo);
-      unawaited(PersistanceHelper.saveList(this));
+      unawaited(PersistenceHelper.saveList(this));
     }
     return added;
   }
@@ -35,7 +35,7 @@ class TodoList implements Comparable<TodoList> {
   /// Use this method to transferExpiredTodos with the [ListManager].
   /// Adds all [todosToAdd] to the list.
   /// Does not calculate the expirationDate.
-  /// Uses [PersistanceHelper] to store the list with the added [todosToAdd].
+  /// Uses [PersistenceHelper] to store the list with the added [todosToAdd].
   List<Todo> addAll(Iterable<Todo> todosToAdd) {
     List<Todo> addedTodos = [];
     for (final todo in todosToAdd) {
@@ -44,7 +44,7 @@ class TodoList implements Comparable<TodoList> {
       }
     }
     if (addedTodos.isNotEmpty) {
-      unawaited(PersistanceHelper.saveList(this));
+      unawaited(PersistenceHelper.saveList(this));
     }
     return addedTodos;
   }
@@ -52,7 +52,7 @@ class TodoList implements Comparable<TodoList> {
   void deleteTodo(Todo todo) {
     final bool deleted = todos.remove(todo);
     if (deleted) {
-      unawaited(PersistanceHelper.saveList(this));
+      unawaited(PersistenceHelper.saveList(this));
     }
   }
 
@@ -60,7 +60,7 @@ class TodoList implements Comparable<TodoList> {
     final int initialLength = todos.length;
     todos.removeAll(todosToDelete);
     if (initialLength != todos.length) {
-      unawaited(PersistanceHelper.saveList(this));
+      unawaited(PersistenceHelper.saveList(this));
     }
   }
 
@@ -69,7 +69,7 @@ class TodoList implements Comparable<TodoList> {
     if (removed) {
       doneTodos.add(todo);
       todo.completionDate = DateTime.now();
-      unawaited(PersistanceHelper.saveList(this));
+      unawaited(PersistenceHelper.saveList(this));
     }
   }
 
@@ -78,7 +78,7 @@ class TodoList implements Comparable<TodoList> {
     if (inserted) {
       doneTodos.remove(todo);
       todo.completionDate = null;
-      unawaited(PersistanceHelper.saveList(this));
+      unawaited(PersistenceHelper.saveList(this));
     }
     return inserted;
   }
