@@ -8,18 +8,6 @@ import 'package:zen_do/persistance/persistance_helper.dart';
 import '../mocks/mocks.mocks.dart';
 
 void main() {
-  late MockHiveInterface hiveMock;
-  late MockBox<TodoList> mockBox;
-
-  setUpAll(() {
-    hiveMock = MockHiveInterface();
-    mockBox = MockBox<TodoList>();
-    PersistanceHelper.hive = hiveMock;
-
-    when(hiveMock.openBox<TodoList>(any)).thenAnswer((_) async => mockBox);
-    when(mockBox.delete(any)).thenAnswer((_) => Future<void>(() {}));
-    when(mockBox.put(any, any)).thenAnswer((_) => Future<void>(() {}));
-  });
   group('compareTo tests', () {
     test('backlog compareTo backlog is 0', () {
       final backlog_1 = TodoList(ListScope.backlog);
@@ -93,143 +81,158 @@ void main() {
     });
   });
 
-  group('expirationDate tests', () {
-    test('inserted todo to dailyList gets expirationDate tomorrow', () {
-      final dailyList = TodoList(ListScope.daily);
-      final todo = Todo('todo expires tomorrow');
-      dailyList.addTodo(todo);
-      final now = DateTime.now();
-      final expectedDate = DateTime(
-        now.year,
-        now.month,
-        now.day,
-      ).add(Duration(days: 1));
+  group('tests using mocks', () {
+    late MockHiveInterface hiveMock;
+    late MockBox<TodoList> mockBox;
 
-      expect(todo.expirationDate != null, true);
-      expect(todo.expirationDate, expectedDate);
+    setUpAll(() {
+      hiveMock = MockHiveInterface();
+      mockBox = MockBox<TodoList>();
+      PersistanceHelper.hive = hiveMock;
+
+      when(hiveMock.openBox<TodoList>(any)).thenAnswer((_) async => mockBox);
+      when(mockBox.delete(any)).thenAnswer((_) => Future<void>(() {}));
+      when(mockBox.put(any, any)).thenAnswer((_) => Future<void>(() {}));
+      when(mockBox.isOpen).thenReturn(false);
     });
-
-    test(
-      'inserted todo to dailyList usind addAll gets no expirationDate',
-      () {
+    group('expirationDate tests', () {
+      test('inserted todo to dailyList gets expirationDate tomorrow', () {
         final dailyList = TodoList(ListScope.daily);
         final todo = Todo('todo expires tomorrow');
-        dailyList.addAll([todo]);
+        dailyList.addTodo(todo);
+        final now = DateTime.now();
+        final expectedDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).add(Duration(days: 1));
 
-        expect(todo.expirationDate, null);
-      },
-    );
+        expect(todo.expirationDate != null, true);
+        expect(todo.expirationDate, expectedDate);
+      });
 
-    test('inserted todo to weekyList gets expirationDate in 7 days', () {
-      final weeklyList = TodoList(ListScope.weekly);
-      final todo = Todo('todo expires in 7 days');
-      weeklyList.addTodo(todo);
-      final now = DateTime.now();
-      final expectedDate = DateTime(
-        now.year,
-        now.month,
-        now.day,
-      ).add(Duration(days: 7));
+      test(
+        'inserted todo to dailyList usind addAll gets no expirationDate',
+        () {
+          final dailyList = TodoList(ListScope.daily);
+          final todo = Todo('todo expires tomorrow');
+          dailyList.addAll([todo]);
 
-      expect(todo.expirationDate != null, true);
-      expect(todo.expirationDate, expectedDate);
-    });
-
-    test('inserted todo to monthlyList gets expirationDate in 30 days', () {
-      final monthlyList = TodoList(ListScope.monthly);
-      final todo = Todo('todo expires in 30 days');
-      monthlyList.addTodo(todo);
-      final now = DateTime.now();
-      final expectedDate = DateTime(
-        now.year,
-        now.month,
-        now.day,
-      ).add(Duration(days: 30));
-
-      expect(todo.expirationDate != null, true);
-      expect(todo.expirationDate, expectedDate);
-    });
-
-    test('inserted todo to yearlyList gets expirationDate in 365 days', () {
-      final yearlyList = TodoList(ListScope.yearly);
-      final todo = Todo('todo expires in 365 days');
-      yearlyList.addTodo(todo);
-      final now = DateTime.now();
-      final expectedDate = DateTime(
-        now.year,
-        now.month,
-        now.day,
-      ).add(Duration(days: 365));
-
-      expect(todo.expirationDate != null, true);
-      expect(todo.expirationDate, expectedDate);
-    });
-
-    test('inserted todo to backlog gets no expirationDate', () {
-      final backlog = TodoList(ListScope.backlog);
-      final todo = Todo('todo expires tomorrow');
-      backlog.addTodo(todo);
-
-      expect(todo.expirationDate == null, true);
-    });
-
-    test('done todo is saved in doneList', () {
-      final yearlyList = TodoList(ListScope.yearly);
-      final todo = Todo('todo expires in 365 days');
-      yearlyList.addTodo(todo);
-      yearlyList.markAsDone(todo);
-
-      expect(yearlyList.doneTodos.length, 1);
-      expect(yearlyList.doneTodos.first, todo);
-    });
-
-    test('restored todo keeps expirationDate', () {
-      final yearlyList = TodoList(ListScope.yearly);
-      final todo = Todo('todo expires in 365 days');
-      yearlyList.addTodo(todo);
-      yearlyList.markAsDone(todo);
-      final expirationDate = todo.expirationDate;
-      yearlyList.restoreTodo(todo);
-
-      expect(todo.expirationDate != null, true);
-      expect(todo.expirationDate, expirationDate);
-    });
-
-    test('get expired todos', () {
-      final weeklyList = TodoList(ListScope.weekly);
-      final todo_1 = Todo('expired 1');
-      final todo_2 = Todo('expired 2');
-      weeklyList.addTodo(todo_1);
-      weeklyList.addTodo(todo_2);
-      todo_1.expirationDate = todo_1.expirationDate!.subtract(
-        Duration(days: 7),
-      );
-      todo_2.expirationDate = todo_2.expirationDate!.subtract(
-        Duration(days: 8),
+          expect(todo.expirationDate, null);
+        },
       );
 
-      expect(weeklyList.getExpiredTodos(ListScope.daily.duration).length, 2);
+      test('inserted todo to weekyList gets expirationDate in 7 days', () {
+        final weeklyList = TodoList(ListScope.weekly);
+        final todo = Todo('todo expires in 7 days');
+        weeklyList.addTodo(todo);
+        final now = DateTime.now();
+        final expectedDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).add(Duration(days: 7));
+
+        expect(todo.expirationDate != null, true);
+        expect(todo.expirationDate, expectedDate);
+      });
+
+      test('inserted todo to monthlyList gets expirationDate in 30 days', () {
+        final monthlyList = TodoList(ListScope.monthly);
+        final todo = Todo('todo expires in 30 days');
+        monthlyList.addTodo(todo);
+        final now = DateTime.now();
+        final expectedDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).add(Duration(days: 30));
+
+        expect(todo.expirationDate != null, true);
+        expect(todo.expirationDate, expectedDate);
+      });
+
+      test('inserted todo to yearlyList gets expirationDate in 365 days', () {
+        final yearlyList = TodoList(ListScope.yearly);
+        final todo = Todo('todo expires in 365 days');
+        yearlyList.addTodo(todo);
+        final now = DateTime.now();
+        final expectedDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).add(Duration(days: 365));
+
+        expect(todo.expirationDate != null, true);
+        expect(todo.expirationDate, expectedDate);
+      });
+
+      test('inserted todo to backlog gets no expirationDate', () {
+        final backlog = TodoList(ListScope.backlog);
+        final todo = Todo('todo expires tomorrow');
+        backlog.addTodo(todo);
+
+        expect(todo.expirationDate == null, true);
+      });
+
+      test('done todo is saved in doneList', () {
+        final yearlyList = TodoList(ListScope.yearly);
+        final todo = Todo('todo expires in 365 days');
+        yearlyList.addTodo(todo);
+        yearlyList.markAsDone(todo);
+
+        expect(yearlyList.doneTodos.length, 1);
+        expect(yearlyList.doneTodos.first, todo);
+      });
+
+      test('restored todo keeps expirationDate', () {
+        final yearlyList = TodoList(ListScope.yearly);
+        final todo = Todo('todo expires in 365 days');
+        yearlyList.addTodo(todo);
+        yearlyList.markAsDone(todo);
+        final expirationDate = todo.expirationDate;
+        yearlyList.restoreTodo(todo);
+
+        expect(todo.expirationDate != null, true);
+        expect(todo.expirationDate, expirationDate);
+      });
+
+      test('get expired todos', () {
+        final weeklyList = TodoList(ListScope.weekly);
+        final todo_1 = Todo('expired 1');
+        final todo_2 = Todo('expired 2');
+        weeklyList.addTodo(todo_1);
+        weeklyList.addTodo(todo_2);
+        todo_1.expirationDate = todo_1.expirationDate!.subtract(
+          Duration(days: 7),
+        );
+        todo_2.expirationDate = todo_2.expirationDate!.subtract(
+          Duration(days: 8),
+        );
+
+        expect(weeklyList.getExpiredTodos(ListScope.daily.duration).length, 2);
+      });
     });
-  });
 
-  group('completionDate tests', () {
-    test('done todo gets completionDate', () {
-      final yearlyList = TodoList(ListScope.yearly);
-      final todo = Todo('done todo with completionDate');
-      yearlyList.addTodo(todo);
-      yearlyList.markAsDone(todo);
+    group('completionDate tests', () {
+      test('done todo gets completionDate', () {
+        final yearlyList = TodoList(ListScope.yearly);
+        final todo = Todo('done todo with completionDate');
+        yearlyList.addTodo(todo);
+        yearlyList.markAsDone(todo);
 
-      expect(todo.expirationDate != null, true);
-    });
+        expect(todo.expirationDate != null, true);
+      });
 
-    test('restored todo has no completionDate', () {
-      final yearlyList = TodoList(ListScope.yearly);
-      final todo = Todo('restored todo without completionDate');
-      yearlyList.addTodo(todo);
-      yearlyList.markAsDone(todo);
-      yearlyList.restoreTodo(todo);
+      test('restored todo has no completionDate', () {
+        final yearlyList = TodoList(ListScope.yearly);
+        final todo = Todo('restored todo without completionDate');
+        yearlyList.addTodo(todo);
+        yearlyList.markAsDone(todo);
+        yearlyList.restoreTodo(todo);
 
-      expect(todo.completionDate, null);
+        expect(todo.completionDate, null);
+      });
     });
   });
 }

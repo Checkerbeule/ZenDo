@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hive/hive.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/list_scope.dart';
@@ -25,7 +27,7 @@ class TodoList implements Comparable<TodoList> {
     final bool added = todos.add(todo);
     if (added) {
       _setExpirationDate(todo);
-      PersistanceHelper.saveList(this);
+      unawaited(PersistanceHelper.saveList(this));
     }
     return added;
   }
@@ -42,7 +44,7 @@ class TodoList implements Comparable<TodoList> {
       }
     }
     if (addedTodos.isNotEmpty) {
-      PersistanceHelper.saveList(this);
+      unawaited(PersistanceHelper.saveList(this));
     }
     return addedTodos;
   }
@@ -50,7 +52,7 @@ class TodoList implements Comparable<TodoList> {
   void deleteTodo(Todo todo) {
     final bool deleted = todos.remove(todo);
     if (deleted) {
-      PersistanceHelper.saveList(this);
+      unawaited(PersistanceHelper.saveList(this));
     }
   }
 
@@ -58,7 +60,7 @@ class TodoList implements Comparable<TodoList> {
     final int initialLength = todos.length;
     todos.removeAll(todosToDelete);
     if (initialLength != todos.length) {
-      PersistanceHelper.saveList(this);
+      unawaited(PersistanceHelper.saveList(this));
     }
   }
 
@@ -67,7 +69,7 @@ class TodoList implements Comparable<TodoList> {
     if (removed) {
       doneTodos.add(todo);
       todo.completionDate = DateTime.now();
-      PersistanceHelper.saveList(this);
+      unawaited(PersistanceHelper.saveList(this));
     }
   }
 
@@ -76,7 +78,7 @@ class TodoList implements Comparable<TodoList> {
     if (inserted) {
       doneTodos.remove(todo);
       todo.completionDate = null;
-      PersistanceHelper.saveList(this);
+      unawaited(PersistanceHelper.saveList(this));
     }
     return inserted;
   }

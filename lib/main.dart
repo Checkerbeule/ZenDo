@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
@@ -59,6 +61,12 @@ class _ZenDoHomePageState extends State<ZenDoHomePage> {
   void initState() {
     super.initState();
     _initData();
+    AppLifecycleListener(
+      onHide: () => unawaited(PersistanceHelper.close()),
+      onInactive: () => unawaited(PersistanceHelper.close()),
+      onPause: () => unawaited(PersistanceHelper.close()),
+      onDetach: () => unawaited(PersistanceHelper.close()),
+    );
   }
 
   Future<void> _initData() async {

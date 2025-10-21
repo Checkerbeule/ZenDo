@@ -60,6 +60,7 @@ void main() {
       when(hiveMock.openBox<TodoList>(any)).thenAnswer((_) async => mockBox);
       when(mockBox.delete(any)).thenAnswer((_) => Future<void>(() {}));
       when(mockBox.put(any, any)).thenAnswer((_) => Future<void>(() {}));
+      when(mockBox.isOpen).thenReturn(false);
     });
 
     test('ListManager transferExpiredTodos from weekly to daily list', () {
