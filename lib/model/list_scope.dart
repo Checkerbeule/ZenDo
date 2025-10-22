@@ -12,6 +12,7 @@ enum ListScope {
   final IconData icon;
   final Duration duration;
   final bool autoTransfer;
+
   const ListScope(this.label, this.icon, this.duration, this.autoTransfer);
 }
 

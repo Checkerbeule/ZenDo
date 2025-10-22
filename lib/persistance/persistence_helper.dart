@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
+import 'package:synchronized/synchronized.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo_list.dart';
 
@@ -9,19 +10,8 @@ class PersistenceHelper {
   static HiveInterface hive = Hive;
   static Box<TodoList>? _listBox;
 
-  // List of currently running save operations
-  static final List<Future<void>> _pendingSaves = [];
-
-  /// Generic helper to run any Hive write safely
-  static Future<void> _runSafeWrite(Future<void> Function() action) async {
-    final future = action();
-    _pendingSaves.add(future);
-
-    // Remove from tracking list when finished
-    future.whenComplete(() => _pendingSaves.remove(future));
-
-    return future;
-  }
+  static final List<Future> _pendingOperations = [];
+  static final _listLock = Lock();
 
   /// Returns the Hive box for [TodoList] items.
   /// Opens the box if it's not yet opened or was closed.
@@ -34,11 +24,11 @@ class PersistenceHelper {
 
   /// Closes all open boxes.
   static Future<void> close() async {
-    if (_pendingSaves.isNotEmpty) {
+    if (_pendingOperations.isNotEmpty) {
       logger.d(
-        '[PersistenceHelper] Waiting for ${_pendingSaves.length} pending saves...',
+        '[PersistenceHelper] Waiting for ${_pendingOperations.length} pending saves...',
       );
-      await Future.wait(_pendingSaves);
+      await Future.wait(_pendingOperations);
     }
 
     if (_listBox?.isOpen ?? false) {
@@ -49,6 +39,20 @@ class PersistenceHelper {
     }
   }
 
+  /// Helper to run all Hive operations on todo_list boxes safely
+  static Future<T> _runListOperationSafely<T>(
+    Future<T> Function() action,
+  ) async {
+    return _listLock.synchronized(timeout: Duration(seconds: 2), () async {
+      final future = action();
+      _pendingOperations.add(future);
+
+      // Remove from tracking list when finished
+      future.whenComplete(() => _pendingOperations.remove(future));
+      return future;
+    });
+  }
+
   /// Saves a list of [TodoList] objects to the Hive box named 'todo_lists'.
   ///
   /// This method clears the existing contents of the box before saving the new lists.
@@ -56,7 +60,7 @@ class PersistenceHelper {
   ///
   /// [lists]: The list of [TodoList] objects to save.
   static Future<void> saveAll(List<TodoList> lists) async {
-    await _runSafeWrite(() async {
+    await _runListOperationSafely(() async {
       final box = await _getListBox();
       for (final list in lists) {
         await box.delete(list.scope.name);
@@ -71,7 +75,7 @@ class PersistenceHelper {
   ///
   /// [list]: The [TodoList] object to save.
   static Future<void> saveList(TodoList list) async {
-    await _runSafeWrite(() async {
+    await _runListOperationSafely(() async {
       final box = await _getListBox();
       await box.delete(list.scope.name);
       await box.put(list.scope.name, list);
@@ -83,15 +87,16 @@ class PersistenceHelper {
   /// Iterates through all possible [ListScope] values and retrieves the corresponding lists.
   /// If a list for a specific scope does not exist, a new [TodoList] is created for that scope.
   static Future<List<TodoList>> loadAll() async {
-    final box = await _getListBox();
-    final lists = <TodoList>[];
+    return await _runListOperationSafely(() async {
+      final box = await _getListBox();
+      final lists = <TodoList>[];
 
-    for (final scope in ListScope.values) {
-      final list = box.get(scope.name);
-      lists.add(list ?? TodoList(scope));
-    }
-
-    return lists;
+      for (final scope in ListScope.values) {
+        final list = box.get(scope.name);
+        lists.add(list ?? TodoList(scope));
+      }
+      return lists;
+    });
   }
 
   /// Loads a [TodoList] from persistent storage for the given [scope].
@@ -103,15 +108,17 @@ class PersistenceHelper {
   ///
   /// Throws any exceptions encountered during box access or data retrieval.
   static Future<TodoList> loadList(ListScope scope) async {
-    final box = await _getListBox();
-    final list = box.get(scope.name);
+    return await _runListOperationSafely(() async {
+      final box = await _getListBox();
+      final list = box.get(scope.name);
 
-    if (list != null) {
-      return list;
-    } else {
-      final newList = TodoList(scope);
-      await box.put(scope.name, newList);
-      return newList;
-    }
+      if (list != null) {
+        return list;
+      } else {
+        final newList = TodoList(scope);
+        await box.put(scope.name, newList);
+        return newList;
+      }
+    });
   }
 }
