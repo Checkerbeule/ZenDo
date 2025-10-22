@@ -1,23 +1,80 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
-import 'package:zen_do/persistance/persistance_helper.dart';
+import 'package:zen_do/persistance/file_lock_helper.dart';
+import 'package:zen_do/persistance/persistence_helper.dart';
 import 'package:zen_do/todo_list_page.dart';
+import 'package:zen_do/zen_do_lifecycle_listener.dart';
+
+Logger logger = Logger(level: Level.debug);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Hive.initFlutter();
+  await initHive();
 
+  await Workmanager().initialize(callbackDispatcher);
+  unawaited(
+    Workmanager().registerPeriodicTask(
+      "dailyTodoTransfer",
+      "transferExpiredTodos",
+      frequency: const Duration(hours: 24),
+      initialDelay: _durationUntilNextMidnight(),
+    ),
+  );
+
+  WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
+  await FileLockHelper.acquire(FileLockType.todoList);
+
+  runApp(const ZenDoApp());
+}
+
+Future<void> initHive() async {
+  await Hive.initFlutter();
   Hive.registerAdapter(TodoAdapter());
   Hive.registerAdapter(TodoListAdapter());
   Hive.registerAdapter(ListScopeAdapter());
+}
 
-  runApp(const ZenDoApp());
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    switch (task) {
+      case "transferExpiredTodos":
+        if (!await FileLockHelper.acquire(FileLockType.todoList)) {
+          logger.e("AutoTransfer skipped: App is active");
+          break;
+        }
+        await initHive();
+        await ListManager.autoTransferExpiredTodos();
+        await FileLockHelper.release(FileLockType.todoList);
+        break;
+      default:
+        logger.e('Unknown task $task');
+        break;
+    }
+
+    return Future.value(true);
+  });
+}
+
+Duration _durationUntilNextMidnight() {
+  final now = DateTime.now();
+  final nextMidnight = DateTime(
+    now.year,
+    now.month,
+    now.day + 1,
+    0,
+    5,
+  ); // 00:05 Uhr
+  return nextMidnight.difference(now);
 }
 
 class ZenDoApp extends StatelessWidget {
@@ -62,7 +119,7 @@ class _ZenDoHomePageState extends State<ZenDoHomePage> {
   }
 
   Future<void> _initData() async {
-    final lists = await PersistanceHelper.loadAll();
+    final lists = await PersistenceHelper.loadAll();
     listManager = ListManager(lists);
     setState(() {});
   }

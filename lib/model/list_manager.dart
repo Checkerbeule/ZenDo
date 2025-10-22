@@ -1,5 +1,6 @@
 import 'package:logger/logger.dart';
 import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/persistance/persistence_helper.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -19,26 +20,41 @@ class ListManager {
     _lists.sort((a, b) => a.compareTo(b));
   }
 
+  static Future<void> autoTransferExpiredTodos() async {
+    logger.d('AutoTransfer of expired todos started...');
+    try {
+      var lists = await PersistenceHelper.loadAll();
+      final manager = ListManager(lists);
+      manager.transferExpiredTodos();
+      await PersistenceHelper.close();
+      logger.d('AutoTransfer of expired todos finished!');
+    } catch (e, s) {
+      logger.e("Error in daily transfer: $e\n$s");
+    }
+  }
+
   void transferExpiredTodos() {
     // use only lists with enabled autotransfer
     final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
-    // sort by duration ascending
-    activeLists.sort((a, b) => a.compareTo(b));
 
-    for (int i = activeLists.length; i > 0; i--) {
-      final currentList = activeLists[i];
-      final previousList = activeLists[i - 1];
+    if (activeLists.length > 1) {
+      for (int i = activeLists.length - 1; i > 0; i--) {
+        final currentList = activeLists[i];
+        final previousList = activeLists[i - 1];
 
-      final expiredTodos = currentList.expiredTodos;
-      final addedTodos = previousList.addAll(expiredTodos);
-      currentList.deleteAll(addedTodos);
-
-      final difference = expiredTodos.length - addedTodos.length;
-      if (difference > 0) {
-        logger.d(
-          '$difference Todos could not be transfered from ${currentList.scope} to ${previousList.scope}!'
-          'The list migth allready contain Todos with the same titles.',
+        final expiredTodos = currentList.getExpiredTodos(
+          previousList.scope.duration,
         );
+        final addedTodos = previousList.addAll(expiredTodos);
+        currentList.deleteAll(addedTodos);
+
+        final difference = expiredTodos.length - addedTodos.length;
+        if (difference > 0) {
+          logger.d(
+            '$difference Todos could not be transfered from ${currentList.scope} to ${previousList.scope}!'
+            'The list migth allready contain Todos with the same titles.',
+          );
+        }
       }
     }
   }

@@ -20,7 +20,7 @@ class _TodoListPageState extends State<TodoListPage> {
   Widget build(BuildContext context) {
     var appState = context.watch<ZenDoAppState>();
 
-    return Scaffold( // TODO remove Scaffold and move FloatingActionButton to Listview
+    return Scaffold(
       body: ListView(
         shrinkWrap: true,
         children: [

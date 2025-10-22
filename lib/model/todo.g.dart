@@ -19,19 +19,25 @@ class TodoAdapter extends TypeAdapter<Todo> {
     return Todo(
       fields[0] as String,
       fields[1] as String?,
-    );
+    )
+      ..expirationDate = fields[3] as DateTime?
+      ..completionDate = fields[4] as DateTime?;
   }
 
   @override
   void write(BinaryWriter writer, Todo obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
       ..write(obj.description)
       ..writeByte(2)
-      ..write(obj.creationDate);
+      ..write(obj.creationDate)
+      ..writeByte(3)
+      ..write(obj.expirationDate)
+      ..writeByte(4)
+      ..write(obj.completionDate);
   }
 
   @override

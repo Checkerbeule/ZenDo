@@ -13,7 +13,21 @@ class Todo {
   @HiveField(2)
   final DateTime creationDate;
 
-  Todo(this.title, this.description) : creationDate = DateTime.now();
+  @HiveField(3)
+  DateTime? expirationDate;
+
+  @HiveField(4)
+  DateTime? completionDate;
+
+  Todo(this.title, [this.description]) : creationDate = DateTime.now();
+
+  bool toBeTransferred(Duration durationOfNextListScope) {
+    if (expirationDate == null) {
+      return false;
+    }
+    final transferDate = expirationDate!.subtract(durationOfNextListScope);
+    return DateTime.now().isAfter(transferDate);
+  }
 
   @override
   operator ==(Object other) {
