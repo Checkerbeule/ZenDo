@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/persistance/file_lock_helper.dart';
 
 class PersistenceHelper {
   static Logger logger = Logger(level: Level.debug);
@@ -23,7 +24,7 @@ class PersistenceHelper {
   }
 
   /// Closes all open boxes.
-  static Future<void> close() async {
+  static Future<void> closeAndRelease() async {
     if (_pendingOperations.isNotEmpty) {
       logger.d(
         '[PersistenceHelper] Waiting for ${_pendingOperations.length} pending saves...',
@@ -36,6 +37,7 @@ class PersistenceHelper {
       await _listBox!.close();
       _listBox = null;
       logger.d('[PersistenceHelper] all boxes closed.');
+      await FileLockHelper.instance.release(LockType.todoList);
     }
   }
 
@@ -44,12 +46,20 @@ class PersistenceHelper {
     Future<T> Function() action,
   ) async {
     return _listLock.synchronized(timeout: Duration(seconds: 2), () async {
-      final future = action();
-      _pendingOperations.add(future);
+      final acquired = await FileLockHelper.instance.acquire(LockType.todoList);
+      if (!acquired) {
+        logger.e(
+          ' [PersisteneHelper] Could not access data because it is currently locked by another process!',
+        );
+        return Future.value(null);
+      } else {
+        final future = action();
+        _pendingOperations.add(future);
 
-      // Remove from tracking list when finished
-      future.whenComplete(() => _pendingOperations.remove(future));
-      return future;
+        // Remove from tracking list when finished
+        future.whenComplete(() => _pendingOperations.remove(future));
+        return future;
+      }
     });
   }
 

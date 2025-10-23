@@ -4,6 +4,7 @@ import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/persistance/file_lock_helper.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
 
 import '../mocks/mocks.mocks.dart';
@@ -51,6 +52,7 @@ void main() {
   group('ListManager transferExpiredTodos tests', () {
     late MockHiveInterface hiveMock;
     late MockBox<TodoList> mockBox;
+    late MockILockHelper mockLockHelper;
 
     setUpAll(() {
       hiveMock = MockHiveInterface();
@@ -61,6 +63,15 @@ void main() {
       when(mockBox.delete(any)).thenAnswer((_) => Future<void>(() {}));
       when(mockBox.put(any, any)).thenAnswer((_) => Future<void>(() {}));
       when(mockBox.isOpen).thenReturn(false);
+
+      mockLockHelper = MockILockHelper();
+      FileLockHelper.instance = mockLockHelper as ILockHelper;
+      when(
+        mockLockHelper.acquire(LockType.todoList),
+      ).thenAnswer((_) async => true);
+      when(
+        mockLockHelper.release(LockType.todoList),
+      ).thenAnswer((_) async => {});
     });
 
     test('ListManager transferExpiredTodos from weekly to daily list', () {

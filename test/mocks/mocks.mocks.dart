@@ -11,6 +11,7 @@ import 'package:hive/src/box/default_compaction_strategy.dart' as _i6;
 import 'package:hive/src/box/default_key_comparator.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i3;
+import 'package:zen_do/persistance/file_lock_helper.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -556,4 +557,32 @@ class MockHiveInterface extends _i1.Mock implements _i2.HiveInterface {
         ),
         returnValueForMissingStub: null,
       );
+}
+
+/// A class which mocks [ILockHelper].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockILockHelper extends _i1.Mock implements _i8.ILockHelper {
+  MockILockHelper() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Future<bool> acquire(_i8.LockType? lockType) => (super.noSuchMethod(
+        Invocation.method(
+          #acquire,
+          [lockType],
+        ),
+        returnValue: _i4.Future<bool>.value(false),
+      ) as _i4.Future<bool>);
+
+  @override
+  _i4.Future<void> release(_i8.LockType? lockType) => (super.noSuchMethod(
+        Invocation.method(
+          #release,
+          [lockType],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 }

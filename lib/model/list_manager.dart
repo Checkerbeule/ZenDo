@@ -26,7 +26,7 @@ class ListManager {
       var lists = await PersistenceHelper.loadAll();
       final manager = ListManager(lists);
       manager.transferExpiredTodos();
-      await PersistenceHelper.close();
+      await PersistenceHelper.closeAndRelease();
       logger.d('AutoTransfer of expired todos finished!');
     } catch (e, s) {
       logger.e("Error in daily transfer: $e\n$s");

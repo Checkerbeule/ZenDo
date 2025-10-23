@@ -21,7 +21,7 @@ void main() async {
 
   await initHive();
 
-  await Workmanager().initialize(callbackDispatcher);
+  unawaited(Workmanager().initialize(callbackDispatcher));
   unawaited(
     Workmanager().registerPeriodicTask(
       "dailyTodoTransfer",
@@ -32,8 +32,7 @@ void main() async {
   );
 
   WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
-  await FileLockHelper.acquire(FileLockType.todoList);
-
+  
   runApp(const ZenDoApp());
 }
 
@@ -42,27 +41,6 @@ Future<void> initHive() async {
   Hive.registerAdapter(TodoAdapter());
   Hive.registerAdapter(TodoListAdapter());
   Hive.registerAdapter(ListScopeAdapter());
-}
-
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    switch (task) {
-      case "transferExpiredTodos":
-        if (!await FileLockHelper.acquire(FileLockType.todoList)) {
-          logger.e("AutoTransfer skipped: App is active");
-          break;
-        }
-        await initHive();
-        await ListManager.autoTransferExpiredTodos();
-        await FileLockHelper.release(FileLockType.todoList);
-        break;
-      default:
-        logger.e('Unknown task $task');
-        break;
-    }
-
-    return Future.value(true);
-  });
 }
 
 Duration _durationUntilNextMidnight() {
@@ -75,6 +53,51 @@ Duration _durationUntilNextMidnight() {
     5,
   ); // 00:05 Uhr
   return nextMidnight.difference(now);
+}
+
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    switch (task) {
+      case "transferExpiredTodos":
+        await _runWithRetries(() async {
+          await initHive();
+          await ListManager.autoTransferExpiredTodos();
+        });
+        break;
+      default:
+        logger.e('Unknown task $task');
+        break;
+    }
+
+    return Future.value(true);
+  });
+}
+
+Future<void> _runWithRetries(
+  Future<void> Function() task, {
+  int maxRetries = 5,
+  Duration delay = const Duration(minutes: 5),
+}) async {
+  for (int i = 0; i < maxRetries; i++) {
+    final acquired = await FileLockHelper.instance.acquire(LockType.todoList);
+    if (acquired) {
+      try {
+        await task();
+      } finally {
+        await FileLockHelper.instance.release(LockType.todoList);
+      }
+      return;
+    } else {
+      logger.w(
+        "[Workmanager] Lock busy – retrying in ${delay.inMinutes} min... (Attempt ${i + 1}/$maxRetries)",
+      );
+      await Future.delayed(delay);
+    }
+  }
+
+  logger.e(
+    "[Workmanager] Failed to acquire file lock after $maxRetries attempts.",
+  );
 }
 
 class ZenDoApp extends StatelessWidget {
