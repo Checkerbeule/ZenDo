@@ -90,10 +90,10 @@ void main() {
       expect(loadedList.todos.first.title, updatedTitle);
     });
 
-    test('loadAll and retreive ${ListScope.values.length}', () async {
+    test('loadAll and retreive 0', () async {
       final loadedLists = await PersistenceHelper.loadAll();
 
-      expect(loadedLists.length, ListScope.values.length);
+      expect(loadedLists.length, 0);
     });
   });
 }

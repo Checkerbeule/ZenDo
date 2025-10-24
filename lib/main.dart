@@ -32,11 +32,12 @@ void main() async {
   );
 
   WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
-  
+
   runApp(const ZenDoApp());
 }
 
 Future<void> initHive() async {
+  //TODO move to PersistenceHelper
   await Hive.initFlutter();
   Hive.registerAdapter(TodoAdapter());
   Hive.registerAdapter(TodoListAdapter());
@@ -59,9 +60,8 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     switch (task) {
       case "transferExpiredTodos":
-        await _runWithRetries(() async {
-          await initHive();
-          await ListManager.autoTransferExpiredTodos();
+        await _runWithRetries(task, () async {
+          return await ListManager.autoTransferExpiredTodos();
         });
         break;
       default:
@@ -74,30 +74,25 @@ void callbackDispatcher() {
 }
 
 Future<void> _runWithRetries(
-  Future<void> Function() task, {
+  String taskname,
+  Future<bool> Function() task, {
   int maxRetries = 5,
   Duration delay = const Duration(minutes: 5),
 }) async {
+  logger.i('Running task $taskname...');
   for (int i = 0; i < maxRetries; i++) {
-    final acquired = await FileLockHelper.instance.acquire(LockType.todoList);
-    if (acquired) {
-      try {
-        await task();
-      } finally {
-        await FileLockHelper.instance.release(LockType.todoList);
-      }
+    final successfull = await task();
+    if (successfull) {
+      logger.i('[Workmanager] Task $taskname successfully finished');
       return;
     } else {
       logger.w(
-        "[Workmanager] Lock busy – retrying in ${delay.inMinutes} min... (Attempt ${i + 1}/$maxRetries)",
+        "[Workmanager] Task $taskname NOT successful – retrying in ${delay.inMinutes} min... (Attempt ${i + 1}/$maxRetries)",
       );
       await Future.delayed(delay);
     }
   }
-
-  logger.e(
-    "[Workmanager] Failed to acquire file lock after $maxRetries attempts.",
-  );
+  logger.e("[Workmanager] Task $taskname failed after $maxRetries attempts.");
 }
 
 class ZenDoApp extends StatelessWidget {

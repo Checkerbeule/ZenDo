@@ -23,7 +23,7 @@ class PersistenceHelper {
     return _listBox!;
   }
 
-  /// Closes all open boxes.
+  /// Closes all open boxes and releases the Lock.
   static Future<void> closeAndRelease() async {
     if (_pendingOperations.isNotEmpty) {
       logger.d(
@@ -41,24 +41,28 @@ class PersistenceHelper {
     }
   }
 
-  /// Helper to run all Hive operations on todo_list boxes safely
+  /// Helper to run all Hive operations on todo_list boxes safely.
   static Future<T> _runListOperationSafely<T>(
     Future<T> Function() action,
   ) async {
     return _listLock.synchronized(timeout: Duration(seconds: 2), () async {
       final acquired = await FileLockHelper.instance.acquire(LockType.todoList);
       if (!acquired) {
-        logger.e(
-          ' [PersisteneHelper] Could not access data because it is currently locked by another process!',
+        throw Exception(
+          '[PersisteneHelper] Could not access data because it is currently locked by another process!',
         );
-        return Future.value(null);
       } else {
-        final future = action();
-        _pendingOperations.add(future);
-
-        // Remove from tracking list when finished
-        future.whenComplete(() => _pendingOperations.remove(future));
-        return future;
+        Future? future;
+        try {
+          future = action();
+          _pendingOperations.add(future);
+          return await future;
+        } catch (e, s) {
+          logger.e('[PersisteneHelper] Hive operation failed: $e\n$s');
+          rethrow;
+        } finally {
+          _pendingOperations.removeWhere((f) => f == future);
+        }
       }
     });
   }
@@ -95,7 +99,6 @@ class PersistenceHelper {
   /// Loads all [TodoList] objects from the Hive box named 'todo_lists'.
   ///
   /// Iterates through all possible [ListScope] values and retrieves the corresponding lists.
-  /// If a list for a specific scope does not exist, a new [TodoList] is created for that scope.
   static Future<List<TodoList>> loadAll() async {
     return await _runListOperationSafely(() async {
       final box = await _getListBox();
@@ -103,7 +106,9 @@ class PersistenceHelper {
 
       for (final scope in ListScope.values) {
         final list = box.get(scope.name);
-        lists.add(list ?? TodoList(scope));
+        if (list != null) {
+          lists.add(list);
+        }
       }
       return lists;
     });
@@ -114,9 +119,9 @@ class PersistenceHelper {
   /// If a list for the specified [scope] exists in the Hive box, it is returned.
   /// Otherwise, a new [TodoList] is created, stored in the box, and returned.
   ///
-  /// Returns a [Future] that completes with the loaded or newly created [TodoList].
-  ///
-  /// Throws any exceptions encountered during box access or data retrieval.
+  /// Returns a [Future] that completes with the loaded [TodoList].
+  /// 
+  /// Throws an exception if no list with the given scope exists.
   static Future<TodoList> loadList(ListScope scope) async {
     return await _runListOperationSafely(() async {
       final box = await _getListBox();
@@ -125,9 +130,9 @@ class PersistenceHelper {
       if (list != null) {
         return list;
       } else {
-        final newList = TodoList(scope);
-        await box.put(scope.name, newList);
-        return newList;
+        throw Exception(
+          '[PersistenceHelper] loadList failed! List with scope $scope does not exist!',
+        );
       }
     });
   }

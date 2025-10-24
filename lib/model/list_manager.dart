@@ -20,16 +20,18 @@ class ListManager {
     _lists.sort((a, b) => a.compareTo(b));
   }
 
-  static Future<void> autoTransferExpiredTodos() async {
+  static Future<bool> autoTransferExpiredTodos() async {
     logger.d('AutoTransfer of expired todos started...');
     try {
       var lists = await PersistenceHelper.loadAll();
       final manager = ListManager(lists);
       manager.transferExpiredTodos();
       await PersistenceHelper.closeAndRelease();
-      logger.d('AutoTransfer of expired todos finished!');
+      logger.d('AutoTransfer of expired todos successfully finished!');
+      return true;
     } catch (e, s) {
-      logger.e("Error in daily transfer: $e\n$s");
+      logger.e("Error in autoTransfer: $e\n$s");
+      return false;
     }
   }
 
