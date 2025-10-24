@@ -1,23 +1,24 @@
 import 'package:logger/logger.dart';
+import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
 
 Logger logger = Logger(level: Level.debug);
 
 class ListManager {
-  final List<TodoList> _lists = [];
+  final Set<TodoList> _lists = {};
 
-  ListManager(Iterable<TodoList> lists) {
-    for (var l in lists) {
-      if (!_lists.contains(l)) {
-        _lists.add(l);
-      } else {
-        logger.d(
-          'List with scope ${l.scope} could not be added to ListManager because it is already contained!',
-        );
-      }
+  ListManager(Iterable<TodoList> lists, {Set<ListScope>? activeScopes}) {
+    final scopesToUse = activeScopes ?? ListScope.values;
+
+    for (final scope in scopesToUse) {
+      _lists.add(
+        lists.singleWhere(
+          (l) => l.scope == scope,
+          orElse: () => TodoList(scope),
+        ),
+      );
     }
-    _lists.sort((a, b) => a.compareTo(b));
   }
 
   static Future<bool> autoTransferExpiredTodos() async {
@@ -38,6 +39,7 @@ class ListManager {
   void transferExpiredTodos() {
     // use only lists with enabled autotransfer
     final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
+    activeLists.sort((a, b) => a.compareTo(b));
 
     if (activeLists.length > 1) {
       for (int i = activeLists.length - 1; i > 0; i--) {
@@ -66,22 +68,32 @@ class ListManager {
   }
 
   List<TodoList> get allLists {
-    return _lists;
+    final lists = _lists.toList();
+    lists.sort((a, b) => a.compareTo(b));
+    return lists;
   }
 
   bool removeList(TodoList list) {
     return _lists.remove(list);
   }
 
+  /// Adds the given list to the [ListManager].
+  /// Returns true if the list was successfully added.
+  /// Returns false if the [ListManager] allready contains a list with the given scope.
   bool addList(TodoList list) {
-    if (!_lists.contains(list)) {
-      _lists.add(list);
-      _lists.sort((a, b) => a.compareTo(b));
-      return true;
+    bool added = _lists.add(list);
+    if (!added) {
+      logger.d(
+        'List with scope ${list.scope} could not be added to ListManager because it is already contained!',
+      );
     }
-    logger.d(
-      'List with scope ${list.scope} could not be added to ListManager because it is already contained!',
-    );
-    return false;
+    return added;
+  }
+
+  /// Creates and adds an empty TodoList with the given scope.
+  /// Returns true if the list was successfully added.
+  /// Returns false if the [ListManager] allready contains a list with the given scope.
+  bool addListOfScope(ListScope scope) {
+    return addList(TodoList(scope));
   }
 }

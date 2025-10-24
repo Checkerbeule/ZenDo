@@ -38,7 +38,7 @@ void main() {
       final dailyList = TodoList(ListScope.daily);
       final backlog = TodoList(ListScope.backlog);
 
-      var manager = ListManager([dailyList, backlog]);
+      var manager = ListManager([dailyList, backlog], activeScopes: {ListScope.daily, ListScope.backlog});
       final monthlyListToAdd = TodoList(ListScope.monthly);
       manager.addList(monthlyListToAdd);
       final lists = manager.allLists;

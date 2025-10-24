@@ -9,7 +9,7 @@ class PersistenceHelper {
   static Logger logger = Logger(level: Level.debug);
 
   static HiveInterface hive = Hive;
-  static Box<TodoList>? _listBox;
+  static Box<TodoList>? listBox;
 
   static final List<Future> _pendingOperations = [];
   static final _listLock = Lock();
@@ -17,10 +17,10 @@ class PersistenceHelper {
   /// Returns the Hive box for [TodoList] items.
   /// Opens the box if it's not yet opened or was closed.
   static Future<Box<TodoList>> _getListBox() async {
-    if (_listBox == null || !_listBox!.isOpen) {
-      _listBox = await hive.openBox<TodoList>('todo_lists');
+    if (listBox == null || !listBox!.isOpen) {
+      listBox = await hive.openBox<TodoList>('todo_lists');
     }
-    return _listBox!;
+    return listBox!;
   }
 
   /// Closes all open boxes and releases the Lock.
@@ -32,10 +32,10 @@ class PersistenceHelper {
       await Future.wait(_pendingOperations);
     }
 
-    if (_listBox?.isOpen ?? false) {
+    if (listBox?.isOpen ?? false) {
       logger.d('[PersistenceHelper] Closing Hive boxes...');
-      await _listBox!.close();
-      _listBox = null;
+      await listBox!.close();
+      listBox = null;
       logger.d('[PersistenceHelper] all boxes closed.');
       await FileLockHelper.instance.release(LockType.todoList);
     }

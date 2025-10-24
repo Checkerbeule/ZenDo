@@ -13,7 +13,6 @@ import '../mocks/mocks.mocks.dart';
 
 void main() {
   group('PersistanceHelper.saveList', () {
-    late Box<TodoList> box;
     const boxName = 'hive_test_data';
 
     late MockILockHelper mockLockHelper;
@@ -30,8 +29,6 @@ void main() {
       Hive.registerAdapter(TodoListAdapter());
       Hive.registerAdapter(ListScopeAdapter());
 
-      box = await Hive.openBox(boxName);
-
       mockLockHelper = MockILockHelper();
       FileLockHelper.instance = mockLockHelper as ILockHelper;
       when(
@@ -44,13 +41,13 @@ void main() {
 
     tearDown(() async {
       // Nach jedem Test Box leeren, aber offen lassen
-      await box.clear();
+      await PersistenceHelper.listBox!.clear();
     });
 
     tearDownAll(() async {
       // Ganz am Ende wieder schließen
-      await box.close();
-      Hive.deleteBoxFromDisk(boxName);
+      await PersistenceHelper.closeAndRelease();
+      await Hive.deleteBoxFromDisk(boxName);
     });
 
     test('save and load a list with one todo', () async {
