@@ -186,16 +186,6 @@ void main() {
         expect(todo.expirationDate == null, true);
       });
 
-      test('done todo is saved in doneList', () {
-        final yearlyList = TodoList(ListScope.yearly);
-        final todo = Todo('todo expires in 365 days');
-        yearlyList.addTodo(todo);
-        yearlyList.markAsDone(todo);
-
-        expect(yearlyList.doneTodos.length, 1);
-        expect(yearlyList.doneTodos.first, todo);
-      });
-
       test('restored todo keeps expirationDate', () {
         final yearlyList = TodoList(ListScope.yearly);
         final todo = Todo('todo expires in 365 days');
@@ -222,6 +212,19 @@ void main() {
         );
 
         expect(weeklyList.getExpiredTodos(ListScope.daily.duration).length, 2);
+      });
+    });
+
+    group('done todos tests', () {
+      test('done todo is saved in doneList', () {
+        final yearlyList = TodoList(ListScope.yearly);
+        final todo = Todo('todo expires in 365 days');
+        yearlyList.addTodo(todo);
+        yearlyList.markAsDone(todo);
+
+        expect(yearlyList.todos.length, 0);
+        expect(yearlyList.doneTodos.length, 1);
+        expect(yearlyList.doneTodos.first, todo);
       });
     });
 
