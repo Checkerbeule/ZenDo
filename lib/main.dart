@@ -1,15 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
-import 'package:zen_do/persistance/file_lock_helper.dart';
+import 'package:zen_do/persistance/hive_initializer.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
 import 'package:zen_do/todo_list_page.dart';
 import 'package:zen_do/zen_do_lifecycle_listener.dart';
@@ -19,50 +17,19 @@ Logger logger = Logger(level: Level.debug);
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await initHive();
+  unawaited(HiveInitializer.initFlutter());
 
   await Workmanager().initialize(callbackDispatcher);
-  unawaited(
-    Workmanager().registerPeriodicTask(
-      "dailyTodoTransfer",
-      "transferExpiredTodos",
-      frequency: const Duration(hours: 24),
-      initialDelay: _durationUntilNextMidnight(),
-    ),
+  await Workmanager().registerPeriodicTask(
+    "dailyTodoTransfer",
+    "transferExpiredTodos",
+    frequency: const Duration(hours: 24),
+    initialDelay: _durationUntilNextMidnight(),
   );
 
   WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
-  await FileLockHelper.acquire(FileLockType.todoList);
 
   runApp(const ZenDoApp());
-}
-
-Future<void> initHive() async {
-  await Hive.initFlutter();
-  Hive.registerAdapter(TodoAdapter());
-  Hive.registerAdapter(TodoListAdapter());
-  Hive.registerAdapter(ListScopeAdapter());
-}
-
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    switch (task) {
-      case "transferExpiredTodos":
-        if (!await FileLockHelper.acquire(FileLockType.todoList)) {
-          logger.e("AutoTransfer skipped: App is active");
-          break;
-        }
-        await initHive();
-        await ListManager.autoTransferExpiredTodos();
-        await FileLockHelper.release(FileLockType.todoList);
-        break;
-      default:
-        logger.e('Unknown task $task');
-        break;
-    }
-
-    return Future.value(true);
-  });
 }
 
 Duration _durationUntilNextMidnight() {
@@ -75,6 +42,47 @@ Duration _durationUntilNextMidnight() {
     5,
   ); // 00:05 Uhr
   return nextMidnight.difference(now);
+}
+
+@pragma("vm:entry-point")
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    await HiveInitializer.initFlutter();
+    switch (task) {
+      case "transferExpiredTodos":
+        await _runWithRetries(task, () async {
+          return await ListManager.autoTransferExpiredTodos();
+        });
+        break;
+      default:
+        logger.e('Unknown task $task');
+        break;
+    }
+
+    return Future.value(true);
+  });
+}
+
+Future<void> _runWithRetries(
+  String taskname,
+  Future<bool> Function() task, {
+  int maxRetries = 5,
+  Duration delay = const Duration(minutes: 5),
+}) async {
+  logger.i('Running task \'$taskname\'...');
+  for (int i = 0; i < maxRetries; i++) {
+    final successfull = await task();
+    if (successfull) {
+      logger.i('[Workmanager] Task \'$taskname\' successfully finished');
+      return;
+    } else {
+      logger.w(
+        "[Workmanager] Task '$taskname' NOT successful – retrying in ${delay.inMinutes} min... (Attempt ${i + 1}/$maxRetries)",
+      );
+      await Future.delayed(delay);
+    }
+  }
+  logger.e("[Workmanager] Task '$taskname' failed after $maxRetries attempts.");
 }
 
 class ZenDoApp extends StatelessWidget {
@@ -119,8 +127,22 @@ class _ZenDoHomePageState extends State<ZenDoHomePage> {
   }
 
   Future<void> _initData() async {
-    final lists = await PersistenceHelper.loadAll();
-    listManager = ListManager(lists);
+    List<TodoList> lists;
+    try {
+      lists = await PersistenceHelper.loadAll();
+    } catch (e, s) {
+      logger.e('Loading todo lists failed: : $e\n$s');
+      lists = [];
+    }
+    listManager = ListManager(
+      lists,
+      activeScopes: {
+        ListScope.daily,
+        ListScope.weekly,
+        ListScope.yearly,
+        ListScope.backlog,
+      },
+    );
     setState(() {});
   }
 

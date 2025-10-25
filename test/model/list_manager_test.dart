@@ -4,6 +4,7 @@ import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/persistance/file_lock_helper.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
 
 import '../mocks/mocks.mocks.dart';
@@ -37,7 +38,10 @@ void main() {
       final dailyList = TodoList(ListScope.daily);
       final backlog = TodoList(ListScope.backlog);
 
-      var manager = ListManager([dailyList, backlog]);
+      var manager = ListManager(
+        [dailyList, backlog],
+        activeScopes: {ListScope.daily, ListScope.backlog},
+      );
       final monthlyListToAdd = TodoList(ListScope.monthly);
       manager.addList(monthlyListToAdd);
       final lists = manager.allLists;
@@ -46,11 +50,49 @@ void main() {
       expect(lists[1], monthlyListToAdd);
       expect(lists.last, backlog);
     });
+
+    test('ListManager initialize with no list, returns all empty lists', () {
+      final manager = ListManager([]);
+      final lists = manager.allLists;
+
+      expect(manager.allLists.length, ListScope.values.length);
+      expect(lists.first.scope, ListScope.daily);
+      expect(lists[1].scope, ListScope.weekly);
+      expect(lists[2].scope, ListScope.monthly);
+      expect(lists[3].scope, ListScope.yearly);
+      expect(lists.last.scope, ListScope.backlog);
+      expect(lists.first.todos.length, 0);
+      expect(lists[1].todos.length, 0);
+      expect(lists[2].todos.length, 0);
+      expect(lists[3].todos.length, 0);
+      expect(lists.last.todos.length, 0);
+    });
+
+    test(
+      'ListManager initialize wit no list and a set of ListTypes, returns all empty lists with the given ListType set',
+      () {
+        final activeScopes = <ListScope>{
+          ListScope.daily,
+          ListScope.weekly,
+          ListScope.yearly,
+          ListScope.backlog,
+        };
+        final manager = ListManager([], activeScopes: activeScopes);
+        final lists = manager.allLists;
+
+        expect(manager.allLists.length, activeScopes.length);
+        expect(lists.first.scope, ListScope.daily);
+        expect(lists[1].scope, ListScope.weekly);
+        expect(lists[2].scope, ListScope.yearly);
+        expect(lists.last.scope, ListScope.backlog);
+      },
+    );
   });
 
   group('ListManager transferExpiredTodos tests', () {
     late MockHiveInterface hiveMock;
     late MockBox<TodoList> mockBox;
+    late MockILockHelper mockLockHelper;
 
     setUpAll(() {
       hiveMock = MockHiveInterface();
@@ -61,6 +103,15 @@ void main() {
       when(mockBox.delete(any)).thenAnswer((_) => Future<void>(() {}));
       when(mockBox.put(any, any)).thenAnswer((_) => Future<void>(() {}));
       when(mockBox.isOpen).thenReturn(false);
+
+      mockLockHelper = MockILockHelper();
+      FileLockHelper.instance = mockLockHelper as ILockHelper;
+      when(
+        mockLockHelper.acquire(LockType.todoList),
+      ).thenAnswer((_) async => true);
+      when(
+        mockLockHelper.release(LockType.todoList),
+      ).thenAnswer((_) async => {});
     });
 
     test('ListManager transferExpiredTodos from weekly to daily list', () {

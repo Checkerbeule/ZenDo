@@ -2,15 +2,21 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:mockito/mockito.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/persistance/file_lock_helper.dart';
+import 'package:zen_do/persistance/hive_initializer.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
+
+import '../mocks/mocks.mocks.dart';
 
 void main() {
   group('PersistanceHelper.saveList', () {
-    late Box<TodoList> box;
     const boxName = 'hive_test_data';
+
+    late MockILockHelper mockLockHelper;
 
     setUpAll(() async {
       TestWidgetsFlutterBinding.ensureInitialized();
@@ -18,24 +24,27 @@ void main() {
       if (!dir.existsSync()) {
         dir.createSync(recursive: true);
       }
-      Hive.init(dir.path);
+      await HiveInitializer.initDart(dir.path);
 
-      Hive.registerAdapter(TodoAdapter());
-      Hive.registerAdapter(TodoListAdapter());
-      Hive.registerAdapter(ListScopeAdapter());
-
-      box = await Hive.openBox(boxName);
+      mockLockHelper = MockILockHelper();
+      FileLockHelper.instance = mockLockHelper as ILockHelper;
+      when(
+        mockLockHelper.acquire(LockType.todoList),
+      ).thenAnswer((_) async => true);
+      when(
+        mockLockHelper.release(LockType.todoList),
+      ).thenAnswer((_) async => {});
     });
 
     tearDown(() async {
       // Nach jedem Test Box leeren, aber offen lassen
-      await box.clear();
+      await PersistenceHelper.listBox!.clear();
     });
 
     tearDownAll(() async {
       // Ganz am Ende wieder schließen
-      await box.close();
-      Hive.deleteBoxFromDisk(boxName);
+      await PersistenceHelper.closeAndRelease();
+      await Hive.deleteBoxFromDisk(boxName);
     });
 
     test('save and load a list with one todo', () async {
@@ -75,10 +84,10 @@ void main() {
       expect(loadedList.todos.first.title, updatedTitle);
     });
 
-    test('loadAll and retreive ${ListScope.values.length}', () async {
+    test('loadAll and retreive 0', () async {
       final loadedLists = await PersistenceHelper.loadAll();
 
-      expect(loadedLists.length, ListScope.values.length);
+      expect(loadedLists.length, 0);
     });
   });
 }
