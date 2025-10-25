@@ -55,6 +55,7 @@ Duration _durationUntilNextMidnight() {
   return nextMidnight.difference(now);
 }
 
+@pragma("vm:entry-point")
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     switch (task) {
@@ -78,20 +79,20 @@ Future<void> _runWithRetries(
   int maxRetries = 5,
   Duration delay = const Duration(minutes: 5),
 }) async {
-  logger.i('Running task $taskname...');
+  logger.i('Running task \'$taskname\'...');
   for (int i = 0; i < maxRetries; i++) {
     final successfull = await task();
     if (successfull) {
-      logger.i('[Workmanager] Task $taskname successfully finished');
+      logger.i('[Workmanager] Task \'$taskname\' successfully finished');
       return;
     } else {
       logger.w(
-        "[Workmanager] Task $taskname NOT successful – retrying in ${delay.inMinutes} min... (Attempt ${i + 1}/$maxRetries)",
+        "[Workmanager] Task '$taskname' NOT successful – retrying in ${delay.inMinutes} min... (Attempt ${i + 1}/$maxRetries)",
       );
       await Future.delayed(delay);
     }
   }
-  logger.e("[Workmanager] Task $taskname failed after $maxRetries attempts.");
+  logger.e("[Workmanager] Task '$taskname' failed after $maxRetries attempts.");
 }
 
 class ZenDoApp extends StatelessWidget {
@@ -136,8 +137,22 @@ class _ZenDoHomePageState extends State<ZenDoHomePage> {
   }
 
   Future<void> _initData() async {
-    final lists = await PersistenceHelper.loadAll();
-    listManager = ListManager(lists);
+    List<TodoList> lists;
+    try {
+      lists = await PersistenceHelper.loadAll();
+    } catch (e, s) {
+      logger.e('Loading todo lists failed: : $e\n$s');
+      lists = [];
+    }
+    listManager = ListManager(
+      lists,
+      activeScopes: {
+        ListScope.daily,
+        ListScope.weekly,
+        ListScope.yearly,
+        ListScope.backlog,
+      },
+    );
     setState(() {});
   }
 
