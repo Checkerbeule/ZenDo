@@ -32,11 +32,17 @@ class PersistenceHelper {
       await Future.wait(_pendingOperations);
     }
 
-    if (listBox?.isOpen ?? false) {
-      logger.d('[PersistenceHelper] Closing Hive boxes...');
-      await listBox!.close();
-      listBox = null;
-      logger.d('[PersistenceHelper] all boxes closed.');
+    try {
+      if (listBox?.isOpen ?? false) {
+        logger.d('[PersistenceHelper] Closing Hive boxes...');
+        await listBox!.close();
+        listBox = null;
+        logger.d('[PersistenceHelper] all boxes closed.');
+      }
+    } catch (e, s) {
+      logger.e('[PersistenceHelper] Error while closing Hive box: $e\n$s');
+      rethrow;
+    } finally {
       await FileLockHelper.instance.release(LockType.todoList);
     }
   }
@@ -120,7 +126,7 @@ class PersistenceHelper {
   /// Otherwise, a new [TodoList] is created, stored in the box, and returned.
   ///
   /// Returns a [Future] that completes with the loaded [TodoList].
-  /// 
+  ///
   /// Throws an exception if no list with the given scope exists.
   static Future<TodoList> loadList(ListScope scope) async {
     return await _runListOperationSafely(() async {

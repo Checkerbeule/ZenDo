@@ -7,6 +7,7 @@ import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/persistance/file_lock_helper.dart';
+import 'package:zen_do/persistance/hive_initializer.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
 
 import '../mocks/mocks.mocks.dart';
@@ -23,11 +24,7 @@ void main() {
       if (!dir.existsSync()) {
         dir.createSync(recursive: true);
       }
-      Hive.init(dir.path);
-
-      Hive.registerAdapter(TodoAdapter());
-      Hive.registerAdapter(TodoListAdapter());
-      Hive.registerAdapter(ListScopeAdapter());
+      await HiveInitializer.initDart(dir.path);
 
       mockLockHelper = MockILockHelper();
       FileLockHelper.instance = mockLockHelper as ILockHelper;
