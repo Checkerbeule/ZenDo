@@ -33,7 +33,20 @@ class _TodoListPageState extends State<TodoListPage> {
           else ...[
             for (var todo in widget.list.todos)
               ListTile(
-                title: Text(todo.title),
+                title: todo.description != null && todo.description!.isNotEmpty
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(todo.title),
+                          const SizedBox(height: 4),
+                          Text(
+                            todo.description!,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      )
+                    : Text(todo.title, textAlign: TextAlign.start),
                 leading: IconButton(
                   onPressed: () => {
                     setState(() {
