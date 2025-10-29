@@ -18,8 +18,6 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<ZenDoAppState>();
-
     return Scaffold(
       body: ListView(
         shrinkWrap: true,
@@ -35,7 +33,11 @@ class _TodoListPageState extends State<TodoListPage> {
             for (var todo in widget.list.todos)
               ListTile(
                 leading: IconButton(
-                  onPressed: () => {widget.list.markAsDone(todo), appState.notify()},
+                  onPressed: () => {
+                    setState(() {
+                      widget.list.markAsDone(todo);
+                    }),
+                  },
                   icon: Icon(Icons.circle_outlined),
                 ),
                 title: Text(todo.title),
@@ -52,8 +54,9 @@ class _TodoListPageState extends State<TodoListPage> {
                 ListTile(
                   leading: IconButton(
                     onPressed: () => {
-                      widget.list.restoreTodo(todo),
-                      appState.notify(),
+                      setState(() {
+                        widget.list.restoreTodo(todo);
+                      }),
                     },
                     icon: Icon(Icons.check_circle),
                     color: Theme.of(context).primaryColor,
@@ -72,7 +75,10 @@ class _TodoListPageState extends State<TodoListPage> {
       ),
 
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => {_showAddToDoDialog(context, widget.list)},
+        onPressed: () async {
+          Future<bool> future = _showAddToDoDialog(context, widget.list);
+          future.then((added) => {if (added) setState(() {})});
+        },
         tooltip: 'ToDo hinzufügen',
         label: const Text('Neue Aufgabe'),
         icon: const Icon(Icons.add),
@@ -81,13 +87,13 @@ class _TodoListPageState extends State<TodoListPage> {
   }
 }
 
-Future<void> _showAddToDoDialog(BuildContext context, TodoList list) {
-  var appState = Provider.of<ZenDoAppState>(context, listen: false);
-  return showDialog<void>(
+Future<bool> _showAddToDoDialog(BuildContext context, TodoList list) async {
+  String title = '';
+  String description = '';
+  bool added = false;
+  await showDialog<bool>(
     context: context,
     builder: (BuildContext context) {
-      String title = '';
-      String description = '';
       return AlertDialog(
         title: const Text('Neue Aufgabe hinzufügen'),
         content: Column(
@@ -126,33 +132,31 @@ Future<void> _showAddToDoDialog(BuildContext context, TodoList list) {
             ),
             child: const Text('Ok'),
             onPressed: () {
-              if (title.trim().isNotEmpty) {
-                var added = list.addTodo(
-                  Todo(title, description),
-                );
-                if (!added) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text(
-                        'Eine Aufgabe mit diesem Titel existiert bereits.',
-                      ),
-                    ),
-                  );
-                } else {
-                  appState.notify();
-                  Navigator.of(context).pop();
-                }
-              } else {
+              if (title.trim().isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Der Titel darf nicht leer sein.'),
+                  const SnackBar(
+                    content: Text('Der Titel darf nicht leer sein.'),
                   ),
                 );
+                return;
               }
+              added = list.addTodo(Todo(title, description));
+              if (!added) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Eine Aufgabe mit diesem Titel existiert bereits.',
+                    ),
+                  ),
+                );
+                return;
+              }
+              Navigator.of(context).pop(true);
             },
           ),
         ],
       );
     },
   );
+  return added;
 }

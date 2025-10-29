@@ -51,11 +51,7 @@ class ZenDoApp extends StatelessWidget {
   }
 }
 
-class ZenDoAppState extends ChangeNotifier {
-  void notify() {
-    notifyListeners();
-  }
-}
+class ZenDoAppState extends ChangeNotifier {} // not used at the moment
 
 class ZenDoHomePage extends StatefulWidget {
   const ZenDoHomePage({super.key});
