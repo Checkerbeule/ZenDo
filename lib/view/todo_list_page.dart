@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
+
+Logger logger = Logger(level: Level.debug);
 
 class TodoListPage extends StatefulWidget {
   const TodoListPage({super.key, required this.list});
@@ -30,6 +33,20 @@ class _TodoListPageState extends State<TodoListPage> {
           else ...[
             for (var todo in widget.list.todos)
               ListTile(
+                title: todo.description != null && todo.description!.isNotEmpty
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(todo.title),
+                          const SizedBox(height: 4),
+                          Text(
+                            todo.description!,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      )
+                    : Text(todo.title, textAlign: TextAlign.start),
                 leading: IconButton(
                   onPressed: () => {
                     setState(() {
@@ -38,7 +55,17 @@ class _TodoListPageState extends State<TodoListPage> {
                   },
                   icon: Icon(Icons.circle_outlined),
                 ),
-                title: Text(todo.title),
+                trailing: IconButton(
+                  onPressed: () => {
+                    _showDeleteDialog(context, widget.list, todo).then(
+                      (deleted) => {
+                        if (deleted) {setState(() {})},
+                      },
+                    ),
+                  },
+                  icon: Icon(Icons.delete_forever),
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
           ],
           ExpansionTile(
@@ -73,9 +100,11 @@ class _TodoListPageState extends State<TodoListPage> {
       ),
 
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          Future<bool> future = _showAddToDoDialog(context, widget.list);
-          future.then((added) => {if (added) setState(() {})});
+        onPressed: () {
+          _showAddToDoDialog(
+            context,
+            widget.list,
+          ).then((added) => {if (added) setState(() {})});
         },
         tooltip: 'ToDo hinzufügen',
         label: const Text('Neue Aufgabe'),
@@ -157,4 +186,54 @@ Future<bool> _showAddToDoDialog(BuildContext context, TodoList list) async {
     },
   );
   return added;
+}
+
+Future<bool> _showDeleteDialog(
+  BuildContext context,
+  TodoList list,
+  Todo todo,
+) async {
+  bool deleted = false;
+  await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Aufgabe löschen'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Diese Aufgabe wirklich unwiederbringlich löschen?"),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: const Text('Abbrechen'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
+            ),
+            child: const Text('Ok'),
+            onPressed: () {
+              try {
+                list.deleteTodo(todo);
+                deleted = true;
+              } catch (e) {
+                logger.e('Failed to delete todo: $e');
+              }
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+      );
+    },
+  );
+  return deleted;
 }
