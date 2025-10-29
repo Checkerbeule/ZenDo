@@ -45,7 +45,7 @@ class ZenDoApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
         ),
-        home: ZenDoHomePage(),
+        home: ZenDoMainPage(),
       ),
     );
   }
@@ -53,14 +53,14 @@ class ZenDoApp extends StatelessWidget {
 
 class ZenDoAppState extends ChangeNotifier {} // not used at the moment
 
-class ZenDoHomePage extends StatefulWidget {
-  const ZenDoHomePage({super.key});
+class ZenDoMainPage extends StatefulWidget {
+  const ZenDoMainPage({super.key});
 
   @override
-  State<ZenDoHomePage> createState() => _ZenDoHomePageState();
+  State<ZenDoMainPage> createState() => _ZenDoMainPageState();
 }
 
-class _ZenDoHomePageState extends State<ZenDoHomePage> {
+class _ZenDoMainPageState extends State<ZenDoMainPage> {
   int pageIndex = 0;
   ListManager? listManager;
 
