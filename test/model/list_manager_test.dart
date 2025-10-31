@@ -89,7 +89,7 @@ void main() {
     );
   });
 
-  group('ListManager transferExpiredTodos tests', () {
+  group('test using mocks', () {
     late MockHiveInterface hiveMock;
     late MockBox<TodoList> mockBox;
     late MockILockHelper mockLockHelper;
@@ -114,134 +114,164 @@ void main() {
       ).thenAnswer((_) async => {});
     });
 
-    test('ListManager transferExpiredTodos from weekly to daily list', () {
-      final transferFrom = TodoList(ListScope.weekly);
-      final transferTo = TodoList(ListScope.daily);
-      var expiredTodo = Todo('expired todo');
-      transferFrom.addTodo(expiredTodo);
-      expiredTodo.expirationDate = DateTime.now().subtract(Duration(days: 7));
+    group('ListManager expiredTodos tests', () {
+      test('get expired todos', () {
+        final weeklyList = TodoList(ListScope.weekly);
+        final todo_1 = Todo('expired 1');
+        final todo_2 = Todo('expired 2');
+        weeklyList.addTodo(todo_1);
+        weeklyList.addTodo(todo_2);
+        todo_1.expirationDate = todo_1.expirationDate!.subtract(
+          Duration(days: 7),
+        );
+        todo_2.expirationDate = todo_2.expirationDate!.subtract(
+          Duration(days: 8),
+        );
+        final manager = ListManager([weeklyList]);
 
-      var manager = ListManager([transferTo, transferFrom]);
-      manager.transferExpiredTodos();
-
-      expect(transferFrom.todos.length, 0);
-      expect(transferTo.todos.length, 1);
-      expect(transferTo.todos.first, expiredTodo);
+        expect(
+          manager.getExpiredTodos(weeklyList.todos, ListScope.daily).length,
+          2,
+        );
+      });
     });
 
-    test('ListManager transferExpiredTodos none expired todo stay in list', () {
-      final transferFrom = TodoList(ListScope.weekly);
-      final transferTo = TodoList(ListScope.daily);
-      final noneExpiredTodo = Todo('expired title');
-      transferFrom.addTodo(noneExpiredTodo);
-
-      var manager = ListManager([transferTo, transferFrom]);
-      manager.transferExpiredTodos();
-
-      expect(transferFrom.todos.length, 1);
-      expect(transferTo.todos.length, 0);
-    });
-
-    test(
-      'ListManager transferExpiredTodos, no transfer from backlog to other list',
-      () {
-        final backlog = TodoList(ListScope.backlog);
-        final transferTo = TodoList(ListScope.weekly);
-        final todo = Todo('todo title');
-        backlog.addTodo(todo);
-
-        var manager = ListManager([transferTo, backlog]);
-        manager.transferExpiredTodos();
-
-        expect(backlog.todos.length, 1);
-        expect(transferTo.todos.length, 0);
-      },
-    );
-
-    test(
-      'ListManager transferExpiredTodos todos stay in dailyList but todo is expired',
-      () {
-        final weeklkyList = TodoList(ListScope.weekly);
-        final dailyList = TodoList(ListScope.daily);
+    group('ListManager transferExpiredTodos tests', () {
+      test('ListManager transferExpiredTodos from weekly to daily list', () {
+        final transferFrom = TodoList(ListScope.weekly);
+        final transferTo = TodoList(ListScope.daily);
         var expiredTodo = Todo('expired todo');
-        dailyList.addTodo(expiredTodo);
-        expiredTodo.expirationDate = DateTime.now().subtract(Duration(days: 1));
+        transferFrom.addTodo(expiredTodo);
+        expiredTodo.expirationDate = DateTime.now().subtract(Duration(days: 7));
 
-        var manager = ListManager([dailyList, weeklkyList]);
+        var manager = ListManager([transferTo, transferFrom]);
         manager.transferExpiredTodos();
 
-        expect(weeklkyList.todos.length, 0);
-        expect(dailyList.todos.length, 1);
-        expect(dailyList.getExpiredTodos(Duration.zero).length, 1);
-      },
-    );
+        expect(transferFrom.todos.length, 0);
+        expect(transferTo.todos.length, 1);
+        expect(transferTo.todos.first, expiredTodo);
+      });
 
-    test(
-      'ListManager transferExpiredTodos todo expired yesterday moves from highes scope to dailyList',
-      () {
+      test(
+        'ListManager transferExpiredTodos none expired todo stay in list',
+        () {
+          final transferFrom = TodoList(ListScope.weekly);
+          final transferTo = TodoList(ListScope.daily);
+          final noneExpiredTodo = Todo('expired title');
+          transferFrom.addTodo(noneExpiredTodo);
+
+          var manager = ListManager([transferTo, transferFrom]);
+          manager.transferExpiredTodos();
+
+          expect(transferFrom.todos.length, 1);
+          expect(transferTo.todos.length, 0);
+        },
+      );
+
+      test(
+        'ListManager transferExpiredTodos, no transfer from backlog to other list',
+        () {
+          final backlog = TodoList(ListScope.backlog);
+          final transferTo = TodoList(ListScope.weekly);
+          final todo = Todo('todo title');
+          backlog.addTodo(todo);
+
+          var manager = ListManager([transferTo, backlog]);
+          manager.transferExpiredTodos();
+
+          expect(backlog.todos.length, 1);
+          expect(transferTo.todos.length, 0);
+        },
+      );
+
+      test(
+        'ListManager transferExpiredTodos todos stay in dailyList but todo is expired',
+        () {
+          final weeklkyList = TodoList(ListScope.weekly);
+          final dailyList = TodoList(ListScope.daily);
+          var expiredTodo = Todo('expired todo');
+          dailyList.addTodo(expiredTodo);
+          DateTime expirationDate = DateTime.now().subtract(Duration(days: 1));
+          expiredTodo.expirationDate = expirationDate;
+
+          var manager = ListManager([dailyList, weeklkyList]);
+          manager.transferExpiredTodos();
+
+          expect(weeklkyList.todos.length, 0);
+          expect(dailyList.todos.length, 1);
+          expect(expiredTodo.expirationDate, expirationDate);
+        },
+      );
+
+      test(
+        'ListManager transferExpiredTodos todo expired yesterday moves from highes scope to dailyList',
+        () {
+          final dailyList = TodoList(ListScope.daily);
+          final weeklyList = TodoList(ListScope.weekly);
+          final monthlyList = TodoList(ListScope.monthly);
+          final yearlyList = TodoList(ListScope.yearly);
+          var expiredTodo = Todo('expired todo');
+          yearlyList.addTodo(expiredTodo);
+          expiredTodo.expirationDate = DateTime.now().subtract(
+            Duration(days: 1),
+          );
+
+          var manager = ListManager([
+            dailyList,
+            monthlyList,
+            weeklyList,
+            yearlyList,
+          ]);
+          manager.transferExpiredTodos();
+
+          expect(yearlyList.todos.length, 0);
+          expect(monthlyList.todos.length, 0);
+          expect(weeklyList.todos.length, 0);
+          expect(dailyList.todos.length, 1);
+        },
+      );
+
+      test(
+        'ListManager transferExpiredTodos todo expires in 7 days moves from highes scope to weekly',
+        () {
+          final dailyList = TodoList(ListScope.daily);
+          final weeklyList = TodoList(ListScope.weekly);
+          final monthlyList = TodoList(ListScope.monthly);
+          final yearlyList = TodoList(ListScope.yearly);
+          var expiredTodo = Todo('expired in 7 days');
+          yearlyList.addTodo(expiredTodo);
+          expiredTodo.expirationDate = DateTime.now().add(Duration(days: 7));
+
+          var manager = ListManager([
+            dailyList,
+            monthlyList,
+            weeklyList,
+            yearlyList,
+          ]);
+          manager.transferExpiredTodos();
+
+          expect(yearlyList.todos.length, 0);
+          expect(monthlyList.todos.length, 0);
+          expect(weeklyList.todos.length, 1);
+          expect(dailyList.todos.length, 0);
+        },
+      );
+
+      test('ListManager transferExpiredTodos and skip missing ListScope', () {
         final dailyList = TodoList(ListScope.daily);
         final weeklyList = TodoList(ListScope.weekly);
         final monthlyList = TodoList(ListScope.monthly);
-        final yearlyList = TodoList(ListScope.yearly);
-        var expiredTodo = Todo('expired todo');
-        yearlyList.addTodo(expiredTodo);
-        expiredTodo.expirationDate = DateTime.now().subtract(Duration(days: 1));
+        var expiredTodo = Todo('expired today');
+        monthlyList.addTodo(expiredTodo);
+        expiredTodo.expirationDate = DateTime.now();
 
-        var manager = ListManager([
-          dailyList,
-          monthlyList,
-          weeklyList,
-          yearlyList,
-        ]);
+        var manager = ListManager([dailyList, monthlyList, weeklyList]);
         manager.transferExpiredTodos();
 
-        expect(yearlyList.todos.length, 0);
         expect(monthlyList.todos.length, 0);
         expect(weeklyList.todos.length, 0);
         expect(dailyList.todos.length, 1);
-      },
-    );
-
-    test(
-      'ListManager transferExpiredTodos todo expires in 7 days moves from highes scope to weekly',
-      () {
-        final dailyList = TodoList(ListScope.daily);
-        final weeklyList = TodoList(ListScope.weekly);
-        final monthlyList = TodoList(ListScope.monthly);
-        final yearlyList = TodoList(ListScope.yearly);
-        var expiredTodo = Todo('expired in 7 days');
-        yearlyList.addTodo(expiredTodo);
-        expiredTodo.expirationDate = DateTime.now().add(Duration(days: 7));
-
-        var manager = ListManager([
-          dailyList,
-          monthlyList,
-          weeklyList,
-          yearlyList,
-        ]);
-        manager.transferExpiredTodos();
-
-        expect(yearlyList.todos.length, 0);
-        expect(monthlyList.todos.length, 0);
-        expect(weeklyList.todos.length, 1);
-        expect(dailyList.todos.length, 0);
-      },
-    );
-
-    test('ListManager transferExpiredTodos and skip missing ListScope', () {
-      final dailyList = TodoList(ListScope.daily);
-      final weeklyList = TodoList(ListScope.weekly);
-      final monthlyList = TodoList(ListScope.monthly);
-      var expiredTodo = Todo('expired today');
-      monthlyList.addTodo(expiredTodo);
-      expiredTodo.expirationDate = DateTime.now();
-
-      var manager = ListManager([dailyList, monthlyList, weeklyList]);
-      manager.transferExpiredTodos();
-
-      expect(monthlyList.todos.length, 0);
-      expect(weeklyList.todos.length, 0);
-      expect(dailyList.todos.length, 1);
+      });
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
@@ -74,7 +75,8 @@ class _TodoListPageState extends State<TodoListPage> {
                         DateTime.now().isAfter(todo.expirationDate!)) ...[
                       SizedBox(width: 5),
                       Tooltip(
-                        message: 'Heute fällig!',
+                        message:
+                            'Fällig am ${DateFormat('dd.MM.yyyy').format(todo.expirationDate!)}!',
                         child: Icon(
                           Icons.access_time_rounded,
                           color: Theme.of(context).colorScheme.error,

@@ -1,5 +1,6 @@
 import 'package:logger/logger.dart';
 import 'package:zen_do/model/list_scope.dart';
+import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
 
@@ -46,8 +47,9 @@ class ListManager {
         final currentList = activeLists[i];
         final previousList = activeLists[i - 1];
 
-        final expiredTodos = currentList.getExpiredTodos(
-          previousList.scope.duration,
+        final expiredTodos = getExpiredTodos(
+          currentList.todos,
+          previousList.scope,
         );
         final addedTodos = previousList.addAll(expiredTodos);
         currentList.deleteAll(addedTodos);
@@ -61,6 +63,43 @@ class ListManager {
         }
       }
     }
+  }
+
+  List<Todo> getExpiredTodos(
+    Set<Todo> todosToTransfer,
+    ListScope scopeOfNextList,
+  ) {
+    return todosToTransfer.where((todo) {
+      if (todo.expirationDate == null) {
+        return false;
+      }
+      final transferDate = todo.expirationDate!.subtract(
+        scopeOfNextList.duration,
+      );
+      return DateTime.now().isAfter(transferDate);
+    }).toList();
+  }
+
+  bool toBeTransferredTomorrow(Todo todo, ListScope currentScope) {
+    if (todo.expirationDate == null || currentScope == ListScope.backlog) {
+      return false;
+    }
+    final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
+    activeLists.sort((a, b) => a.compareTo(b));
+
+    if (activeLists.length > 1) {
+      for (int i = activeLists.length - 1; i > 0; i--) {
+        final currentList = activeLists[i];
+        final previousList = activeLists[i - 1];
+        if (currentList.scope == currentScope) {
+          final transferDate = todo.expirationDate!
+              .subtract(previousList.scope.duration)
+              .subtract(Duration(days: 1));
+          return DateTime.now().isAfter(transferDate);
+        }
+      }
+    }
+    return false;
   }
 
   int get listCount {

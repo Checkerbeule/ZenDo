@@ -87,14 +87,6 @@ class TodoList implements Comparable<TodoList> {
     return doneTodos.length;
   }
 
-  List<Todo> getExpiredTodos(Duration durationOfNextListScope) {
-    return todos.where((todo) {
-      return todo.expirationDate == null
-          ? false
-          : todo.toBeTransferred(durationOfNextListScope);
-    }).toList();
-  }
-
   void _setExpirationDate(Todo todo) {
     if (scope != ListScope.backlog) {
       final now = DateTime.now();
