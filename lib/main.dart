@@ -119,7 +119,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
               children: [
                 DefaultTabController(
                   initialIndex: 0,
-                  length: listManager!.listCount,
+                  length: listManager.listCount,
                   child: Scaffold(
                     appBar: AppBar(
                       backgroundColor: Theme.of(
@@ -139,7 +139,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
                     body: TabBarView(
                       physics: const NeverScrollableScrollPhysics(),
                       children: <Widget>[
-                        for (var list in listManager!.allLists)
+                        for (var list in listManager.allLists)
                           TodoListPage(list: list),
                       ],
                     ),
