@@ -41,6 +41,7 @@ class ZenDoApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => ZenDoAppState(),
       child: MaterialApp(
+        //TODO MaterialApp should be top level and first widget
         title: 'ZenDo',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
@@ -51,7 +52,43 @@ class ZenDoApp extends StatelessWidget {
   }
 }
 
-class ZenDoAppState extends ChangeNotifier {} // not used at the moment
+class ZenDoAppState extends ChangeNotifier {
+  ListManager? listManager;
+
+  ZenDoAppState() {
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    Set<ListScope> scopes = {
+      //TODO #46 make dynamic based on user preferences
+      ListScope.daily,
+      ListScope.weekly,
+      ListScope.yearly,
+      ListScope.backlog,
+    };
+    try {
+      List<TodoList> loadedLists = await PersistenceHelper.loadAll();
+      listManager = ListManager(loadedLists, activeScopes: scopes);
+    } catch (e, s) {
+      logger.e('Loading todo lists failed: : $e\n$s');
+      listManager = ListManager([], activeScopes: scopes);
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  //TODO #46 make dynamic based on user preferences
+  /* void addList(TodoList list) {
+    listManager?.addList(list);
+    notifyListeners();
+  }
+
+  void removeList(TodoList list) {
+    listManager?.removeList(list);
+    notifyListeners();
+  } */
+}
 
 class ZenDoMainPage extends StatefulWidget {
   const ZenDoMainPage({super.key});
@@ -62,36 +99,12 @@ class ZenDoMainPage extends StatefulWidget {
 
 class _ZenDoMainPageState extends State<ZenDoMainPage> {
   int pageIndex = 0;
-  ListManager? listManager;
-
-  @override
-  void initState() {
-    super.initState();
-    _initData();
-  }
-
-  Future<void> _initData() async {
-    List<TodoList> lists;
-    try {
-      lists = await PersistenceHelper.loadAll();
-    } catch (e, s) {
-      logger.e('Loading todo lists failed: : $e\n$s');
-      lists = [];
-    }
-    listManager = ListManager(
-      lists,
-      activeScopes: {
-        ListScope.daily,
-        ListScope.weekly,
-        ListScope.yearly,
-        ListScope.backlog,
-      },
-    );
-    setState(() {});
-  }
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<ZenDoAppState>();
+    final listManager = appState.listManager;
+
     return Scaffold(
       body: listManager == null
           ? Scaffold(

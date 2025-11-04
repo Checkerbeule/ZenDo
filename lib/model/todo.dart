@@ -21,6 +21,14 @@ class Todo {
 
   Todo(this.title, [this.description]) : creationDate = DateTime.now();
 
+  bool get isExpired {
+    if (expirationDate == null) {
+      return false;
+    } else {
+      return DateTime.now().isAfter(expirationDate!);
+    }
+  }
+
   @override
   operator ==(Object other) {
     if (identical(this, other)) return true;

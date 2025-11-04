@@ -114,70 +114,266 @@ void main() {
       ).thenAnswer((_) async => {});
     });
 
-    group('ListManager expiredTodos tests', () {
-      test('get expired todos', () {
+    group('ListManager getTodosToTransfer tests', () {
+      test('ListManager getTodosToTransfer: from daily list', () {
+        final dailyList = TodoList(ListScope.daily);
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        dailyList.addTodo(todoToTransfer);
+        dailyList.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ); // today
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.daily.duration); // tomorrow
+        final manager = ListManager([dailyList]);
+
+        expect(dailyList.todos.length, 2);
+        expect(
+          manager.getTodosToTransfer(dailyList.todos, ListScope.daily).length,
+          1,
+        );
+      });
+
+      test('ListManager getTodosToTransfer: from weekly list', () {
         final weeklyList = TodoList(ListScope.weekly);
-        final todo_1 = Todo('expired 1');
-        final todo_2 = Todo('expired 2');
-        weeklyList.addTodo(todo_1);
-        weeklyList.addTodo(todo_2);
-        todo_1.expirationDate = todo_1.expirationDate!.subtract(
-          Duration(days: 7),
-        );
-        todo_2.expirationDate = todo_2.expirationDate!.subtract(
-          Duration(days: 8),
-        );
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        weeklyList.addTodo(todoToTransfer);
+        weeklyList.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ); // today
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.daily.duration); // tomorrow
         final manager = ListManager([weeklyList]);
 
+        expect(weeklyList.todos.length, 2);
         expect(
-          manager.getExpiredTodos(weeklyList.todos, ListScope.daily).length,
-          2,
+          manager.getTodosToTransfer(weeklyList.todos, ListScope.daily).length,
+          1,
+        );
+      });
+
+      test('ListManager getTodosToTransfer: from montly list', () {
+        final monthlyList = TodoList(ListScope.monthly);
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        monthlyList.addTodo(todoToTransfer);
+        monthlyList.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(Duration(days: 6)); // add weekly duration minus 1 day
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.weekly.duration); // add weekly duration
+        final manager = ListManager([monthlyList]);
+
+        expect(monthlyList.todos.length, 2);
+        expect(
+          manager
+              .getTodosToTransfer(monthlyList.todos, ListScope.weekly)
+              .length,
+          1,
+        );
+      });
+
+      test('ListManager getTodosToTransfer: from yearly list', () {
+        final yearlyList = TodoList(ListScope.yearly);
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        yearlyList.addTodo(todoToTransfer);
+        yearlyList.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(Duration(days: 29)); // add monthly duration minus 1 day
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.monthly.duration); // add monthly duration
+        final manager = ListManager([yearlyList]);
+
+        expect(yearlyList.todos.length, 2);
+        expect(
+          manager
+              .getTodosToTransfer(yearlyList.todos, ListScope.monthly)
+              .length,
+          1,
         );
       });
     });
 
-    group('ListManager transferExpiredTodos tests', () {
-      test('ListManager transferExpiredTodos from weekly to daily list', () {
+    group('ListManager transferTodos tests', () {
+      test('ListManager transferTodos: from weekly to daily list', () {
         final transferFrom = TodoList(ListScope.weekly);
         final transferTo = TodoList(ListScope.daily);
-        var expiredTodo = Todo('expired todo');
-        transferFrom.addTodo(expiredTodo);
-        expiredTodo.expirationDate = DateTime.now().subtract(Duration(days: 7));
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        transferFrom.addTodo(todoToTransfer);
+        transferFrom.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ); // today
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.daily.duration); // tomorrow
 
         var manager = ListManager([transferTo, transferFrom]);
-        manager.transferExpiredTodos();
+        manager.transferTodos();
 
-        expect(transferFrom.todos.length, 0);
+        expect(transferFrom.todos.length, 1);
+        expect(transferFrom.todos.first, todoNotToTransfer);
         expect(transferTo.todos.length, 1);
-        expect(transferTo.todos.first, expiredTodo);
+        expect(transferTo.todos.first, todoToTransfer);
+      });
+
+      test('ListManager transferTodos: from monthly to weekly list', () {
+        final transferFrom = TodoList(ListScope.monthly);
+        final transferTo = TodoList(ListScope.weekly);
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        transferFrom.addTodo(todoToTransfer);
+        transferFrom.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(Duration(days: 6)); // add weekly duration minus 1 day
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.weekly.duration); // add weekly duration
+
+        var manager = ListManager([transferTo, transferFrom]);
+        manager.transferTodos();
+
+        expect(transferFrom.todos.length, 1);
+        expect(transferFrom.todos.first, todoNotToTransfer);
+        expect(transferTo.todos.length, 1);
+        expect(transferTo.todos.first, todoToTransfer);
+      });
+
+      test('ListManager transferTodos: from yearly to monthly list', () {
+        final transferFrom = TodoList(ListScope.yearly);
+        final transferTo = TodoList(ListScope.monthly);
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        transferFrom.addTodo(todoToTransfer);
+        transferFrom.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(Duration(days: 29)); // add monthly duration minus 1 day
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.monthly.duration); // add monthly duration
+
+        var manager = ListManager([transferTo, transferFrom]);
+        manager.transferTodos();
+
+        expect(transferFrom.todos.length, 1);
+        expect(transferFrom.todos.first, todoNotToTransfer);
+        expect(transferTo.todos.length, 1);
+        expect(transferTo.todos.first, todoToTransfer);
+      });
+
+      test('ListManager transferTodos: todo stays in list', () {
+        final transferFrom = TodoList(ListScope.weekly);
+        final transferTo = TodoList(ListScope.daily);
+        final todoNotToTransfer = Todo('do not transfer');
+        transferFrom.addTodo(todoNotToTransfer);
+
+        var manager = ListManager([transferTo, transferFrom]);
+        manager.transferTodos();
+
+        expect(transferFrom.todos.length, 1);
+        expect(transferTo.todos.length, 0);
       });
 
       test(
-        'ListManager transferExpiredTodos none expired todo stay in list',
-        () {
-          final transferFrom = TodoList(ListScope.weekly);
-          final transferTo = TodoList(ListScope.daily);
-          final noneExpiredTodo = Todo('expired title');
-          transferFrom.addTodo(noneExpiredTodo);
-
-          var manager = ListManager([transferTo, transferFrom]);
-          manager.transferExpiredTodos();
-
-          expect(transferFrom.todos.length, 1);
-          expect(transferTo.todos.length, 0);
-        },
-      );
-
-      test(
-        'ListManager transferExpiredTodos, no transfer from backlog to other list',
+        'ListManager transferTodos: no transfer from backlog to other list',
         () {
           final backlog = TodoList(ListScope.backlog);
           final transferTo = TodoList(ListScope.weekly);
-          final todo = Todo('todo title');
-          backlog.addTodo(todo);
+          final backlogTodo = Todo('do not transfer');
+          backlog.addTodo(backlogTodo);
 
           var manager = ListManager([transferTo, backlog]);
-          manager.transferExpiredTodos();
+          manager.transferTodos();
 
           expect(backlog.todos.length, 1);
           expect(transferTo.todos.length, 0);
@@ -185,17 +381,25 @@ void main() {
       );
 
       test(
-        'ListManager transferExpiredTodos todos stay in dailyList but todo is expired',
+        'ListManager transferTodos: todos stay in dailyList but todo is expired',
         () {
           final weeklkyList = TodoList(ListScope.weekly);
           final dailyList = TodoList(ListScope.daily);
           var expiredTodo = Todo('expired todo');
           dailyList.addTodo(expiredTodo);
-          DateTime expirationDate = DateTime.now().subtract(Duration(days: 1));
+          final now = DateTime.now();
+          final expirationDate = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            0,
+            0,
+            0,
+          ).subtract(Duration(days: 1));
           expiredTodo.expirationDate = expirationDate;
 
           var manager = ListManager([dailyList, weeklkyList]);
-          manager.transferExpiredTodos();
+          manager.transferTodos();
 
           expect(weeklkyList.todos.length, 0);
           expect(dailyList.todos.length, 1);
@@ -204,7 +408,7 @@ void main() {
       );
 
       test(
-        'ListManager transferExpiredTodos todo expired yesterday moves from highes scope to dailyList',
+        'ListManager transferTodos: todo expired yesterday moves from highest scope to dailyList',
         () {
           final dailyList = TodoList(ListScope.daily);
           final weeklyList = TodoList(ListScope.weekly);
@@ -212,9 +416,15 @@ void main() {
           final yearlyList = TodoList(ListScope.yearly);
           var expiredTodo = Todo('expired todo');
           yearlyList.addTodo(expiredTodo);
-          expiredTodo.expirationDate = DateTime.now().subtract(
-            Duration(days: 1),
-          );
+          final now = DateTime.now();
+          expiredTodo.expirationDate = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            0,
+            0,
+            0,
+          ).subtract(Duration(days: 1));
 
           var manager = ListManager([
             dailyList,
@@ -222,7 +432,7 @@ void main() {
             weeklyList,
             yearlyList,
           ]);
-          manager.transferExpiredTodos();
+          manager.transferTodos();
 
           expect(yearlyList.todos.length, 0);
           expect(monthlyList.todos.length, 0);
@@ -232,15 +442,23 @@ void main() {
       );
 
       test(
-        'ListManager transferExpiredTodos todo expires in 7 days moves from highes scope to weekly',
+        'ListManager transferTodos: todo expires in 6 days moves from highest scope to weekly',
         () {
           final dailyList = TodoList(ListScope.daily);
           final weeklyList = TodoList(ListScope.weekly);
           final monthlyList = TodoList(ListScope.monthly);
           final yearlyList = TodoList(ListScope.yearly);
-          var expiredTodo = Todo('expired in 7 days');
-          yearlyList.addTodo(expiredTodo);
-          expiredTodo.expirationDate = DateTime.now().add(Duration(days: 7));
+          var todoToTransfer = Todo('expires in 6 days');
+          yearlyList.addTodo(todoToTransfer);
+          final now = DateTime.now();
+          todoToTransfer.expirationDate = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            0,
+            0,
+            0,
+          ).add(Duration(days: 6));
 
           var manager = ListManager([
             dailyList,
@@ -248,7 +466,7 @@ void main() {
             weeklyList,
             yearlyList,
           ]);
-          manager.transferExpiredTodos();
+          manager.transferTodos();
 
           expect(yearlyList.todos.length, 0);
           expect(monthlyList.todos.length, 0);
@@ -257,21 +475,261 @@ void main() {
         },
       );
 
-      test('ListManager transferExpiredTodos and skip missing ListScope', () {
+      test('ListManager transferTodos: skip missing ListScope', () {
         final dailyList = TodoList(ListScope.daily);
         final weeklyList = TodoList(ListScope.weekly);
         final monthlyList = TodoList(ListScope.monthly);
-        var expiredTodo = Todo('expired today');
-        monthlyList.addTodo(expiredTodo);
-        expiredTodo.expirationDate = DateTime.now();
+        var todoToTransfer = Todo('expired today');
+        monthlyList.addTodo(todoToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        );
 
         var manager = ListManager([dailyList, monthlyList, weeklyList]);
-        manager.transferExpiredTodos();
+        manager.transferTodos();
 
         expect(monthlyList.todos.length, 0);
         expect(weeklyList.todos.length, 0);
         expect(dailyList.todos.length, 1);
       });
+    });
+
+    group('ListManager toBeTransferredTomorrow tests', () {
+      test(
+        'ListManager toBeTransferredTomorrow: todos from daily list are never transferred',
+        () {
+          final dailyList = TodoList(ListScope.daily);
+          final weeklyList = TodoList(ListScope.weekly);
+          final monthlyList = TodoList(ListScope.monthly);
+          final yearlyList = TodoList(ListScope.yearly);
+          final backlog = TodoList(ListScope.backlog);
+          final todo_1 = Todo('todo 1');
+          final todo_2 = Todo('todo 2');
+          dailyList.addTodo(todo_1);
+          dailyList.addTodo(todo_2);
+          final now = DateTime.now();
+          todo_1.expirationDate = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            0,
+            0,
+            0,
+          ).add(Duration(days: 1)); // tomorrow
+          todo_2.expirationDate = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            0,
+            0,
+            0,
+          ).add(Duration(days: 2)); // day after tomorrow
+          final manager = ListManager([
+            dailyList,
+            weeklyList,
+            monthlyList,
+            yearlyList,
+            backlog,
+          ]);
+          expect(
+            manager.toBeTransferredTomorrow(todo_1, ListScope.daily),
+            false,
+          );
+          expect(
+            manager.toBeTransferredTomorrow(todo_2, ListScope.daily),
+            false,
+          );
+        },
+      );
+
+      test('ListManager toBeTransferredTomorrow: from weekly list', () {
+        final dailyList = TodoList(ListScope.daily);
+        final weeklyList = TodoList(ListScope.weekly);
+        final monthlyList = TodoList(ListScope.monthly);
+        final yearlyList = TodoList(ListScope.yearly);
+        final backlog = TodoList(ListScope.backlog);
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        weeklyList.addTodo(todoToTransfer);
+        weeklyList.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.daily.duration); // tomorrow
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(Duration(days: 2)); // day after tomorrow
+        final manager = ListManager([
+          dailyList,
+          weeklyList,
+          monthlyList,
+          yearlyList,
+          backlog,
+        ]);
+
+        expect(
+          manager.toBeTransferredTomorrow(todoToTransfer, ListScope.weekly),
+          true,
+        );
+        expect(
+          manager.toBeTransferredTomorrow(todoNotToTransfer, ListScope.weekly),
+          false,
+        );
+      });
+
+      test('ListManager toBeTransferredTomorrow: from monthly list', () {
+        final dailyList = TodoList(ListScope.daily);
+        final weeklyList = TodoList(ListScope.weekly);
+        final monthlyList = TodoList(ListScope.monthly);
+        final yearlyList = TodoList(ListScope.yearly);
+        final backlog = TodoList(ListScope.backlog);
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        monthlyList.addTodo(todoToTransfer);
+        monthlyList.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.weekly.duration); // in 7 days
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(Duration(days: 8)); // in 8 days
+        final manager = ListManager([
+          dailyList,
+          weeklyList,
+          monthlyList,
+          yearlyList,
+          backlog,
+        ]);
+
+        expect(
+          manager.toBeTransferredTomorrow(todoToTransfer, ListScope.monthly),
+          true,
+        );
+        expect(
+          manager.toBeTransferredTomorrow(todoNotToTransfer, ListScope.monthly),
+          false,
+        );
+      });
+
+      test('ListManager toBeTransferredTomorrow: from yearly list', () {
+        final dailyList = TodoList(ListScope.daily);
+        final weeklyList = TodoList(ListScope.weekly);
+        final monthlyList = TodoList(ListScope.monthly);
+        final yearlyList = TodoList(ListScope.yearly);
+        final backlog = TodoList(ListScope.backlog);
+        final todoToTransfer = Todo('transfer');
+        final todoNotToTransfer = Todo('do not transfer');
+        yearlyList.addTodo(todoToTransfer);
+        yearlyList.addTodo(todoNotToTransfer);
+        final now = DateTime.now();
+        todoToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(ListScope.monthly.duration); // in 30 days
+        todoNotToTransfer.expirationDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          0,
+          0,
+          0,
+        ).add(Duration(days: 31)); // in 31 days
+        final manager = ListManager([
+          dailyList,
+          weeklyList,
+          monthlyList,
+          yearlyList,
+          backlog,
+        ]);
+
+        expect(
+          manager.toBeTransferredTomorrow(todoToTransfer, ListScope.yearly),
+          true,
+        );
+        expect(
+          manager.toBeTransferredTomorrow(todoNotToTransfer, ListScope.yearly),
+          false,
+        );
+      });
+
+      test(
+        'ListManager toBeTransferredTomorrow: todos from backlog are never transferred',
+        () {
+          final dailyList = TodoList(ListScope.daily);
+          final weeklyList = TodoList(ListScope.weekly);
+          final monthlyList = TodoList(ListScope.monthly);
+          final yearlyList = TodoList(ListScope.yearly);
+          final backlog = TodoList(ListScope.backlog);
+          final todo_1 = Todo('transfer');
+          final todo_2 = Todo('do not transfer');
+          backlog.addTodo(todo_1);
+          backlog.addTodo(todo_2);
+          final now = DateTime.now();
+          todo_1.expirationDate = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            0,
+            0,
+            0,
+          ).add(ListScope.yearly.duration); // in 365 days
+          todo_2.expirationDate = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            0,
+            0,
+            0,
+          ).add(Duration(days: 366)); // in 366 days
+          final manager = ListManager([
+            dailyList,
+            weeklyList,
+            monthlyList,
+            yearlyList,
+            backlog,
+          ]);
+
+          expect(
+            manager.toBeTransferredTomorrow(todo_1, ListScope.backlog),
+            false,
+          );
+          expect(
+            manager.toBeTransferredTomorrow(todo_2, ListScope.backlog),
+            false,
+          );
+        },
+      );
     });
   });
 }

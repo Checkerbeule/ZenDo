@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
+import 'package:zen_do/main.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
 
@@ -20,6 +22,9 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<ZenDoAppState>();
+    final listManager = appState.listManager;
+
     return Scaffold(
       body: ListView(
         shrinkWrap: true,
@@ -71,12 +76,16 @@ class _TodoListPageState extends State<TodoListPage> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                    if (todo.expirationDate != null &&
-                        DateTime.now().isAfter(todo.expirationDate!)) ...[
+                    if (listManager != null &&
+                        (listManager.toBeTransferredTomorrow(
+                              todo,
+                              widget.list.scope,
+                            ) ||
+                            todo.expirationDate!.isBefore(DateTime.now()))) ...[
                       SizedBox(width: 5),
                       Tooltip(
                         message:
-                            'Fällig am ${DateFormat('dd.MM.yyyy').format(todo.expirationDate!)}!',
+                            'Fällig am ${DateFormat('dd.MM.yyyy').format(todo.expirationDate!)} !',
                         child: Icon(
                           Icons.access_time_rounded,
                           color: Theme.of(context).colorScheme.error,

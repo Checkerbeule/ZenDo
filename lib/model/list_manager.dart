@@ -22,12 +22,12 @@ class ListManager {
     }
   }
 
-  static Future<bool> autoTransferExpiredTodos() async {
+  static Future<bool> autoTransferTodos() async {
     logger.d('AutoTransfer of expired todos started...');
     try {
       var lists = await PersistenceHelper.loadAll();
       final manager = ListManager(lists);
-      manager.transferExpiredTodos();
+      manager.transferTodos();
       await PersistenceHelper.closeAndRelease();
       logger.d('AutoTransfer of expired todos successfully finished!');
       return true;
@@ -37,7 +37,7 @@ class ListManager {
     }
   }
 
-  void transferExpiredTodos() {
+  void transferTodos() {
     // use only lists with enabled autotransfer
     final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
     activeLists.sort((a, b) => a.compareTo(b));
@@ -47,7 +47,7 @@ class ListManager {
         final currentList = activeLists[i];
         final previousList = activeLists[i - 1];
 
-        final expiredTodos = getExpiredTodos(
+        final expiredTodos = getTodosToTransfer(
           currentList.todos,
           previousList.scope,
         );
@@ -65,7 +65,7 @@ class ListManager {
     }
   }
 
-  List<Todo> getExpiredTodos(
+  List<Todo> getTodosToTransfer(
     Set<Todo> todosToTransfer,
     ListScope scopeOfNextList,
   ) {
@@ -73,33 +73,34 @@ class ListManager {
       if (todo.expirationDate == null) {
         return false;
       }
-      final transferDate = todo.expirationDate!.subtract(
-        scopeOfNextList.duration,
-      );
+      final transferDate = todo.expirationDate!
+          .subtract(scopeOfNextList.duration)
+          .add(Duration(days: 1));
       return DateTime.now().isAfter(transferDate);
     }).toList();
   }
 
   bool toBeTransferredTomorrow(Todo todo, ListScope currentScope) {
-    if (todo.expirationDate == null || currentScope == ListScope.backlog) {
+    if (todo.expirationDate == null ||
+        currentScope == ListScope.backlog ||
+        currentScope == ListScope.daily) {
       return false;
     }
     final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
     activeLists.sort((a, b) => a.compareTo(b));
 
-    if (activeLists.length > 1) {
-      for (int i = activeLists.length - 1; i > 0; i--) {
-        final currentList = activeLists[i];
-        final previousList = activeLists[i - 1];
-        if (currentList.scope == currentScope) {
-          final transferDate = todo.expirationDate!
-              .subtract(previousList.scope.duration)
-              .subtract(Duration(days: 1));
-          return DateTime.now().isAfter(transferDate);
-        }
-      }
+    final indexOfListContainigTodo = activeLists.indexWhere(
+      (l) => l.scope == currentScope,
+    );
+    if (indexOfListContainigTodo < 1) {
+      return false;
     }
-    return false;
+    final scopeDurationToSubtract =
+        activeLists[indexOfListContainigTodo - 1].scope;
+    final transferDate = todo.expirationDate!.subtract(
+      scopeDurationToSubtract.duration,
+    );
+    return DateTime.now().isAfter(transferDate);
   }
 
   int get listCount {
