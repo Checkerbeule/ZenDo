@@ -21,12 +21,12 @@ class Todo {
 
   Todo(this.title, [this.description]) : creationDate = DateTime.now();
 
-  bool toBeTransferred(Duration durationOfNextListScope) {
+  bool get isExpired {
     if (expirationDate == null) {
       return false;
+    } else {
+      return DateTime.now().isAfter(expirationDate!);
     }
-    final transferDate = expirationDate!.subtract(durationOfNextListScope);
-    return DateTime.now().isAfter(transferDate);
   }
 
   @override

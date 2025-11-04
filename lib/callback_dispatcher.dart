@@ -13,7 +13,7 @@ void callbackDispatcher() {
     switch (task) {
       case "transferExpiredTodos":
         await _runWithRetries(task, () async {
-          return await ListManager.autoTransferExpiredTodos();
+          return await ListManager.autoTransferTodos();
         });
         break;
       default:

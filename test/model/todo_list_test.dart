@@ -197,22 +197,6 @@ void main() {
         expect(todo.expirationDate != null, true);
         expect(todo.expirationDate, expirationDate);
       });
-
-      test('get expired todos', () {
-        final weeklyList = TodoList(ListScope.weekly);
-        final todo_1 = Todo('expired 1');
-        final todo_2 = Todo('expired 2');
-        weeklyList.addTodo(todo_1);
-        weeklyList.addTodo(todo_2);
-        todo_1.expirationDate = todo_1.expirationDate!.subtract(
-          Duration(days: 7),
-        );
-        todo_2.expirationDate = todo_2.expirationDate!.subtract(
-          Duration(days: 8),
-        );
-
-        expect(weeklyList.getExpiredTodos(ListScope.daily.duration).length, 2);
-      });
     });
 
     group('done todos tests', () {

@@ -1,5 +1,6 @@
 import 'package:logger/logger.dart';
 import 'package:zen_do/model/list_scope.dart';
+import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
 
@@ -21,12 +22,12 @@ class ListManager {
     }
   }
 
-  static Future<bool> autoTransferExpiredTodos() async {
+  static Future<bool> autoTransferTodos() async {
     logger.d('AutoTransfer of expired todos started...');
     try {
       var lists = await PersistenceHelper.loadAll();
       final manager = ListManager(lists);
-      manager.transferExpiredTodos();
+      manager.transferTodos();
       await PersistenceHelper.closeAndRelease();
       logger.d('AutoTransfer of expired todos successfully finished!');
       return true;
@@ -36,7 +37,7 @@ class ListManager {
     }
   }
 
-  void transferExpiredTodos() {
+  void transferTodos() {
     // use only lists with enabled autotransfer
     final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
     activeLists.sort((a, b) => a.compareTo(b));
@@ -46,8 +47,9 @@ class ListManager {
         final currentList = activeLists[i];
         final previousList = activeLists[i - 1];
 
-        final expiredTodos = currentList.getExpiredTodos(
-          previousList.scope.duration,
+        final expiredTodos = getTodosToTransfer(
+          currentList.todos,
+          previousList.scope,
         );
         final addedTodos = previousList.addAll(expiredTodos);
         currentList.deleteAll(addedTodos);
@@ -61,6 +63,44 @@ class ListManager {
         }
       }
     }
+  }
+
+  List<Todo> getTodosToTransfer(
+    Set<Todo> todosToTransfer,
+    ListScope scopeOfNextList,
+  ) {
+    return todosToTransfer.where((todo) {
+      if (todo.expirationDate == null) {
+        return false;
+      }
+      final transferDate = todo.expirationDate!
+          .subtract(scopeOfNextList.duration)
+          .add(Duration(days: 1));
+      return DateTime.now().isAfter(transferDate);
+    }).toList();
+  }
+
+  bool toBeTransferredTomorrow(Todo todo, ListScope currentScope) {
+    if (todo.expirationDate == null ||
+        currentScope == ListScope.backlog ||
+        currentScope == ListScope.daily) {
+      return false;
+    }
+    final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
+    activeLists.sort((a, b) => a.compareTo(b));
+
+    final indexOfListContainigTodo = activeLists.indexWhere(
+      (l) => l.scope == currentScope,
+    );
+    if (indexOfListContainigTodo < 1) {
+      return false;
+    }
+    final scopeDurationToSubtract =
+        activeLists[indexOfListContainigTodo - 1].scope;
+    final transferDate = todo.expirationDate!.subtract(
+      scopeDurationToSubtract.duration,
+    );
+    return DateTime.now().isAfter(transferDate);
   }
 
   int get listCount {

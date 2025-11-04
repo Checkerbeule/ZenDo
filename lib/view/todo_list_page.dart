@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
+import 'package:zen_do/main.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
 
@@ -19,6 +22,9 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<ZenDoAppState>();
+    final listManager = appState.listManager;
+
     return Scaffold(
       body: ListView(
         shrinkWrap: true,
@@ -33,20 +39,6 @@ class _TodoListPageState extends State<TodoListPage> {
           else ...[
             for (var todo in widget.list.todos)
               ListTile(
-                title: todo.description != null && todo.description!.isNotEmpty
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(todo.title),
-                          const SizedBox(height: 4),
-                          Text(
-                            todo.description!,
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      )
-                    : Text(todo.title, textAlign: TextAlign.start),
                 leading: IconButton(
                   onPressed: () => {
                     setState(() {
@@ -54,6 +46,54 @@ class _TodoListPageState extends State<TodoListPage> {
                     }),
                   },
                   icon: Icon(Icons.circle_outlined),
+                ),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    todo.description != null && todo.description!.isNotEmpty
+                        ? Flexible(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  todo.title,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  todo.description!,
+                                  style: const TextStyle(color: Colors.grey),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          )
+                        : Flexible(
+                            child: Text(
+                              todo.title,
+                              textAlign: TextAlign.start,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                    if (listManager != null &&
+                        (listManager.toBeTransferredTomorrow(
+                              todo,
+                              widget.list.scope,
+                            ) ||
+                            todo.expirationDate!.isBefore(DateTime.now()))) ...[
+                      SizedBox(width: 5),
+                      Tooltip(
+                        message:
+                            'Fällig am ${DateFormat('dd.MM.yyyy').format(todo.expirationDate!)} !',
+                        child: Icon(
+                          Icons.access_time_rounded,
+                          color: Theme.of(context).colorScheme.error,
+                          size: 18,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 trailing: IconButton(
                   onPressed: () => {
@@ -134,7 +174,6 @@ Future<bool> _showAddToDoDialog(BuildContext context, TodoList list) async {
               },
             ),
             TextField(
-              autofocus: true,
               decoration: const InputDecoration(hintText: 'Beschreibung'),
               onChanged: (value) {
                 description = value;
