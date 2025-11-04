@@ -128,7 +128,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
                       title: const Text('ZenDo Listen'),
                       bottom: TabBar(
                         tabs: [
-                          for (var list in listManager!.allLists)
+                          for (var list in listManager.allLists)
                             Tab(
                               icon: Icon(list.scope.icon),
                               text: list.scope.label,
