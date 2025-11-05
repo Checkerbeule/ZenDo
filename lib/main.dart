@@ -1,16 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/callback_dispatcher.dart';
-import 'package:zen_do/model/list_manager.dart';
-import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/persistance/hive_initializer.dart';
-import 'package:zen_do/persistance/persistence_helper.dart';
 import 'package:zen_do/utils/time_util.dart';
-import 'package:zen_do/view/todo_list_page.dart';
+import 'package:zen_do/view/todo_page.dart';
 import 'package:zen_do/zen_do_lifecycle_listener.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -39,9 +36,9 @@ class ZenDoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => ZenDoAppState(),
+      //TODO use MultiProvider
+      create: (context) => TodoState(),
       child: MaterialApp(
-        //TODO MaterialApp should be top level and first widget
         title: 'ZenDo',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
@@ -52,43 +49,7 @@ class ZenDoApp extends StatelessWidget {
   }
 }
 
-class ZenDoAppState extends ChangeNotifier {
-  ListManager? listManager;
-
-  ZenDoAppState() {
-    _initData();
-  }
-
-  Future<void> _initData() async {
-    Set<ListScope> scopes = {
-      //TODO #46 make dynamic based on user preferences
-      ListScope.daily,
-      ListScope.weekly,
-      ListScope.yearly,
-      ListScope.backlog,
-    };
-    try {
-      List<TodoList> loadedLists = await PersistenceHelper.loadAll();
-      listManager = ListManager(loadedLists, activeScopes: scopes);
-    } catch (e, s) {
-      logger.e('Loading todo lists failed: : $e\n$s');
-      listManager = ListManager([], activeScopes: scopes);
-    } finally {
-      notifyListeners();
-    }
-  }
-
-  //TODO #46 make dynamic based on user preferences
-  /* void addList(TodoList list) {
-    listManager?.addList(list);
-    notifyListeners();
-  }
-
-  void removeList(TodoList list) {
-    listManager?.removeList(list);
-    notifyListeners();
-  } */
-}
+class ZenDoAppState extends ChangeNotifier {} //not used at the moment
 
 class ZenDoMainPage extends StatefulWidget {
   const ZenDoMainPage({super.key});
@@ -99,79 +60,72 @@ class ZenDoMainPage extends StatefulWidget {
 
 class _ZenDoMainPageState extends State<ZenDoMainPage> {
   int pageIndex = 0;
+  final List<String> _pageTitles = ['Listen', 'Habits', 'Notizen'];
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<ZenDoAppState>();
-    final listManager = appState.listManager;
-
     return Scaffold(
-      body: listManager == null
-          ? Scaffold(
-              appBar: AppBar(
-                title: const Text('ZenDo Listen'),
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-              ),
-              body: Center(child: CircularProgressIndicator()),
-            )
-          : IndexedStack(
-              index: pageIndex,
-              children: [
-                DefaultTabController(
-                  initialIndex: 0,
-                  length: listManager.listCount,
-                  child: Scaffold(
-                    appBar: AppBar(
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.inversePrimary,
-                      title: const Text('ZenDo Listen'),
-                      bottom: TabBar(
-                        tabs: [
-                          for (var list in listManager.allLists)
-                            Tab(
-                              icon: Icon(list.scope.icon),
-                              text: list.scope.label,
-                            ),
-                        ],
-                      ),
-                    ),
-                    body: TabBarView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: <Widget>[
-                        for (var list in listManager.allLists)
-                          TodoListPage(list: list),
-                      ],
-                    ),
-                  ),
-                ),
-                const Center(
-                  child: Text('Habit Page'),
-                ), //TODO implement Habit Page
-                const Center(
-                  child: Text('Einstellungen'),
-                ), //TODO implement Settings Page
-              ],
-            ),
+      appBar: AppBar(
+        title: Text('ZenDo ${_pageTitles[pageIndex]}'),
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        actions: [
+          IconButton(icon: Icon(Icons.settings), onPressed: () => {}),
+        ], //TODO implement settings,
+      ),
+      body: IndexedStack(
+        index: pageIndex,
+        children: [
+          const TodoPage(),
+          const Center(child: Text('Habit Page')), //TODO implement Habit Page
+          const Center(child: Text('Notizen Page')), //TODO implement notes Page
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        indicatorColor: Theme.of(context).colorScheme.inversePrimary,
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((
+          Set<WidgetState> states,
+        ) {
+          if (states.contains(WidgetState.selected)) {
+            return TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            );
+          }
+          return TextStyle(
+            color: Theme.of(context).colorScheme.onSecondaryContainer,
+          );
+        }),
         selectedIndex: pageIndex,
         onDestinationSelected: (int index) {
           setState(() {
             pageIndex = index;
           });
         },
-        destinations: const <Widget>[
+        destinations: <Widget>[
           NavigationDestination(
             icon: Icon(Icons.view_list_outlined),
-            label: 'Listen',
+            label: _pageTitles[0],
+            selectedIcon: Icon(
+              Icons.view_list_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
           NavigationDestination(
             icon: Icon(Icons.track_changes),
-            label: 'Habits',
+            label: _pageTitles[1],
+            selectedIcon: Icon(
+              Icons.track_changes,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings),
-            label: 'Einstellungen',
+            icon: Icon(Icons.edit_note),
+            label: _pageTitles[2],
+            selectedIcon: Icon(
+              Icons.edit_note,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
         ],
       ),

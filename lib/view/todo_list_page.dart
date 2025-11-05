@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/main.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/view/todo_page.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -22,7 +22,7 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<ZenDoAppState>();
+    final appState = context.watch<TodoState>();
     final listManager = appState.listManager;
 
     return Scaffold(
