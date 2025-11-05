@@ -80,6 +80,18 @@ class ListManager {
     }).toList();
   }
 
+  int toBeTransferredOrExpiredCount(TodoList list) {
+    int count = 0;
+    final now = DateTime.now();
+    for (var todo in list.todos) {
+      if (todo.expirationDate != null && now.isAfter(todo.expirationDate!) ||
+          toBeTransferredTomorrow(todo, list.scope)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
   bool toBeTransferredTomorrow(Todo todo, ListScope currentScope) {
     if (todo.expirationDate == null ||
         currentScope == ListScope.backlog ||

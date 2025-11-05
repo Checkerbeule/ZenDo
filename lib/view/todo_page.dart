@@ -77,9 +77,21 @@ class TodoPage extends StatelessWidget {
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                 toolbarHeight: 0,
                 bottom: TabBar(
+                  dividerColor: Theme.of(context).primaryColor,
                   tabs: [
                     for (var list in listManager.allLists)
-                      Tab(icon: Icon(list.scope.icon), text: list.scope.label),
+                      Tab(
+                        icon:
+                            listManager.toBeTransferredOrExpiredCount(list) > 0
+                            ? Badge(
+                                label: Text(
+                                  '${listManager.toBeTransferredOrExpiredCount(list)}',
+                                ),
+                                child: Icon(list.scope.icon),
+                              )
+                            : Icon(list.scope.icon),
+                        text: list.scope.label,
+                      ),
                   ],
                 ),
               ),

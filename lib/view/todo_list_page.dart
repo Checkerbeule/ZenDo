@@ -193,7 +193,7 @@ Future<bool> _showAddToDoDialog(BuildContext context, TodoList list) async {
           OutlinedButton(
             style: OutlinedButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.primary,
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
             ),
             child: const Text('Ok'),
             onPressed: () {
