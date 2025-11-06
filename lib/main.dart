@@ -60,13 +60,17 @@ class ZenDoMainPage extends StatefulWidget {
 
 class _ZenDoMainPageState extends State<ZenDoMainPage> {
   int pageIndex = 0;
-  final List<String> _pageTitles = ['Listen', 'Habits', 'Notizen'];
+  final Map<String, IconData> _pageIcons = {
+    'Listen': Icons.view_list_outlined,
+    'Habits': Icons.track_changes,
+    'Notizen': Icons.edit_note,
+  };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ZenDo ${_pageTitles[pageIndex]}'),
+        title: Text('ZenDo ${_pageIcons.keys.elementAt(pageIndex)}'),
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         actions: [
           IconButton(icon: Icon(Icons.settings), onPressed: () => {}),
@@ -103,30 +107,15 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
           });
         },
         destinations: <Widget>[
-          NavigationDestination(
-            icon: Icon(Icons.view_list_outlined),
-            label: _pageTitles[0],
-            selectedIcon: Icon(
-              Icons.view_list_outlined,
-              color: Theme.of(context).colorScheme.primary,
+          for (var entry in _pageIcons.entries)
+            NavigationDestination(
+              icon: Icon(entry.value),
+              label: entry.key,
+              selectedIcon: Icon(
+                entry.value,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.track_changes),
-            label: _pageTitles[1],
-            selectedIcon: Icon(
-              Icons.track_changes,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.edit_note),
-            label: _pageTitles[2],
-            selectedIcon: Icon(
-              Icons.edit_note,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
         ],
       ),
     );

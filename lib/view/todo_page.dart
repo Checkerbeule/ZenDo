@@ -84,6 +84,9 @@ class TodoPage extends StatelessWidget {
                         icon:
                             listManager.toBeTransferredOrExpiredCount(list) > 0
                             ? Badge(
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.tertiary,
                                 label: Text(
                                   '${listManager.toBeTransferredOrExpiredCount(list)}',
                                 ),

@@ -104,6 +104,7 @@ class _TodoListPageState extends State<TodoListPage> {
                     ),
                   },
                   icon: Icon(Icons.delete_forever),
+                  color: Theme.of(context).colorScheme.tertiary
                 ),
               ),
           ],
