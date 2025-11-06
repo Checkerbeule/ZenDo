@@ -5,6 +5,7 @@ import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
+import 'package:zen_do/view/loading_screen.dart';
 import 'package:zen_do/view/todo_list_page.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -58,17 +59,7 @@ class TodoPage extends StatelessWidget {
     final listManager = appState.listManager;
 
     return listManager == null
-        ? Center(
-            child: Column(
-              spacing: 16,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                Text('Lade Todo-Listen...'),
-              ],
-            ),
-          )
+        ? LoadingScreen(message: 'Lade Aufgaben...')
         : DefaultTabController(
             initialIndex: 0,
             length: listManager.listCount,
