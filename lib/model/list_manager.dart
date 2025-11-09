@@ -22,6 +22,9 @@ class ListManager {
     }
   }
 
+  /// Loads all lists from persistence, transfers expired todos and saves the updated lists back to persistence.
+  /// Returns true if the transfer was successful, false otherwise.
+  /// Use this method for the background auto-transfer task.
   static Future<bool> autoTransferTodos() async {
     logger.d('AutoTransfer of expired todos started...');
     try {
@@ -37,6 +40,7 @@ class ListManager {
     }
   }
 
+  /// Transfers todos that are expired from higher scope lists to lower scope lists.
   void transferTodos() {
     // use only lists with enabled autotransfer
     final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
@@ -80,6 +84,7 @@ class ListManager {
     }).toList();
   }
 
+  /// Returns the count of todos in the given [list] that are either expired or due to be transferred tomorrow.
   int toBeTransferredOrExpiredCount(TodoList list) {
     int count = 0;
     final now = DateTime.now();
@@ -92,6 +97,8 @@ class ListManager {
     return count;
   }
 
+  /// Returns true if the given [todo] in the list of the given [currentScope] due to be transferred tomorrow.
+  /// Returns false if the given [currentScope] is [ListScope.backlog] or [ListScope.daily] or if the [todo] has no expiration date.
   bool toBeTransferredTomorrow(Todo todo, ListScope currentScope) {
     if (todo.expirationDate == null ||
         currentScope == ListScope.backlog ||
