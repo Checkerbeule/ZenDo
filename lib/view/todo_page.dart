@@ -10,6 +10,20 @@ import 'package:zen_do/view/todo_list_page.dart';
 
 Logger logger = Logger(level: Level.debug);
 
+class TodoPage extends StatelessWidget {
+  const TodoPage({super.key, required this.pageName});
+
+  final String pageName;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => TodoState(),
+      child: _TodoView(),
+    );
+  }
+}
+
 class TodoState extends ChangeNotifier {
   TodoState() {
     _initData();
@@ -67,53 +81,58 @@ class TodoState extends ChangeNotifier {
   } */
 }
 
-class TodoPage extends StatelessWidget {
-  const TodoPage({super.key, required String pageName});
-
+class _TodoView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<TodoState>();
-    final listManager = appState.listManager;
-
-    return listManager == null
-        ? LoadingScreen(message: 'Lade Aufgaben...')
-        : DefaultTabController(
-            initialIndex: 0,
-            length: listManager.listCount,
-            child: Scaffold(
-              appBar: AppBar(
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                toolbarHeight: 0,
-                bottom: TabBar(
-                  dividerColor: Theme.of(context).primaryColor,
-                  tabs: [
-                    for (var list in listManager.allLists)
-                      Tab(
-                        icon:
-                            listManager.toBeTransferredOrExpiredCount(list) > 0
-                            ? Badge(
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.tertiary,
-                                label: Text(
-                                  '${listManager.toBeTransferredOrExpiredCount(list)}',
-                                ),
-                                child: Icon(list.scope.icon),
-                              )
-                            : Icon(list.scope.icon),
-                        text: list.scope.label,
-                      ),
-                  ],
+    return Consumer<TodoState>(
+      builder: (context, todoState, child) {
+        final listManager = todoState.listManager;
+        return listManager == null
+            ? LoadingScreen(message: 'Lade Aufgaben...')
+            : DefaultTabController(
+                initialIndex: 0,
+                length: listManager.listCount,
+                child: Scaffold(
+                  appBar: AppBar(
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
+                    toolbarHeight: 0,
+                    bottom: TabBar(
+                      dividerColor: Theme.of(context).primaryColor,
+                      tabs: [
+                        for (var list in listManager.allLists)
+                          Tab(
+                            icon:
+                                listManager.toBeTransferredOrExpiredCount(
+                                      list,
+                                    ) >
+                                    0
+                                ? Badge(
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.tertiary,
+                                    label: Text(
+                                      '${listManager.toBeTransferredOrExpiredCount(list)}',
+                                    ),
+                                    child: Icon(list.scope.icon),
+                                  )
+                                : Icon(list.scope.icon),
+                            text: list.scope.label,
+                          ),
+                      ],
+                    ),
+                  ),
+                  body: TabBarView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: <Widget>[
+                      for (var list in listManager.allLists)
+                        TodoListPage(list: list),
+                    ],
+                  ),
                 ),
-              ),
-              body: TabBarView(
-                physics: const NeverScrollableScrollPhysics(),
-                children: <Widget>[
-                  for (var list in listManager.allLists)
-                    TodoListPage(list: list),
-                ],
-              ),
-            ),
-          );
+              );
+      },
+    );
   }
 }

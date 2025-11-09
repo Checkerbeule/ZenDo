@@ -35,12 +35,8 @@ class ZenDoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      //TODO use MultiProvider
-      providers: [
-        ChangeNotifierProvider(create: (context) => ZenDoAppState()),
-        ChangeNotifierProvider(create: (context) => TodoState()),
-      ],
+    return ChangeNotifierProvider(
+      create: (context) => ZenDoAppState(),
       child: MaterialApp(
         title: 'ZenDo',
         theme: ThemeData(
@@ -57,7 +53,7 @@ class ZenDoAppState extends ChangeNotifier {
     'Listen': (Icons.view_list_outlined, 0),
     'Habits': (Icons.track_changes, 1),
     'Notizen': (Icons.edit_note, 5),
-  };
+  }; //TODO don't use fake message counts
 
   void updateMessageCount(String title, int newCount) {
     var page = pageData[title];
