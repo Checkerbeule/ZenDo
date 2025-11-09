@@ -125,6 +125,10 @@ class ListManager {
     return lists;
   }
 
+  TodoList getListByScope(ListScope scope) {
+    return _lists.firstWhere((list) => list.scope == scope);
+  }
+
   bool removeList(TodoList list) {
     return _lists.remove(list);
   }

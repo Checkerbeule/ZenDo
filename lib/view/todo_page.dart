@@ -33,9 +33,26 @@ class TodoState extends ChangeNotifier {
       logger.e('Loading todo lists failed: : $e\n$s');
       listManager = ListManager([], activeScopes: scopes);
     } finally {
-      await Future.delayed(Duration(seconds: 5));
       notifyListeners();
     }
+  }
+
+  T performAcitionOnList<T>(Function(TodoList) action, ListScope scope) {
+    T result;
+    if (listManager != null) {
+      final list = listManager!.getListByScope(scope);
+      result = action(list);
+      notifyListeners();
+    } else if (T is bool) {
+      result = false as T;
+    } else if (T == Null) {
+      result = null as T;
+    } else {
+      throw Exception(
+        '[TodoState] Cannot perform action on list because ListManager is not initialized!',
+      );
+    }
+    return result;
   }
 
   //TODO #46 make dynamic based on user preferences
