@@ -27,10 +27,10 @@ class TodoPage extends StatelessWidget {
 }
 
 class TodoState extends ChangeNotifier {
-  final ZenDoAppState appStage;
+  final ZenDoAppState appState;
   ListManager? listManager;
 
-  TodoState(this.appStage) {
+  TodoState(this.appState) {
     _initData();
   }
 
@@ -45,7 +45,7 @@ class TodoState extends ChangeNotifier {
     try {
       List<TodoList> loadedLists = await PersistenceHelper.loadAll();
       listManager = ListManager(loadedLists, activeScopes: scopes);
-      appStage.updateMessageCount(
+      appState.updateMessageCount(
         AppPage.todos,
         listManager!.expiredTodosCount,
       );
@@ -62,7 +62,7 @@ class TodoState extends ChangeNotifier {
     if (listManager != null) {
       final list = listManager!.getListByScope(scope);
       result = action(list);
-      appStage.updateMessageCount(
+      appState.updateMessageCount(
         AppPage.todos,
         listManager!.expiredTodosCount,
       );
