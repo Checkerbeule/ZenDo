@@ -1,4 +1,6 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/main.dart';
@@ -29,6 +31,8 @@ class TodoPage extends StatelessWidget {
 class TodoState extends ChangeNotifier {
   final ZenDoAppState appState;
   ListManager? listManager;
+  bool isLoadingDataFailed = false;
+  String? errorMessage;
 
   TodoState(this.appState) {
     _initData();
@@ -51,6 +55,8 @@ class TodoState extends ChangeNotifier {
       );
     } catch (e, s) {
       logger.e('Loading todo lists failed: : $e\n$s');
+      isLoadingDataFailed = true;
+      errorMessage = e.toString();
       listManager = ListManager([], activeScopes: scopes);
     } finally {
       notifyListeners();
@@ -97,6 +103,12 @@ class _TodoView extends StatelessWidget {
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
         final listManager = todoState.listManager;
+        if (todoState.isLoadingDataFailed) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showLoadingErrorDialog(context, todoState.errorMessage!);
+          });
+        }
+
         return listManager == null
             ? LoadingScreen(message: 'Lade Aufgaben...')
             : DefaultTabController(
@@ -145,4 +157,52 @@ class _TodoView extends StatelessWidget {
       },
     );
   }
+}
+
+void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
+  await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Laden der Daten fehlgeschlagen !'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(errorMessage),
+            SizedBox(height: 16),
+            Text(
+              'Schließen Sie die App und öffenen Sie sie zu einem späteren Zeitpunkt erneut.',
+            ),
+            Text(
+              'Sollte der Fehler anschließend weiterhin bestehen, löschen Sie den App-Cache (Ihre Daten bleiben erhalten).',
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: const Text('Einstellungen öffnen'),
+            onPressed: () {
+              AppSettings.openAppSettings(
+                type: AppSettingsType.settings,
+                asAnotherTask: false,
+              );
+            },
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: const Text('App schließen'),
+            onPressed: () {
+              SystemNavigator.pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }
