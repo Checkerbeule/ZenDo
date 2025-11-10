@@ -1,16 +1,14 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/callback_dispatcher.dart';
-import 'package:zen_do/model/list_manager.dart';
-import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/persistance/hive_initializer.dart';
-import 'package:zen_do/persistance/persistence_helper.dart';
 import 'package:zen_do/utils/time_util.dart';
-import 'package:zen_do/view/todo_list_page.dart';
+import 'package:zen_do/view/app_page.dart';
+import 'package:zen_do/view/todo/todo_page.dart';
 import 'package:zen_do/zen_do_lifecycle_listener.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -41,7 +39,6 @@ class ZenDoApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => ZenDoAppState(),
       child: MaterialApp(
-        //TODO MaterialApp should be top level and first widget
         title: 'ZenDo',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
@@ -53,41 +50,18 @@ class ZenDoApp extends StatelessWidget {
 }
 
 class ZenDoAppState extends ChangeNotifier {
-  ListManager? listManager;
+  Map<AppPage, int> pageMessages = {
+    AppPage.todos: 0,
+    AppPage.habits: 0,
+    AppPage.notes: 0,
+  };
 
-  ZenDoAppState() {
-    _initData();
-  }
-
-  Future<void> _initData() async {
-    Set<ListScope> scopes = {
-      //TODO #46 make dynamic based on user preferences
-      ListScope.daily,
-      ListScope.weekly,
-      ListScope.yearly,
-      ListScope.backlog,
-    };
-    try {
-      List<TodoList> loadedLists = await PersistenceHelper.loadAll();
-      listManager = ListManager(loadedLists, activeScopes: scopes);
-    } catch (e, s) {
-      logger.e('Loading todo lists failed: : $e\n$s');
-      listManager = ListManager([], activeScopes: scopes);
-    } finally {
-      notifyListeners();
-    }
-  }
-
-  //TODO #46 make dynamic based on user preferences
-  /* void addList(TodoList list) {
-    listManager?.addList(list);
+  //TODO use this on every todo update (delete, restore, markAsDone)
+  void updateMessageCount(AppPage page, int newCount) {
+    if (pageMessages[page] == newCount) return;
+    pageMessages[page] = newCount;
     notifyListeners();
   }
-
-  void removeList(TodoList list) {
-    listManager?.removeList(list);
-    notifyListeners();
-  } */
 }
 
 class ZenDoMainPage extends StatefulWidget {
@@ -102,79 +76,81 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<ZenDoAppState>();
-    final listManager = appState.listManager;
-
-    return Scaffold(
-      body: listManager == null
-          ? Scaffold(
-              appBar: AppBar(
-                title: const Text('ZenDo Listen'),
-                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-              ),
-              body: Center(child: CircularProgressIndicator()),
-            )
-          : IndexedStack(
-              index: pageIndex,
-              children: [
-                DefaultTabController(
-                  initialIndex: 0,
-                  length: listManager.listCount,
-                  child: Scaffold(
-                    appBar: AppBar(
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.inversePrimary,
-                      title: const Text('ZenDo Listen'),
-                      bottom: TabBar(
-                        tabs: [
-                          for (var list in listManager.allLists)
-                            Tab(
-                              icon: Icon(list.scope.icon),
-                              text: list.scope.label,
-                            ),
-                        ],
-                      ),
-                    ),
-                    body: TabBarView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: <Widget>[
-                        for (var list in listManager.allLists)
-                          TodoListPage(list: list),
-                      ],
-                    ),
-                  ),
-                ),
-                const Center(
-                  child: Text('Habit Page'),
-                ), //TODO implement Habit Page
-                const Center(
-                  child: Text('Einstellungen'),
-                ), //TODO implement Settings Page
-              ],
+    return Consumer<ZenDoAppState>(
+      builder: (context, appState, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'ZenDo ${appState.pageMessages.keys.elementAt(pageIndex).label(context)}',
             ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: pageIndex,
-        onDestinationSelected: (int index) {
-          setState(() {
-            pageIndex = index;
-          });
-        },
-        destinations: const <Widget>[
-          NavigationDestination(
-            icon: Icon(Icons.view_list_outlined),
-            label: 'Listen',
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            actions: [
+              IconButton(icon: Icon(Icons.settings), onPressed: () => {}),
+            ], //TODO implement settings,
           ),
-          NavigationDestination(
-            icon: Icon(Icons.track_changes),
-            label: 'Habits',
+          body: IndexedStack(
+            index: pageIndex,
+            children: [
+              TodoPage(),
+              Center(
+                child: Text(AppPage.habits.label(context)),
+              ), //TODO implement Habit Page
+              Center(
+                child: Text(AppPage.notes.label(context)),
+              ), //TODO implement notes Page
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.settings),
-            label: 'Einstellungen',
+          bottomNavigationBar: NavigationBar(
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            indicatorColor: Theme.of(context).colorScheme.inversePrimary,
+            labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((
+              Set<WidgetState> states,
+            ) {
+              if (states.contains(WidgetState.selected)) {
+                return TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                );
+              }
+              return TextStyle(
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              );
+            }),
+            selectedIndex: pageIndex,
+            onDestinationSelected: (int index) {
+              setState(() {
+                pageIndex = index;
+              });
+            },
+            destinations: <Widget>[
+              for (var page in appState.pageMessages.entries)
+                NavigationDestination(
+                  icon: page.value > 0
+                      ? Badge(
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          label: Text('${page.value}'),
+                          child: Icon(page.key.icon),
+                        )
+                      : Icon(page.key.icon),
+                  label: page.key.label(context),
+                  selectedIcon: page.value > 0
+                      ? Badge(
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          label: Text('${page.value}'),
+                          child: Icon(
+                            page.key.icon,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
+                      : Icon(
+                          page.key.icon,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

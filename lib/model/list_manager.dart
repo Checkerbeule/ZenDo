@@ -22,6 +22,9 @@ class ListManager {
     }
   }
 
+  /// Loads all lists from persistence, transfers expired todos and saves the updated lists back to persistence.
+  /// Returns true if the transfer was successful, false otherwise.
+  /// Use this method for the background auto-transfer task.
   static Future<bool> autoTransferTodos() async {
     logger.d('AutoTransfer of expired todos started...');
     try {
@@ -37,9 +40,10 @@ class ListManager {
     }
   }
 
+  /// Transfers todos that are expired from higher scope lists to lower scope lists.
   void transferTodos() {
     // use only lists with enabled autotransfer
-    final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
+    final activeLists = listsWithAutotransfer;
     activeLists.sort((a, b) => a.compareTo(b));
 
     if (activeLists.length > 1) {
@@ -80,13 +84,15 @@ class ListManager {
     }).toList();
   }
 
+  /// Returns true if the given [todo] in the list of the given [currentScope] due to be transferred tomorrow.
+  /// Returns false if the given [currentScope] is [ListScope.backlog] or [ListScope.daily] or if the [todo] has no expiration date.
   bool toBeTransferredTomorrow(Todo todo, ListScope currentScope) {
     if (todo.expirationDate == null ||
         currentScope == ListScope.backlog ||
         currentScope == ListScope.daily) {
       return false;
     }
-    final activeLists = _lists.where((l) => l.scope.autoTransfer).toList();
+    final activeLists = listsWithAutotransfer;
     activeLists.sort((a, b) => a.compareTo(b));
 
     final indexOfListContainigTodo = activeLists.indexWhere(
@@ -103,6 +109,33 @@ class ListManager {
     return DateTime.now().isAfter(transferDate);
   }
 
+  /// Returns the count of todos in the given [list] that are either expired or due to be transferred tomorrow.
+  int toBeTransferredOrExpiredCount(TodoList list) {
+    int count = 0;
+    final now = DateTime.now();
+    for (var todo in list.todos) {
+      if (todo.expirationDate != null && now.isAfter(todo.expirationDate!) ||
+          toBeTransferredTomorrow(todo, list.scope)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /// Returns the number of expired [Todo]s in all active lists.
+  int get expiredTodosCount {
+    int count = 0;
+    final now = DateTime.now();
+    for (final list in listsWithAutotransfer) {
+      for (final todo in list.todos) {
+        if (todo.expirationDate != null && now.isAfter(todo.expirationDate!)) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
+
   int get listCount {
     return _lists.length;
   }
@@ -111,6 +144,14 @@ class ListManager {
     final lists = _lists.toList();
     lists.sort((a, b) => a.compareTo(b));
     return lists;
+  }
+
+  List<TodoList> get listsWithAutotransfer {
+    return _lists.where((l) => l.scope.isAutoTransfer).toList();
+  }
+
+  TodoList getListByScope(ListScope scope) {
+    return _lists.firstWhere((list) => list.scope == scope);
   }
 
   bool removeList(TodoList list) {
