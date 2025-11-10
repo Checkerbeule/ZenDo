@@ -8,12 +8,12 @@ enum ListScope {
   yearly('Jährlich', Icons.calendar_today, Duration(days: 365), true),
   backlog('Backlog', Icons.list_rounded, Duration.zero, false);
 
-  final String label;
+  final String label; //TODO use extension for multilanguage support on label
   final IconData icon;
   final Duration duration;
-  final bool autoTransfer;
+  final bool isAutoTransfer;
 
-  const ListScope(this.label, this.icon, this.duration, this.autoTransfer);
+  const ListScope(this.label, this.icon, this.duration, this.isAutoTransfer);
 }
 
 class ListScopeAdapter extends TypeAdapter<ListScope> {

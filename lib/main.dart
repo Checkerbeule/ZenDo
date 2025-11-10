@@ -7,7 +7,8 @@ import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/callback_dispatcher.dart';
 import 'package:zen_do/persistance/hive_initializer.dart';
 import 'package:zen_do/utils/time_util.dart';
-import 'package:zen_do/view/todo_page.dart';
+import 'package:zen_do/view/app_page.dart';
+import 'package:zen_do/view/todo/todo_page.dart';
 import 'package:zen_do/zen_do_lifecycle_listener.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -49,20 +50,16 @@ class ZenDoApp extends StatelessWidget {
 }
 
 class ZenDoAppState extends ChangeNotifier {
-  Map<String, (IconData icon, int messageCount)> pageData = {
-    'Listen': (Icons.view_list_outlined, 0),
-    'Habits': (Icons.track_changes, 1),
-    'Notizen': (Icons.edit_note, 5),
-  }; //TODO don't use fake message counts
+  Map<AppPage, int> pageMessages = {
+    AppPage.todos: 0,
+    AppPage.habits: 0,
+    AppPage.notes: 0,
+  };
 
-  void updateMessageCount(String title, int newCount) {
-    var page = pageData[title];
-    if (page == null) {
-      logger.w('Failed to update message count for unknown page: $title');
-      return;
-    }
-    if (page.$2 == newCount) return;
-    pageData[title] = (page.$1, newCount);
+  //TODO use this on every todo update (delete, restore, markAsDone)
+  void updateMessageCount(AppPage page, int newCount) {
+    if (pageMessages[page] == newCount) return;
+    pageMessages[page] = newCount;
     notifyListeners();
   }
 }
@@ -83,7 +80,9 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
       builder: (context, appState, child) {
         return Scaffold(
           appBar: AppBar(
-            title: Text('ZenDo ${appState.pageData.keys.elementAt(pageIndex)}'),
+            title: Text(
+              'ZenDo ${appState.pageMessages.keys.elementAt(pageIndex).label(context)}',
+            ),
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             actions: [
               IconButton(icon: Icon(Icons.settings), onPressed: () => {}),
@@ -92,12 +91,12 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
           body: IndexedStack(
             index: pageIndex,
             children: [
-              TodoPage(pageName: appState.pageData.keys.elementAt(0)),
+              TodoPage(),
               Center(
-                child: Text(appState.pageData.keys.elementAt(1)),
+                child: Text(AppPage.habits.label(context)),
               ), //TODO implement Habit Page
               Center(
-                child: Text(appState.pageData.keys.elementAt(2)),
+                child: Text(AppPage.notes.label(context)),
               ), //TODO implement notes Page
             ],
           ),
@@ -124,27 +123,27 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
               });
             },
             destinations: <Widget>[
-              for (var page in appState.pageData.entries)
+              for (var page in appState.pageMessages.entries)
                 NavigationDestination(
-                  icon: page.value.$2 > 0
+                  icon: page.value > 0
                       ? Badge(
                           backgroundColor: Theme.of(context).colorScheme.error,
-                          label: Text('${page.value.$2}'),
-                          child: Icon(page.value.$1),
+                          label: Text('${page.value}'),
+                          child: Icon(page.key.icon),
                         )
-                      : Icon(page.value.$1),
-                  label: page.key,
-                  selectedIcon: page.value.$2 > 0
+                      : Icon(page.key.icon),
+                  label: page.key.label(context),
+                  selectedIcon: page.value > 0
                       ? Badge(
                           backgroundColor: Theme.of(context).colorScheme.error,
-                          label: Text('${page.value.$2}'),
+                          label: Text('${page.value}'),
                           child: Icon(
-                            page.value.$1,
+                            page.key.icon,
                             color: Theme.of(context).colorScheme.primary,
                           ),
                         )
                       : Icon(
-                          page.value.$1,
+                          page.key.icon,
                           color: Theme.of(context).colorScheme.primary,
                         ),
                 ),

@@ -4,7 +4,7 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
-import 'package:zen_do/view/todo_page.dart';
+import 'package:zen_do/view/todo/todo_page.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -153,130 +153,119 @@ class _TodoListPageState extends State<TodoListPage> {
 }
 
 void _showAddToDoDialog(BuildContext context, TodoList list) async {
+  final todoState = context.read<TodoState>();
   String title = '';
   String description = '';
   await showDialog<bool>(
     context: context,
     builder: (BuildContext context) {
-      return Consumer<TodoState>(
-        builder: (context, todoState, child) {
-          return AlertDialog(
-            title: const Text('Neue Aufgabe hinzufügen'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  autofocus: true,
-                  decoration: const InputDecoration(hintText: 'Titel'),
-                  onChanged: (value) {
-                    title = value;
-                  },
-                ),
-                TextField(
-                  decoration: const InputDecoration(hintText: 'Beschreibung'),
-                  onChanged: (value) {
-                    description = value;
-                  },
-                ),
-              ],
+      return AlertDialog(
+        title: const Text('Neue Aufgabe hinzufügen'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Titel'),
+              onChanged: (value) {
+                title = value;
+              },
             ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                ),
-                child: const Text('Abbrechen'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.secondaryContainer,
-                ),
-                child: const Text('Ok'),
-                onPressed: () {
-                  if (title.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Der Titel darf nicht leer sein.'),
-                      ),
-                    );
-                    return;
-                  }
-                  bool added = todoState.performAcitionOnList<bool>(
-                    (list) => list.addTodo(Todo(title, description)),
-                    list.scope,
-                  );
-                  if (!added) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Eine Aufgabe mit diesem Titel existiert bereits.',
-                        ),
-                      ),
-                    );
-                    return;
-                  }
-                  Navigator.of(context).pop(true);
-                },
-              ),
-            ],
-          );
-        },
+            TextField(
+              decoration: const InputDecoration(hintText: 'Beschreibung'),
+              onChanged: (value) {
+                description = value;
+              },
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Abbrechen'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            ),
+            child: const Text('Ok'),
+            onPressed: () {
+              if (title.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Der Titel darf nicht leer sein.'),
+                  ),
+                );
+                return;
+              }
+              bool added = todoState.performAcitionOnList<bool>(
+                (list) => list.addTodo(Todo(title, description)),
+                list.scope,
+              );
+              if (!added) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Eine Aufgabe mit diesem Titel existiert bereits.',
+                    ),
+                  ),
+                );
+                return;
+              }
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
       );
     },
   );
 }
 
-void _showDeleteDialog(
-  BuildContext context,
-  TodoList list,
-  Todo todo,
-) async {
+void _showDeleteDialog(BuildContext context, TodoList list, Todo todo) async {
+  final todoState = context.read<TodoState>();
+
   await showDialog<bool>(
     context: context,
     builder: (BuildContext context) {
-      return Consumer<TodoState>(
-        builder: (context, todoState, child) {
-          return AlertDialog(
-            title: const Text('Aufgabe löschen ?'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text("Diese Aufgabe wirklich unwiederbringlich löschen?"),
-              ],
+      return AlertDialog(
+        title: const Text('Aufgabe löschen ?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Diese Aufgabe wirklich unwiederbringlich löschen?"),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
             ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                ),
-                child: const Text('Abbrechen'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                  backgroundColor: Theme.of(context).colorScheme.errorContainer,
-                ),
-                child: const Text('Ok'),
-                onPressed: () {
-                  todoState.performAcitionOnList<Null>(
-                    (list) => list.deleteTodo(todo),
-                    list.scope,
-                  );
-                  Navigator.of(context).pop(true);
-                },
-              ),
-            ],
-          );
-        },
+            child: const Text('Abbrechen'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
+            ),
+            child: const Text('Ok'),
+            onPressed: () {
+              todoState.performAcitionOnList<Null>(
+                (list) => list.deleteTodo(todo),
+                list.scope,
+              );
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
       );
     },
   );
