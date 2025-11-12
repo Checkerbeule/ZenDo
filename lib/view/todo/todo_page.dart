@@ -8,7 +8,7 @@ import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/persistance/persistence_helper.dart';
-import 'package:zen_do/view/app_page.dart';
+import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/loading_screen.dart';
 import 'package:zen_do/view/todo/todo_list_page.dart';
 
@@ -50,7 +50,7 @@ class TodoState extends ChangeNotifier {
       List<TodoList> loadedLists = await PersistenceHelper.loadAll();
       listManager = ListManager(loadedLists, activeScopes: scopes);
       appState.updateMessageCount(
-        AppPage.todos,
+        PageType.todos,
         listManager!.expiredTodosCount,
       );
     } catch (e, s) {
@@ -69,7 +69,7 @@ class TodoState extends ChangeNotifier {
       final list = listManager!.getListByScope(scope);
       result = action(list);
       appState.updateMessageCount(
-        AppPage.todos,
+        PageType.todos,
         listManager!.expiredTodosCount,
       );
       notifyListeners();

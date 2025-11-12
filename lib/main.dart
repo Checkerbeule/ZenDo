@@ -7,7 +7,7 @@ import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/callback_dispatcher.dart';
 import 'package:zen_do/persistance/hive_initializer.dart';
 import 'package:zen_do/utils/time_util.dart';
-import 'package:zen_do/view/app_page.dart';
+import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
 import 'package:zen_do/zen_do_lifecycle_listener.dart';
 
@@ -50,14 +50,14 @@ class ZenDoApp extends StatelessWidget {
 }
 
 class ZenDoAppState extends ChangeNotifier {
-  Map<AppPage, int> pageMessages = {
-    AppPage.todos: 0,
-    AppPage.habits: 0,
-    AppPage.notes: 0,
+  Map<PageType, int> pageMessages = {
+    PageType.todos: 0,
+    PageType.habits: 0,
+    PageType.notes: 0,
   };
 
   //TODO use this on every todo update (delete, restore, markAsDone)
-  void updateMessageCount(AppPage page, int newCount) {
+  void updateMessageCount(PageType page, int newCount) {
     if (pageMessages[page] == newCount) return;
     pageMessages[page] = newCount;
     notifyListeners();
@@ -93,10 +93,10 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             children: [
               TodoPage(),
               Center(
-                child: Text(AppPage.habits.label(context)),
+                child: Text(PageType.habits.label(context)),
               ), //TODO implement Habit Page
               Center(
-                child: Text(AppPage.notes.label(context)),
+                child: Text(PageType.notes.label(context)),
               ), //TODO implement notes Page
             ],
           ),
