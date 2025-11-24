@@ -20,6 +20,7 @@ class TodoListPage extends StatefulWidget {
 
 class _TodoListPageState extends State<TodoListPage> {
   bool expanded = false;
+  Offset tapPosition = Offset.zero;
 
   @override
   Widget build(BuildContext context) {
@@ -39,74 +40,15 @@ class _TodoListPageState extends State<TodoListPage> {
                 )
               else ...[
                 for (var todo in widget.list.todos)
-                  ListTile(
-                    leading: IconButton(
-                      onPressed: () => {
-                        todoState.performAcitionOnList<Null>(
-                          () => widget.list.markAsDone(todo),
-                        ),
-                      },
-                      icon: Icon(Icons.circle_outlined),
-                    ),
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        todo.description != null && todo.description!.isNotEmpty
-                            ? Flexible(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      todo.title,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      todo.description!,
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Flexible(
-                                child: Text(
-                                  todo.title,
-                                  textAlign: TextAlign.start,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                        if (listManager != null &&
-                            (listManager.toBeTransferredTomorrow(
-                                  todo,
-                                  widget.list.scope,
-                                ) ||
-                                (todo.expirationDate != null &&
-                                    todo.expirationDate!.isBefore(
-                                      DateTime.now(),
-                                    )))) ...[
-                          SizedBox(width: 5),
-                          Tooltip(
-                            message:
-                                'Fällig am ${formatDate(todo.expirationDate!)} !',
-                            child: Icon(
-                              Icons.access_time_rounded,
-                              color: Theme.of(context).colorScheme.error,
-                              size: 18,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                  GestureDetector(
+                    onTapDown: (tapDetails) {
+                      tapPosition = tapDetails.globalPosition;
+                    },
                     onTap: () async {
-                      final updatedTodo = await showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return TodoEditPage(todo: todo);
-                        },
+                      final updatedTodo = await _showTodoEditDialog(
+                        context,
+                        tapPosition,
+                        todo,
                       );
                       if (updatedTodo != null) {
                         todoState.performAcitionOnList<bool>(
@@ -114,11 +56,76 @@ class _TodoListPageState extends State<TodoListPage> {
                         );
                       }
                     },
-                    trailing: IconButton(
-                      onPressed: () =>
-                          _showDeleteDialog(context, widget.list, todo),
-                      icon: Icon(Icons.delete_forever),
-                      color: Theme.of(context).colorScheme.tertiary,
+                    child: ListTile(
+                      leading: IconButton(
+                        onPressed: () => {
+                          todoState.performAcitionOnList<Null>(
+                            () => widget.list.markAsDone(todo),
+                          ),
+                        },
+                        icon: Icon(Icons.circle_outlined),
+                      ),
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          todo.description != null &&
+                                  todo.description!.isNotEmpty
+                              ? Flexible(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        todo.title,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        todo.description!,
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Flexible(
+                                  child: Text(
+                                    todo.title,
+                                    textAlign: TextAlign.start,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                          if (listManager != null &&
+                              (listManager.toBeTransferredTomorrow(
+                                    todo,
+                                    widget.list.scope,
+                                  ) ||
+                                  (todo.expirationDate != null &&
+                                      todo.expirationDate!.isBefore(
+                                        DateTime.now(),
+                                      )))) ...[
+                            SizedBox(width: 5),
+                            Tooltip(
+                              message:
+                                  'Fällig am ${formatDate(todo.expirationDate!)} !',
+                              child: Icon(
+                                Icons.access_time_rounded,
+                                color: Theme.of(context).colorScheme.error,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      trailing: IconButton(
+                        onPressed: () =>
+                            _showDeleteDialog(context, widget.list, todo),
+                        icon: Icon(Icons.delete_forever),
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
                     ),
                   ),
               ],
@@ -276,6 +283,29 @@ void _showDeleteDialog(BuildContext context, TodoList list, Todo todo) async {
             },
           ),
         ],
+      );
+    },
+  );
+}
+
+Future<Todo?> _showTodoEditDialog(
+  BuildContext context,
+  Offset tapPosition,
+  Todo todo,
+) async {
+  return showGeneralDialog<Todo>(
+    context: context,
+    barrierDismissible: false,
+    pageBuilder: (context, anim1, anim2) {
+      return TodoEditPage(todo: todo);
+    },
+    barrierColor: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.5),
+    transitionDuration: Duration(milliseconds: 350),
+    transitionBuilder: (context, anim1, anim2, child) {
+      return Transform.scale(
+        scale: anim1.value,
+        //origin: tapPosition, //TODO calculate correct origin position
+        child: child,
       );
     },
   );
