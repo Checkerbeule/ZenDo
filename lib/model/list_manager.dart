@@ -70,7 +70,7 @@ class ListManager {
   }
 
   List<Todo> getTodosToTransfer(
-    Set<Todo> todosToTransfer,
+    List<Todo> todosToTransfer,
     ListScope scopeOfNextList,
   ) {
     return todosToTransfer.where((todo) {
@@ -122,6 +122,11 @@ class ListManager {
     return count;
   }
 
+  /// Checks wether an [Todo] allready exists with the given title in the list of the given [ListScope].
+  bool todoTitleAllreadyExists(String title, ListScope scopeOfList) {
+    return getListByScope(scopeOfList).todos.any((todo) => todo.title == title);
+  }
+
   /// Returns the number of expired [Todo]s in all active lists.
   int get expiredTodosCount {
     int count = 0;
@@ -144,6 +149,14 @@ class ListManager {
     final lists = _lists.toList();
     lists.sort((a, b) => a.compareTo(b));
     return lists;
+  }
+
+  List<ListScope> get allScopes {
+    List<ListScope> scopes = [];
+    for (final list in allLists) {
+      scopes.add(list.scope);
+    }
+    return scopes;
   }
 
   List<TodoList> get listsWithAutotransfer {

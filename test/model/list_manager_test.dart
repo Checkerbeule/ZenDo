@@ -117,8 +117,8 @@ void main() {
     group('ListManager getTodosToTransfer tests', () {
       test('ListManager getTodosToTransfer: from daily list', () {
         final dailyList = TodoList(ListScope.daily);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         dailyList.addTodo(todoToTransfer);
         dailyList.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -149,8 +149,8 @@ void main() {
 
       test('ListManager getTodosToTransfer: from weekly list', () {
         final weeklyList = TodoList(ListScope.weekly);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         weeklyList.addTodo(todoToTransfer);
         weeklyList.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -181,8 +181,8 @@ void main() {
 
       test('ListManager getTodosToTransfer: from montly list', () {
         final monthlyList = TodoList(ListScope.monthly);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         monthlyList.addTodo(todoToTransfer);
         monthlyList.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -215,8 +215,8 @@ void main() {
 
       test('ListManager getTodosToTransfer: from yearly list', () {
         final yearlyList = TodoList(ListScope.yearly);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         yearlyList.addTodo(todoToTransfer);
         yearlyList.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -252,8 +252,8 @@ void main() {
       test('ListManager transferTodos: from weekly to daily list', () {
         final transferFrom = TodoList(ListScope.weekly);
         final transferTo = TodoList(ListScope.daily);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -286,8 +286,8 @@ void main() {
       test('ListManager transferTodos: from monthly to weekly list', () {
         final transferFrom = TodoList(ListScope.monthly);
         final transferTo = TodoList(ListScope.weekly);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -320,8 +320,8 @@ void main() {
       test('ListManager transferTodos: from yearly to monthly list', () {
         final transferFrom = TodoList(ListScope.yearly);
         final transferTo = TodoList(ListScope.monthly);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -354,7 +354,7 @@ void main() {
       test('ListManager transferTodos: todo stays in list', () {
         final transferFrom = TodoList(ListScope.weekly);
         final transferTo = TodoList(ListScope.daily);
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         transferFrom.addTodo(todoNotToTransfer);
 
         var manager = ListManager([transferTo, transferFrom]);
@@ -369,7 +369,7 @@ void main() {
         () {
           final backlog = TodoList(ListScope.backlog);
           final transferTo = TodoList(ListScope.weekly);
-          final backlogTodo = Todo('do not transfer');
+          final backlogTodo = Todo(title: 'do not transfer');
           backlog.addTodo(backlogTodo);
 
           var manager = ListManager([transferTo, backlog]);
@@ -385,7 +385,7 @@ void main() {
         () {
           final weeklkyList = TodoList(ListScope.weekly);
           final dailyList = TodoList(ListScope.daily);
-          var expiredTodo = Todo('expired todo');
+          var expiredTodo = Todo(title: 'expired todo');
           dailyList.addTodo(expiredTodo);
           final now = DateTime.now();
           final expirationDate = DateTime(
@@ -414,7 +414,7 @@ void main() {
           final weeklyList = TodoList(ListScope.weekly);
           final monthlyList = TodoList(ListScope.monthly);
           final yearlyList = TodoList(ListScope.yearly);
-          var expiredTodo = Todo('expired todo');
+          var expiredTodo = Todo(title: 'expired todo');
           yearlyList.addTodo(expiredTodo);
           final now = DateTime.now();
           expiredTodo.expirationDate = DateTime(
@@ -448,7 +448,7 @@ void main() {
           final weeklyList = TodoList(ListScope.weekly);
           final monthlyList = TodoList(ListScope.monthly);
           final yearlyList = TodoList(ListScope.yearly);
-          var todoToTransfer = Todo('expires in 6 days');
+          var todoToTransfer = Todo(title: 'expires in 6 days');
           yearlyList.addTodo(todoToTransfer);
           final now = DateTime.now();
           todoToTransfer.expirationDate = DateTime(
@@ -479,7 +479,7 @@ void main() {
         final dailyList = TodoList(ListScope.daily);
         final weeklyList = TodoList(ListScope.weekly);
         final monthlyList = TodoList(ListScope.monthly);
-        var todoToTransfer = Todo('expired today');
+        var todoToTransfer = Todo(title: 'expired today');
         monthlyList.addTodo(todoToTransfer);
         final now = DateTime.now();
         todoToTransfer.expirationDate = DateTime(
@@ -509,8 +509,8 @@ void main() {
           final monthlyList = TodoList(ListScope.monthly);
           final yearlyList = TodoList(ListScope.yearly);
           final backlog = TodoList(ListScope.backlog);
-          final todo_1 = Todo('todo 1');
-          final todo_2 = Todo('todo 2');
+          final todo_1 = Todo(title: 'todo 1');
+          final todo_2 = Todo(title: 'todo 2');
           dailyList.addTodo(todo_1);
           dailyList.addTodo(todo_2);
           final now = DateTime.now();
@@ -554,8 +554,8 @@ void main() {
         final monthlyList = TodoList(ListScope.monthly);
         final yearlyList = TodoList(ListScope.yearly);
         final backlog = TodoList(ListScope.backlog);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         weeklyList.addTodo(todoToTransfer);
         weeklyList.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -599,8 +599,8 @@ void main() {
         final monthlyList = TodoList(ListScope.monthly);
         final yearlyList = TodoList(ListScope.yearly);
         final backlog = TodoList(ListScope.backlog);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         monthlyList.addTodo(todoToTransfer);
         monthlyList.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -644,8 +644,8 @@ void main() {
         final monthlyList = TodoList(ListScope.monthly);
         final yearlyList = TodoList(ListScope.yearly);
         final backlog = TodoList(ListScope.backlog);
-        final todoToTransfer = Todo('transfer');
-        final todoNotToTransfer = Todo('do not transfer');
+        final todoToTransfer = Todo(title: 'transfer');
+        final todoNotToTransfer = Todo(title: 'do not transfer');
         yearlyList.addTodo(todoToTransfer);
         yearlyList.addTodo(todoNotToTransfer);
         final now = DateTime.now();
@@ -691,8 +691,8 @@ void main() {
           final monthlyList = TodoList(ListScope.monthly);
           final yearlyList = TodoList(ListScope.yearly);
           final backlog = TodoList(ListScope.backlog);
-          final todo_1 = Todo('transfer');
-          final todo_2 = Todo('do not transfer');
+          final todo_1 = Todo(title: 'transfer');
+          final todo_2 = Todo(title: 'do not transfer');
           backlog.addTodo(todo_1);
           backlog.addTodo(todo_2);
           final now = DateTime.now();

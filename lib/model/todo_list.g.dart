@@ -19,7 +19,7 @@ class TodoListAdapter extends TypeAdapter<TodoList> {
     return TodoList(
       fields[0] as ListScope,
     )
-      ..todos = (fields[1] as List).cast<Todo>().toSet()
+      ..todos = (fields[1] as List).cast<Todo>()
       ..doneTodos = (fields[2] as List).cast<Todo>();
   }
 
@@ -30,7 +30,7 @@ class TodoListAdapter extends TypeAdapter<TodoList> {
       ..writeByte(0)
       ..write(obj.scope)
       ..writeByte(1)
-      ..write(obj.todos.toList())
+      ..write(obj.todos)
       ..writeByte(2)
       ..write(obj.doneTodos);
   }

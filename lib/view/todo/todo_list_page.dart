@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/utils/time_util.dart';
+import 'package:zen_do/view/todo/todo_edit_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -27,7 +28,7 @@ class _TodoListPageState extends State<TodoListPage> {
         final listManager = todoState.listManager;
         return Scaffold(
           body: ListView(
-            shrinkWrap: true,
+            //shrinkWrap: true, //TODO needed?
             children: [
               if (widget.list.todos.isEmpty)
                 ListTile(
@@ -42,8 +43,7 @@ class _TodoListPageState extends State<TodoListPage> {
                     leading: IconButton(
                       onPressed: () => {
                         todoState.performAcitionOnList<Null>(
-                          (list) => list.markAsDone(todo),
-                          widget.list.scope,
+                          () => widget.list.markAsDone(todo),
                         ),
                       },
                       icon: Icon(Icons.circle_outlined),
@@ -84,13 +84,14 @@ class _TodoListPageState extends State<TodoListPage> {
                                   todo,
                                   widget.list.scope,
                                 ) ||
-                                todo.expirationDate!.isBefore(
-                                  DateTime.now(),
-                                ))) ...[
+                                (todo.expirationDate != null &&
+                                    todo.expirationDate!.isBefore(
+                                      DateTime.now(),
+                                    )))) ...[
                           SizedBox(width: 5),
                           Tooltip(
                             message:
-                                'Fällig am ${DateFormat('dd.MM.yyyy').format(todo.expirationDate!)} !',
+                                'Fällig am ${formatDate(todo.expirationDate!)} !',
                             child: Icon(
                               Icons.access_time_rounded,
                               color: Theme.of(context).colorScheme.error,
@@ -100,6 +101,19 @@ class _TodoListPageState extends State<TodoListPage> {
                         ],
                       ],
                     ),
+                    onTap: () async {
+                      final updatedTodo = await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return TodoEditPage(todo: todo);
+                        },
+                      );
+                      if (updatedTodo != null) {
+                        todoState.performAcitionOnList<bool>(
+                          () => widget.list.replaceTodo(todo, updatedTodo),
+                        );
+                      }
+                    },
                     trailing: IconButton(
                       onPressed: () =>
                           _showDeleteDialog(context, widget.list, todo),
@@ -119,8 +133,7 @@ class _TodoListPageState extends State<TodoListPage> {
                     ListTile(
                       leading: IconButton(
                         onPressed: () => todoState.performAcitionOnList<bool>(
-                          (list) => list.restoreTodo(todo),
-                          widget.list.scope,
+                          () => widget.list.restoreTodo(todo),
                         ),
                         icon: Icon(Icons.check_circle),
                         color: Theme.of(context).primaryColor,
@@ -156,7 +169,7 @@ void _showAddToDoDialog(BuildContext context, TodoList list) async {
   final todoState = context.read<TodoState>();
   String title = '';
   String description = '';
-  await showDialog<bool>(
+  await showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -205,8 +218,8 @@ void _showAddToDoDialog(BuildContext context, TodoList list) async {
                 return;
               }
               bool added = todoState.performAcitionOnList<bool>(
-                (list) => list.addTodo(Todo(title, description)),
-                list.scope,
+                () =>
+                    list.addTodo(Todo(title: title, description: description)),
               );
               if (!added) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -230,7 +243,7 @@ void _showAddToDoDialog(BuildContext context, TodoList list) async {
 void _showDeleteDialog(BuildContext context, TodoList list, Todo todo) async {
   final todoState = context.read<TodoState>();
 
-  await showDialog<bool>(
+  await showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -258,10 +271,7 @@ void _showDeleteDialog(BuildContext context, TodoList list, Todo todo) async {
             ),
             child: const Text('Ok'),
             onPressed: () {
-              todoState.performAcitionOnList<Null>(
-                (list) => list.deleteTodo(todo),
-                list.scope,
-              );
+              todoState.performAcitionOnList<Null>(() => list.deleteTodo(todo));
               Navigator.of(context).pop(true);
             },
           ),

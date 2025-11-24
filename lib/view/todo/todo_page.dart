@@ -63,15 +63,17 @@ class TodoState extends ChangeNotifier {
     }
   }
 
-  T performAcitionOnList<T>(Function(TodoList) action, ListScope scope) {
+  T performAcitionOnList<T>(Function() action) {
     T result;
     if (listManager != null) {
-      final list = listManager!.getListByScope(scope);
-      result = action(list);
+      result = action();
       appState.updateMessageCount(
         PageType.todos,
         listManager!.expiredTodosCount,
       );
+      if (T is bool && result == false) {
+        return false as T;
+      }
       notifyListeners();
     } else if (T is bool) {
       result = false as T;

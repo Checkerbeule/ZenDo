@@ -13,7 +13,7 @@ class TodoList implements Comparable<TodoList> {
   final ListScope scope;
 
   @HiveField(1)
-  Set<Todo> todos = {};
+  List<Todo> todos = [];
 
   @HiveField(2)
   List<Todo> doneTodos = [];
@@ -23,23 +23,29 @@ class TodoList implements Comparable<TodoList> {
   /// Adds the [todo] to the list.
   /// Calculates the expirationDate based on the ListScope.
   /// Uses [PersistenceHelper] to store the list with the added [todo]
+  /// Returns true if the new [Todo] was successfully added.
+  /// Returns false if there allready exists a [Todo] with same title.
   bool addTodo(Todo todo) {
-    final bool added = todos.add(todo);
-    if (added) {
+    if (!todos.any((elem) => elem.title == todo.title)) {
+      todos.add(todo);
       _setExpirationDate(todo);
+      todo.listScope = scope;
       unawaited(PersistenceHelper.saveList(this));
+      return true;
     }
-    return added;
+    return false;
   }
 
   /// Use this method to transferExpiredTodos with the [ListManager].
   /// Adds all [todosToAdd] to the list.
-  /// Does not calculate the expirationDate.
+  /// Does NOT calculate the expirationDate.
   /// Uses [PersistenceHelper] to store the list with the added [todosToAdd].
   List<Todo> addAll(Iterable<Todo> todosToAdd) {
     List<Todo> addedTodos = [];
     for (final todo in todosToAdd) {
-      if (todos.add(todo)) {
+      if (!todos.any((elem) => elem.title == todo.title)) {
+        todos.add(todo);
+        todo.listScope = scope;
         addedTodos.add(todo);
       }
     }
@@ -58,7 +64,9 @@ class TodoList implements Comparable<TodoList> {
 
   void deleteAll(Iterable<Todo> todosToDelete) {
     final int initialLength = todos.length;
-    todos.removeAll(todosToDelete);
+    for (final todo in todosToDelete) {
+      todos.remove(todo);
+    }
     if (initialLength != todos.length) {
       unawaited(PersistenceHelper.saveList(this));
     }
@@ -74,13 +82,30 @@ class TodoList implements Comparable<TodoList> {
   }
 
   bool restoreTodo(Todo todo) {
-    bool inserted = todos.add(todo);
-    if (inserted) {
+    bool isRestored = !todos.any((elem) => elem.title == todo.title);
+    if (isRestored) {
+      todos.add(todo);
       doneTodos.remove(todo);
       todo.completionDate = null;
       unawaited(PersistenceHelper.saveList(this));
     }
-    return inserted;
+    return isRestored;
+  }
+
+  /// Updates a [Todo] by replacing the [oldTodo] with [newTodo].
+  /// Returns true if replacement was successful, otherwise false.
+  bool replaceTodo(Todo oldTodo, Todo newTodo) {
+    if (todos.contains(oldTodo) &&
+        oldTodo != newTodo &&
+        !todos.any((todo) => todo != oldTodo && todo.title == newTodo.title)) {
+      final index = todos.indexOf(oldTodo);
+      todos[index] = newTodo;
+
+      unawaited(PersistenceHelper.saveList(this));
+      return true;
+    }
+
+    return false;
   }
 
   int get doneCount {

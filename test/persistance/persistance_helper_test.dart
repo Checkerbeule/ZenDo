@@ -52,7 +52,7 @@ void main() {
       final list = TodoList(scope);
       final title = 'test todo';
       final description = 'test description';
-      final todo = Todo(title, description);
+      final todo = Todo(title: title, description: description);
       list.addTodo(todo);
 
       await PersistenceHelper.saveList(list);
@@ -68,12 +68,12 @@ void main() {
       final scope = ListScope.daily;
       final list = TodoList(scope);
 
-      final initialTodo = Todo('initial todo');
+      final initialTodo = Todo(title: 'initial todo');
       list.addTodo(initialTodo);
       await PersistenceHelper.saveList(list);
 
       final updatedTitle = 'updated';
-      final updatedTodo = Todo(updatedTitle);
+      final updatedTodo = Todo(title: updatedTitle);
       list.deleteTodo(initialTodo);
       list.addTodo(updatedTodo);
       await PersistenceHelper.saveList(list);

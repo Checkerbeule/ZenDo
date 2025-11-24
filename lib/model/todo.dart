@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:zen_do/model/list_scope.dart';
 
 part 'todo.g.dart';
 
@@ -19,7 +20,45 @@ class Todo {
   @HiveField(4)
   DateTime? completionDate;
 
-  Todo(this.title, [this.description]) : creationDate = DateTime.now();
+  @HiveField(5)
+  ListScope? listScope;
+
+  Todo({required this.title, this.description}) : creationDate = DateTime.now();
+
+  Todo._internal({
+    required this.title,
+    this.description,
+    required this.creationDate,
+    this.expirationDate,
+    this.completionDate,
+    this.listScope,
+  });
+
+  Todo copyWith({
+    String? title,
+    String? description,
+    DateTime? creationDate,
+    DateTime? expirationDate,
+    DateTime? completionDate,
+    ListScope? listScope,
+  }) {
+    return Todo._internal(
+      title: title ?? this.title,
+      description: description ?? this.description,
+      creationDate: creationDate ?? this.creationDate,
+      expirationDate: expirationDate ?? this.expirationDate,
+      completionDate: completionDate ?? this.completionDate,
+      listScope: listScope ?? this.listScope,
+    );
+  }
+
+  Todo.copy(Todo other)
+    : title = other.title,
+      description = other.description,
+      creationDate = other.creationDate,
+      expirationDate = other.expirationDate,
+      completionDate = other.completionDate,
+      listScope = other.listScope;
 
   bool get isExpired {
     if (expirationDate == null) {
@@ -30,12 +69,24 @@ class Todo {
   }
 
   @override
-  operator ==(Object other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
-    return other is Todo && other.title == title;
+    return other is Todo &&
+        other.title == title &&
+        other.description == description &&
+        other.creationDate == creationDate &&
+        other.expirationDate == expirationDate &&
+        other.completionDate == completionDate &&
+        other.listScope == listScope;
   }
 
   @override
-  int get hashCode => title.hashCode;
+  int get hashCode => Object.hash(
+        title,
+        description,
+        creationDate,
+        expirationDate,
+        completionDate,
+        listScope,
+      );
 }
