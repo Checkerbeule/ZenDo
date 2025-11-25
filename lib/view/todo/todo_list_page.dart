@@ -4,9 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
+import 'package:zen_do/view/dialog_helper.dart';
 import 'package:zen_do/view/todo/todo_edit_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
-import 'package:zen_do/view/dialog_helper.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -46,11 +46,13 @@ class _TodoListPageState extends State<TodoListPage> {
                       tapPosition = tapDetails.globalPosition;
                     },
                     onTap: () async {
-                      final updatedTodo = await showDialogWithScaleTransition<Todo>(
-                        context,
-                        tapPosition,
-                        TodoEditPage(todo: todo),
-                      );
+                      final updatedTodo =
+                          await showDialogWithScaleTransition<Todo>(
+                            context: context,
+                            //tapPosition: tapPosition, not used at the moment
+                            child: TodoEditPage(todo: todo),
+                            barrierDismissable: false,
+                          );
                       if (updatedTodo != null) {
                         todoState.performAcitionOnList<bool>(
                           () => widget.list.replaceTodo(todo, updatedTodo),
@@ -122,8 +124,22 @@ class _TodoListPageState extends State<TodoListPage> {
                         ],
                       ),
                       trailing: IconButton(
-                        onPressed: () =>
-                            _showDeleteDialog(context, widget.list, todo),
+                        onPressed: () async {
+                          final delete = await showDialogWithScaleTransition<bool>(
+                            context: context,
+                            child: DeleteDialog(
+                              title: 'Aufgabe löschen ?',
+                              text:
+                                  'Diese Aufgabe wirklich unwiederbringlich löschen?',
+                            ),
+                          );
+                          if (delete != null && delete) {
+                            todoState.performAcitionOnList<Null>(
+                              () => widget.list.deleteTodo(todo),
+                            );
+                          }
+                        },
+                        //_showDeleteDialog(context, widget.list, todo),
                         icon: Icon(Icons.delete_forever),
                         color: Theme.of(context).colorScheme.tertiary,
                       ),
@@ -239,47 +255,6 @@ void _showAddToDoDialog(BuildContext context, TodoList list) async {
                 );
                 return;
               }
-              Navigator.of(context).pop(true);
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
-void _showDeleteDialog(BuildContext context, TodoList list, Todo todo) async {
-  final todoState = context.read<TodoState>();
-
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Aufgabe löschen ?'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("Diese Aufgabe wirklich unwiederbringlich löschen?"),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-            ),
-            child: const Text('Abbrechen'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-              backgroundColor: Theme.of(context).colorScheme.errorContainer,
-            ),
-            child: const Text('Ok'),
-            onPressed: () {
-              todoState.performAcitionOnList<Null>(() => list.deleteTodo(todo));
               Navigator.of(context).pop(true);
             },
           ),
