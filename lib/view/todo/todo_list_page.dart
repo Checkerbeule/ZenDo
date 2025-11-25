@@ -6,6 +6,7 @@ import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/todo/todo_edit_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
+import 'package:zen_do/view/dialog_helper.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -40,15 +41,15 @@ class _TodoListPageState extends State<TodoListPage> {
                 )
               else ...[
                 for (var todo in widget.list.todos)
-                  GestureDetector(
+                  InkWell(
                     onTapDown: (tapDetails) {
                       tapPosition = tapDetails.globalPosition;
                     },
                     onTap: () async {
-                      final updatedTodo = await _showTodoEditDialog(
+                      final updatedTodo = await showDialogWithScaleTransition<Todo>(
                         context,
                         tapPosition,
-                        todo,
+                        TodoEditPage(todo: todo),
                       );
                       if (updatedTodo != null) {
                         todoState.performAcitionOnList<bool>(
@@ -283,29 +284,6 @@ void _showDeleteDialog(BuildContext context, TodoList list, Todo todo) async {
             },
           ),
         ],
-      );
-    },
-  );
-}
-
-Future<Todo?> _showTodoEditDialog(
-  BuildContext context,
-  Offset tapPosition,
-  Todo todo,
-) async {
-  return showGeneralDialog<Todo>(
-    context: context,
-    barrierDismissible: false,
-    pageBuilder: (context, anim1, anim2) {
-      return TodoEditPage(todo: todo);
-    },
-    barrierColor: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.5),
-    transitionDuration: Duration(milliseconds: 350),
-    transitionBuilder: (context, anim1, anim2, child) {
-      return Transform.scale(
-        scale: anim1.value,
-        //origin: tapPosition, //TODO calculate correct origin position
-        child: child,
       );
     },
   );
