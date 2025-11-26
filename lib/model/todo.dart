@@ -6,7 +6,15 @@ part 'todo.g.dart';
 @HiveType(typeId: 0)
 class Todo {
   @HiveField(0)
-  String title;
+  late String _title;
+
+  String get title => _title;
+  set title(String title) {
+    if (title.isEmpty) {
+      throw ArgumentError('title must not be empty!');
+    }
+    _title = title.trim();
+  }
 
   @HiveField(1)
   String? description;
@@ -23,16 +31,21 @@ class Todo {
   @HiveField(5)
   ListScope? listScope;
 
-  Todo({required this.title, this.description}) : creationDate = DateTime.now();
+  Todo({required String title, this.description})
+    : creationDate = DateTime.now() {
+    this.title = title;
+  }
 
   Todo._internal({
-    required this.title,
+    required String title,
     this.description,
     required this.creationDate,
     this.expirationDate,
     this.completionDate,
     this.listScope,
-  });
+  }) {
+    this.title = title;
+  }
 
   Todo copyWith({
     String? title,
@@ -53,12 +66,13 @@ class Todo {
   }
 
   Todo.copy(Todo other)
-    : title = other.title,
-      description = other.description,
+    : description = other.description,
       creationDate = other.creationDate,
       expirationDate = other.expirationDate,
       completionDate = other.completionDate,
-      listScope = other.listScope;
+      listScope = other.listScope {
+    title = other.title;
+  }
 
   bool get isExpired {
     if (expirationDate == null) {
@@ -82,11 +96,11 @@ class Todo {
 
   @override
   int get hashCode => Object.hash(
-        title,
-        description,
-        creationDate,
-        expirationDate,
-        completionDate,
-        listScope,
-      );
+    title,
+    description,
+    creationDate,
+    expirationDate,
+    completionDate,
+    listScope,
+  );
 }

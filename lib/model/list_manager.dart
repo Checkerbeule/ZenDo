@@ -44,7 +44,6 @@ class ListManager {
   void transferTodos() {
     // use only lists with enabled autotransfer
     final activeLists = listsWithAutotransfer;
-    activeLists.sort((a, b) => a.compareTo(b));
 
     if (activeLists.length > 1) {
       for (int i = activeLists.length - 1; i > 0; i--) {
@@ -85,26 +84,23 @@ class ListManager {
   }
 
   /// Returns true if the given [todo] in the list of the given [currentScope] due to be transferred tomorrow.
-  /// Returns false if the given [currentScope] is [ListScope.backlog] or [ListScope.daily] or if the [todo] has no expiration date.
-  bool toBeTransferredTomorrow(Todo todo, ListScope currentScope) {
+  /// Returns false if the given [todo] is located in [ListScope.backlog] or [ListScope.daily],
+  ///  the [todo] has no expiration date or the [todo] has no listScope.
+  bool toBeTransferredTomorrow(Todo todo) {
     if (todo.expirationDate == null ||
-        currentScope == ListScope.backlog ||
-        currentScope == ListScope.daily) {
+        todo.listScope == null ||
+        todo.listScope == ListScope.backlog ||
+        todo.listScope == ListScope.daily) {
       return false;
     }
-    final activeLists = listsWithAutotransfer;
-    activeLists.sort((a, b) => a.compareTo(b));
 
-    final indexOfListContainigTodo = activeLists.indexWhere(
-      (l) => l.scope == currentScope,
-    );
-    if (indexOfListContainigTodo < 1) {
+    final indexOfListContainigTodo = getIndexOfList(todo.listScope!);
+    if (indexOfListContainigTodo <= 0) {
       return false;
     }
-    final scopeDurationToSubtract =
-        activeLists[indexOfListContainigTodo - 1].scope;
+    final scopeToSubtract = allLists[indexOfListContainigTodo - 1].scope;
     final transferDate = todo.expirationDate!.subtract(
-      scopeDurationToSubtract.duration,
+      scopeToSubtract.duration,
     );
     return DateTime.now().isAfter(transferDate);
   }
@@ -115,16 +111,97 @@ class ListManager {
     final now = DateTime.now();
     for (var todo in list.todos) {
       if (todo.expirationDate != null && now.isAfter(todo.expirationDate!) ||
-          toBeTransferredTomorrow(todo, list.scope)) {
+          toBeTransferredTomorrow(todo)) {
         count++;
       }
     }
     return count;
   }
 
-  /// Checks wether an [Todo] allready exists with the given title in the list of the given [ListScope].
+  TodoList? getPreviousList(ListScope scope) {
+    final indexOfCurrentList = getIndexOfList(scope);
+    if (indexOfCurrentList < 0 || indexOfCurrentList + 1 >= _lists.length) {
+      return null;
+    }
+    return allLists.elementAt(indexOfCurrentList + 1);
+  }
+
+  TodoList? getNextList(ListScope scope) {
+    final indexOfCurrentList = getIndexOfList(scope);
+    if (indexOfCurrentList <= 0) {
+      return null;
+    }
+    return allLists.elementAt(indexOfCurrentList - 1);
+  }
+
+  bool moveToNextList(Todo todo) {
+    if (todo.listScope == null) {
+      return false;
+    }
+    final nextList = getNextList(todo.listScope!);
+    if (nextList == null) {
+      return false;
+    }
+    return moveToOtherList(todo, nextList.scope);
+  }
+
+  bool moveToPreviousList(Todo todo) {
+    if (todo.listScope == null) {
+      return false;
+    }
+    final nextList = getPreviousList(todo.listScope!);
+    if (nextList == null) {
+      return false;
+    }
+    return moveToOtherList(todo, nextList.scope);
+  }
+
+  /// Moves the given [todo] from its containing list, to another [destination] list
+  bool moveToOtherList(Todo todo, ListScope destination) {
+    String errorMessage =
+        '[ListManager] Shift of todo ${todo.title} not possible!';
+    bool isDeleted = false;
+    bool isAdded = false;
+
+    // do some pre-checks
+    if (!allScopes.contains(destination)) {
+      logger.i(
+        '$errorMessage The destination list with the given scope ${destination.name} does not exist!',
+      );
+      return false;
+    }
+    if (todoTitleAllreadyExists(todo.title, destination)) {
+      logger.i(
+        '$errorMessage The todo allready exists in the destinatin list $destination!',
+      );
+      return false;
+    }
+    if (todo.listScope == null) {
+      logger.i('$errorMessage The given todo does not have a containing list!');
+      return false;
+    }
+
+    isDeleted = getListByScope(todo.listScope!).deleteTodo(todo);
+    if (isDeleted) {
+      isAdded = getListByScope(destination).addTodo(todo);
+      if (!isAdded) {
+        //revert if add to destination not possible
+        getListByScope(todo.listScope!).addTodo(todo);
+        logger.i(
+          '$errorMessage The given todo could not be added to the destinatin list $destination!',
+        );
+      }
+    } else {
+      logger.i(
+        '$errorMessage The given todo could not be deletet from the containing list!',
+      );
+    }
+    return isAdded && isDeleted;
+  }
+
+  /// Checks wether a [Todo] allready exists with the given title in the list of the given [ListScope].
   bool todoTitleAllreadyExists(String title, ListScope scopeOfList) {
-    return getListByScope(scopeOfList).todos.any((todo) => todo.title == title);
+    return getListByScope(scopeOfList).isTodoTitleVacant(title);
   }
 
   /// Returns the number of expired [Todo]s in all active lists.
@@ -160,7 +237,11 @@ class ListManager {
   }
 
   List<TodoList> get listsWithAutotransfer {
-    return _lists.where((l) => l.scope.isAutoTransfer).toList();
+    return allLists.where((l) => l.scope.isAutoTransfer).toList();
+  }
+
+  int getIndexOfList(ListScope scope) {
+    return allLists.indexWhere((l) => l.scope == scope);
   }
 
   TodoList getListByScope(ListScope scope) {

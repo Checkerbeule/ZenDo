@@ -538,11 +538,11 @@ void main() {
             backlog,
           ]);
           expect(
-            manager.toBeTransferredTomorrow(todo_1, ListScope.daily),
+            manager.toBeTransferredTomorrow(todo_1),
             false,
           );
           expect(
-            manager.toBeTransferredTomorrow(todo_2, ListScope.daily),
+            manager.toBeTransferredTomorrow(todo_2),
             false,
           );
         },
@@ -584,11 +584,11 @@ void main() {
         ]);
 
         expect(
-          manager.toBeTransferredTomorrow(todoToTransfer, ListScope.weekly),
+          manager.toBeTransferredTomorrow(todoToTransfer),
           true,
         );
         expect(
-          manager.toBeTransferredTomorrow(todoNotToTransfer, ListScope.weekly),
+          manager.toBeTransferredTomorrow(todoNotToTransfer),
           false,
         );
       });
@@ -629,11 +629,11 @@ void main() {
         ]);
 
         expect(
-          manager.toBeTransferredTomorrow(todoToTransfer, ListScope.monthly),
+          manager.toBeTransferredTomorrow(todoToTransfer),
           true,
         );
         expect(
-          manager.toBeTransferredTomorrow(todoNotToTransfer, ListScope.monthly),
+          manager.toBeTransferredTomorrow(todoNotToTransfer),
           false,
         );
       });
@@ -674,11 +674,11 @@ void main() {
         ]);
 
         expect(
-          manager.toBeTransferredTomorrow(todoToTransfer, ListScope.yearly),
+          manager.toBeTransferredTomorrow(todoToTransfer),
           true,
         );
         expect(
-          manager.toBeTransferredTomorrow(todoNotToTransfer, ListScope.yearly),
+          manager.toBeTransferredTomorrow(todoNotToTransfer),
           false,
         );
       });
@@ -721,11 +721,11 @@ void main() {
           ]);
 
           expect(
-            manager.toBeTransferredTomorrow(todo_1, ListScope.backlog),
+            manager.toBeTransferredTomorrow(todo_1),
             false,
           );
           expect(
-            manager.toBeTransferredTomorrow(todo_2, ListScope.backlog),
+            manager.toBeTransferredTomorrow(todo_2),
             false,
           );
         },

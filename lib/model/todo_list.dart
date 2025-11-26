@@ -18,6 +18,7 @@ class TodoList implements Comparable<TodoList> {
   @HiveField(2)
   List<Todo> doneTodos = [];
 
+  @HiveField(3)
   TodoList(this.scope);
 
   /// Adds the [todo] to the list.
@@ -26,7 +27,7 @@ class TodoList implements Comparable<TodoList> {
   /// Returns true if the new [Todo] was successfully added.
   /// Returns false if there allready exists a [Todo] with same title.
   bool addTodo(Todo todo) {
-    if (!todos.any((elem) => elem.title == todo.title)) {
+    if (isTodoTitleVacant(todo.title)) {
       todos.add(todo);
       _setExpirationDate(todo);
       todo.listScope = scope;
@@ -43,7 +44,7 @@ class TodoList implements Comparable<TodoList> {
   List<Todo> addAll(Iterable<Todo> todosToAdd) {
     List<Todo> addedTodos = [];
     for (final todo in todosToAdd) {
-      if (!todos.any((elem) => elem.title == todo.title)) {
+      if (isTodoTitleVacant(todo.title)) {
         todos.add(todo);
         todo.listScope = scope;
         addedTodos.add(todo);
@@ -55,11 +56,12 @@ class TodoList implements Comparable<TodoList> {
     return addedTodos;
   }
 
-  void deleteTodo(Todo todo) {
+  bool deleteTodo(Todo todo) {
     final bool deleted = todos.remove(todo);
     if (deleted) {
       unawaited(PersistenceHelper.saveList(this));
     }
+    return deleted;
   }
 
   void deleteAll(Iterable<Todo> todosToDelete) {
@@ -82,30 +84,33 @@ class TodoList implements Comparable<TodoList> {
   }
 
   bool restoreTodo(Todo todo) {
-    bool isRestored = !todos.any((elem) => elem.title == todo.title);
-    if (isRestored) {
+    bool isRestorable = isTodoTitleVacant(todo.title);
+    if (isRestorable) {
       todos.add(todo);
       doneTodos.remove(todo);
       todo.completionDate = null;
       unawaited(PersistenceHelper.saveList(this));
     }
-    return isRestored;
+    return isRestorable;
   }
 
   /// Updates a [Todo] by replacing the [oldTodo] with [newTodo].
   /// Returns true if replacement was successful, otherwise false.
   bool replaceTodo(Todo oldTodo, Todo newTodo) {
-    if (todos.contains(oldTodo) &&
-        oldTodo != newTodo &&
-        !todos.any((todo) => todo != oldTodo && todo.title == newTodo.title)) {
-      final index = todos.indexOf(oldTodo);
-      todos[index] = newTodo;
-
-      unawaited(PersistenceHelper.saveList(this));
-      return true;
+    bool isReplaced = false;
+    if (todos.contains(oldTodo) && oldTodo != newTodo) {
+      final indexOfOldTodo = todos.indexOf(oldTodo);
+      if (isTodoTitleVacant(newTodo.title)) {
+        todos[indexOfOldTodo] = newTodo;
+        isReplaced = true;
+      } else {
+        todos[indexOfOldTodo] = oldTodo;
+      }
+      if (isReplaced) {
+        unawaited(PersistenceHelper.saveList(this));
+      }
     }
-
-    return false;
+    return isReplaced;
   }
 
   int get doneCount {
@@ -121,6 +126,14 @@ class TodoList implements Comparable<TodoList> {
         now.day,
       ).add(scope.duration);
     }
+  }
+
+  /// Checks wether a [Todo] allready exists with the given [title].
+  /// Returns true if the given [title] is not yet used, otherwise false.
+  bool isTodoTitleVacant(String title) {
+    return !todos.any(
+      (todo) => todo.title.toLowerCase() == title.trim().toLowerCase(),
+    );
   }
 
   @override

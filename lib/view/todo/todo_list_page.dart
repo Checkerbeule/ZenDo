@@ -102,10 +102,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                   ),
                                 ),
                           if (listManager != null &&
-                              (listManager.toBeTransferredTomorrow(
-                                    todo,
-                                    widget.list.scope,
-                                  ) ||
+                              (listManager.toBeTransferredTomorrow(todo) ||
                                   (todo.expirationDate != null &&
                                       todo.expirationDate!.isBefore(
                                         DateTime.now(),
