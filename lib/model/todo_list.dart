@@ -131,9 +131,7 @@ class TodoList implements Comparable<TodoList> {
   /// Checks wether a [Todo] allready exists with the given [title].
   /// Returns true if the given [title] is not yet used, otherwise false.
   bool isTodoTitleVacant(String title) {
-    return !todos.any(
-      (todo) => todo.title.toLowerCase() == title.trim().toLowerCase(),
-    );
+    return !todos.any((todo) => todo.title == title.trim());
   }
 
   @override

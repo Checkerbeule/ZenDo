@@ -170,7 +170,7 @@ class ListManager {
       );
       return false;
     }
-    if (todoTitleAllreadyExists(todo.title, destination)) {
+    if (!isTodoTitleVacant(todo.title, destination)) {
       logger.i(
         '$errorMessage The todo allready exists in the destinatin list $destination!',
       );
@@ -181,12 +181,12 @@ class ListManager {
       return false;
     }
 
-    isDeleted = getListByScope(todo.listScope!).deleteTodo(todo);
+    isDeleted = getListByScope(todo.listScope!)!.deleteTodo(todo);
     if (isDeleted) {
-      isAdded = getListByScope(destination).addTodo(todo);
+      isAdded = getListByScope(destination)!.addTodo(todo);
       if (!isAdded) {
         //revert if add to destination not possible
-        getListByScope(todo.listScope!).addTodo(todo);
+        getListByScope(todo.listScope!)!.addTodo(todo);
         logger.i(
           '$errorMessage The given todo could not be added to the destinatin list $destination!',
         );
@@ -200,8 +200,12 @@ class ListManager {
   }
 
   /// Checks wether a [Todo] allready exists with the given title in the list of the given [ListScope].
-  bool todoTitleAllreadyExists(String title, ListScope scopeOfList) {
-    return getListByScope(scopeOfList).isTodoTitleVacant(title);
+  bool isTodoTitleVacant(String title, ListScope scopeOfList) {
+    final listOfScope = getListByScope(scopeOfList);
+    if(listOfScope == null) {
+      return false;
+    }
+    return listOfScope.isTodoTitleVacant(title);
   }
 
   /// Returns the number of expired [Todo]s in all active lists.
@@ -244,8 +248,14 @@ class ListManager {
     return allLists.indexWhere((l) => l.scope == scope);
   }
 
-  TodoList getListByScope(ListScope scope) {
-    return _lists.firstWhere((list) => list.scope == scope);
+  TodoList? getListByScope(ListScope scope) {
+    TodoList? list;
+    try {
+      list = _lists.firstWhere((list) => list.scope == scope);
+    } catch (e) {
+      logger.i('[ListManager] List of scope $scope dos not exist!');
+    }
+    return list;
   }
 
   bool removeList(TodoList list) {
