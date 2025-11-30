@@ -50,12 +50,25 @@ class _TodoListPageState extends State<TodoListPage> {
                           await showDialogWithScaleTransition<Todo>(
                             context: context,
                             //tapPosition: tapPosition, not used at the moment
-                            child: TodoEditPage(todo: todo),
+                            child: TodoEditPage(
+                              todo: todo,
+                              todoState: todoState,
+                            ),
                             barrierDismissable: false,
                           );
                       if (updatedTodo != null) {
+                        if (updatedTodo.listScope != todo.listScope) {
+                          todoState.performAcitionOnList(() {
+                            listManager!.moveToOtherList(
+                              todo,
+                              updatedTodo.listScope!,
+                            );
+                          });
+                        }
                         todoState.performAcitionOnList<bool>(
-                          () => widget.list.replaceTodo(todo, updatedTodo),
+                          () => listManager!
+                              .getListByScope(updatedTodo.listScope!)!
+                              .replaceTodo(todo, updatedTodo),
                         );
                       }
                     },

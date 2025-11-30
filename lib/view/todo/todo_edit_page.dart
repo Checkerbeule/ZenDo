@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/utils/time_util.dart';
+import 'package:zen_do/view/todo/todo_page.dart';
 
 class TodoEditPage extends StatefulWidget {
-  const TodoEditPage({super.key, required this.todo});
+  const TodoEditPage({super.key, required this.todo, required this.todoState});
 
   final Todo todo;
+  final TodoState todoState;
 
   @override
   State<TodoEditPage> createState() => _TodoEditPageState();
@@ -22,13 +24,17 @@ class _TodoEditPageState extends State<TodoEditPage> {
   @override
   Widget build(BuildContext context) {
     final List<DropdownMenuItem> listScopeDropDownItems = [];
-    ListScope? selectedScope;
-    for (final scope in ListScope.values) {
-      final item = DropdownMenuItem(value: scope, child: Text(scope.label));
-      listScopeDropDownItems.add(item);
-      if(scope == widget.todo.listScope) {
-        selectedScope = scope;
-      }
+    ListScope? selectedScope = widget.todo.listScope;
+    for (final scope in widget.todoState.listManager!.allScopes) {
+      listScopeDropDownItems.add(
+        DropdownMenuItem(
+          value: scope,
+          child: Text(
+            style: TextStyle(fontWeight: FontWeight.normal),
+            scope.label,
+          ),
+        ),
+      );
     }
 
     return AlertDialog(
@@ -69,7 +75,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
                       decoration: InputDecoration(labelText: 'Liste: '),
                       items: listScopeDropDownItems,
                       initialValue: selectedScope,
-                      onChanged: null, //readonly/disabled
+                      onChanged: (newScope) {
+                        selectedScope = newScope;
+                      },
                     ),
                   ),
                   //TODO add dropdown for labels with multi select
@@ -117,6 +125,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
               final updatedTodo = widget.todo.copyWith(
                 title: titleController.text,
                 description: descriptionController.text,
+                listScope: selectedScope,
               );
               Navigator.of(context).pop(updatedTodo);
             }
