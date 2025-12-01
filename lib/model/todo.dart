@@ -1,14 +1,26 @@
 import 'package:hive/hive.dart';
+import 'package:zen_do/model/list_scope.dart';
 
 part 'todo.g.dart';
 
 @HiveType(typeId: 0)
 class Todo {
   @HiveField(0)
-  String title;
+  late String _title;
+  String get title => _title;
+  set title(String title) {
+    if (title.isEmpty) {
+      throw ArgumentError('title must not be empty!');
+    }
+    _title = title.trim();
+  }
 
   @HiveField(1)
-  String? description;
+  String? _description;
+  String? get description => _description;
+  set description(String? description) {
+    _description = description?.trim();
+  }
 
   @HiveField(2)
   final DateTime creationDate;
@@ -19,7 +31,53 @@ class Todo {
   @HiveField(4)
   DateTime? completionDate;
 
-  Todo(this.title, [this.description]) : creationDate = DateTime.now();
+  @HiveField(5)
+  ListScope? listScope;
+
+  Todo({required String title, String? description})
+    : creationDate = DateTime.now() {
+    this.title = title;
+    this.description = description;
+  }
+
+  Todo._internal({
+    required String title,
+    String? description,
+    required this.creationDate,
+    this.expirationDate,
+    this.completionDate,
+    this.listScope,
+  }) {
+    this.title = title;
+    this.description = description;
+  }
+
+  Todo copyWith({
+    String? title,
+    String? description,
+    DateTime? creationDate,
+    DateTime? expirationDate,
+    DateTime? completionDate,
+    ListScope? listScope,
+  }) {
+    return Todo._internal(
+      title: title ?? this.title,
+      description: description ?? this.description,
+      creationDate: creationDate ?? this.creationDate,
+      expirationDate: expirationDate ?? this.expirationDate,
+      completionDate: completionDate ?? this.completionDate,
+      listScope: listScope ?? this.listScope,
+    );
+  }
+
+  Todo.copy(Todo other)
+    : creationDate = other.creationDate,
+      expirationDate = other.expirationDate,
+      completionDate = other.completionDate,
+      listScope = other.listScope {
+    title = other.title;
+    description = other.description;
+  }
 
   bool get isExpired {
     if (expirationDate == null) {
@@ -30,12 +88,24 @@ class Todo {
   }
 
   @override
-  operator ==(Object other) {
+  bool operator ==(Object other) {
     if (identical(this, other)) return true;
-
-    return other is Todo && other.title == title;
+    return other is Todo &&
+        other.title == title &&
+        other.description == description &&
+        other.creationDate == creationDate &&
+        other.expirationDate == expirationDate &&
+        other.completionDate == completionDate &&
+        other.listScope == listScope;
   }
 
   @override
-  int get hashCode => title.hashCode;
+  int get hashCode => Object.hash(
+    title,
+    description,
+    creationDate,
+    expirationDate,
+    completionDate,
+    listScope,
+  );
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/utils/time_util.dart';
+import 'package:zen_do/view/dialog_helper.dart';
+import 'package:zen_do/view/todo/todo_edit_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -19,6 +21,7 @@ class TodoListPage extends StatefulWidget {
 
 class _TodoListPageState extends State<TodoListPage> {
   bool expanded = false;
+  Offset tapPosition = Offset.zero;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +30,7 @@ class _TodoListPageState extends State<TodoListPage> {
         final listManager = todoState.listManager;
         return Scaffold(
           body: ListView(
-            shrinkWrap: true,
+            //shrinkWrap: true, //TODO needed?
             children: [
               if (widget.list.todos.isEmpty)
                 ListTile(
@@ -38,73 +41,118 @@ class _TodoListPageState extends State<TodoListPage> {
                 )
               else ...[
                 for (var todo in widget.list.todos)
-                  ListTile(
-                    leading: IconButton(
-                      onPressed: () => {
-                        todoState.performAcitionOnList<Null>(
-                          (list) => list.markAsDone(todo),
-                          widget.list.scope,
-                        ),
-                      },
-                      icon: Icon(Icons.circle_outlined),
-                    ),
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        todo.description != null && todo.description!.isNotEmpty
-                            ? Flexible(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      todo.title,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      todo.description!,
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Flexible(
-                                child: Text(
-                                  todo.title,
-                                  textAlign: TextAlign.start,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                        if (listManager != null &&
-                            (listManager.toBeTransferredTomorrow(
-                                  todo,
-                                  widget.list.scope,
-                                ) ||
-                                todo.expirationDate!.isBefore(
-                                  DateTime.now(),
-                                ))) ...[
-                          SizedBox(width: 5),
-                          Tooltip(
-                            message:
-                                'Fällig am ${DateFormat('dd.MM.yyyy').format(todo.expirationDate!)} !',
-                            child: Icon(
-                              Icons.access_time_rounded,
-                              color: Theme.of(context).colorScheme.error,
-                              size: 18,
+                  InkWell(
+                    onTapDown: (tapDetails) {
+                      tapPosition = tapDetails.globalPosition;
+                    },
+                    onTap: () async {
+                      final updatedTodo =
+                          await showDialogWithScaleTransition<Todo>(
+                            context: context,
+                            //tapPosition: tapPosition, not used at the moment
+                            child: TodoEditPage(
+                              todo: todo,
+                              todoState: todoState,
                             ),
+                            barrierDismissable: false,
+                          );
+                      if (updatedTodo != null) {
+                        if (updatedTodo.listScope != todo.listScope) {
+                          todoState.performAcitionOnList(
+                            () => listManager!.moveToOtherList(
+                              todo,
+                              updatedTodo.listScope!,
+                            ),
+                          );
+                        }
+                        todoState.performAcitionOnList<bool>(
+                          () => listManager!
+                              .getListByScope(updatedTodo.listScope!)!
+                              .replaceTodo(todo, updatedTodo),
+                        );
+                      }
+                    },
+                    child: ListTile(
+                      leading: IconButton(
+                        onPressed: () => {
+                          todoState.performAcitionOnList<Null>(
+                            () => widget.list.markAsDone(todo),
                           ),
+                        },
+                        icon: Icon(Icons.circle_outlined),
+                      ),
+                      title: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          todo.description != null &&
+                                  todo.description!.isNotEmpty
+                              ? Flexible(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        todo.title,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        todo.description!,
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Flexible(
+                                  child: Text(
+                                    todo.title,
+                                    textAlign: TextAlign.start,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                          if (listManager != null &&
+                              (listManager.toBeTransferredTomorrow(todo) ||
+                                  (todo.expirationDate != null &&
+                                      todo.expirationDate!.isBefore(
+                                        DateTime.now(),
+                                      )))) ...[
+                            SizedBox(width: 5),
+                            Tooltip(
+                              message:
+                                  'Fällig am ${formatDate(todo.expirationDate!)} !',
+                              child: Icon(
+                                Icons.access_time_rounded,
+                                color: Theme.of(context).colorScheme.error,
+                                size: 18,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    ),
-                    trailing: IconButton(
-                      onPressed: () =>
-                          _showDeleteDialog(context, widget.list, todo),
-                      icon: Icon(Icons.delete_forever),
-                      color: Theme.of(context).colorScheme.tertiary,
+                      ),
+                      trailing: IconButton(
+                        onPressed: () async {
+                          final delete = await showDialogWithScaleTransition<bool>(
+                            context: context,
+                            child: DeleteDialog(
+                              title: 'Aufgabe löschen ?',
+                              text:
+                                  'Diese Aufgabe wirklich unwiederbringlich löschen?',
+                            ),
+                          );
+                          if (delete != null && delete) {
+                            todoState.performAcitionOnList<Null>(
+                              () => widget.list.deleteTodo(todo),
+                            );
+                          }
+                        },
+                        //_showDeleteDialog(context, widget.list, todo),
+                        icon: Icon(Icons.delete_forever),
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
                     ),
                   ),
               ],
@@ -119,8 +167,7 @@ class _TodoListPageState extends State<TodoListPage> {
                     ListTile(
                       leading: IconButton(
                         onPressed: () => todoState.performAcitionOnList<bool>(
-                          (list) => list.restoreTodo(todo),
-                          widget.list.scope,
+                          () => widget.list.restoreTodo(todo),
                         ),
                         icon: Icon(Icons.check_circle),
                         color: Theme.of(context).primaryColor,
@@ -156,7 +203,7 @@ void _showAddToDoDialog(BuildContext context, TodoList list) async {
   final todoState = context.read<TodoState>();
   String title = '';
   String description = '';
-  await showDialog<bool>(
+  await showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -205,8 +252,8 @@ void _showAddToDoDialog(BuildContext context, TodoList list) async {
                 return;
               }
               bool added = todoState.performAcitionOnList<bool>(
-                (list) => list.addTodo(Todo(title, description)),
-                list.scope,
+                () =>
+                    list.addTodo(Todo(title: title, description: description)),
               );
               if (!added) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -218,50 +265,6 @@ void _showAddToDoDialog(BuildContext context, TodoList list) async {
                 );
                 return;
               }
-              Navigator.of(context).pop(true);
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
-void _showDeleteDialog(BuildContext context, TodoList list, Todo todo) async {
-  final todoState = context.read<TodoState>();
-
-  await showDialog<bool>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Aufgabe löschen ?'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("Diese Aufgabe wirklich unwiederbringlich löschen?"),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-            ),
-            child: const Text('Abbrechen'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-              backgroundColor: Theme.of(context).colorScheme.errorContainer,
-            ),
-            child: const Text('Ok'),
-            onPressed: () {
-              todoState.performAcitionOnList<Null>(
-                (list) => list.deleteTodo(todo),
-                list.scope,
-              );
               Navigator.of(context).pop(true);
             },
           ),

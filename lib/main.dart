@@ -56,7 +56,6 @@ class ZenDoAppState extends ChangeNotifier {
     PageType.notes: 0,
   };
 
-  //TODO use this on every todo update (delete, restore, markAsDone)
   void updateMessageCount(PageType page, int newCount) {
     if (pageMessages[page] == newCount) return;
     pageMessages[page] = newCount;
