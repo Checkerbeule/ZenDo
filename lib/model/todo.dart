@@ -7,7 +7,6 @@ part 'todo.g.dart';
 class Todo {
   @HiveField(0)
   late String _title;
-
   String get title => _title;
   set title(String title) {
     if (title.isEmpty) {
