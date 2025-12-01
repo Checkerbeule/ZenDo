@@ -58,12 +58,12 @@ class _TodoListPageState extends State<TodoListPage> {
                           );
                       if (updatedTodo != null) {
                         if (updatedTodo.listScope != todo.listScope) {
-                          todoState.performAcitionOnList(() {
-                            listManager!.moveToOtherList(
+                          todoState.performAcitionOnList(
+                            () => listManager!.moveToOtherList(
                               todo,
                               updatedTodo.listScope!,
-                            );
-                          });
+                            ),
+                          );
                         }
                         todoState.performAcitionOnList<bool>(
                           () => listManager!

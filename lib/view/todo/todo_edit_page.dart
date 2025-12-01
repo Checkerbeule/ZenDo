@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/utils/time_util.dart';
@@ -15,17 +16,31 @@ class TodoEditPage extends StatefulWidget {
 }
 
 class _TodoEditPageState extends State<TodoEditPage> {
+  late final Todo todo;
+  late final ListManager manager;
+  late ListScope selectedScope;
+  final List<DropdownMenuItem> listScopeDropDownItems = [];
   final formKey = GlobalKey<FormState>();
-  late final titleController = TextEditingController(text: widget.todo.title);
-  late final descriptionController = TextEditingController(
-    text: widget.todo.description,
-  );
+  late final TextEditingController titleController;
+  late final TextEditingController descriptionController;
+
+  bool get isChanged =>
+      todo.title != titleController.text.trim() ||
+      todo.description != descriptionController.text.trim() ||
+      todo.listScope != selectedScope;
 
   @override
-  Widget build(BuildContext context) {
-    final List<DropdownMenuItem> listScopeDropDownItems = [];
-    ListScope? selectedScope = widget.todo.listScope;
-    for (final scope in widget.todoState.listManager!.allScopes) {
+  void initState() {
+    super.initState();
+
+    todo = widget.todo;
+    manager = widget.todoState.listManager!;
+
+    selectedScope = todo.listScope!;
+    titleController = TextEditingController(text: todo.title);
+    descriptionController = TextEditingController(text: todo.description);
+
+    for (final scope in manager.allScopes) {
       listScopeDropDownItems.add(
         DropdownMenuItem(
           value: scope,
@@ -36,7 +51,10 @@ class _TodoEditPageState extends State<TodoEditPage> {
         ),
       );
     }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Aufgabe bearbeiten'),
       content: Form(
@@ -55,6 +73,10 @@ class _TodoEditPageState extends State<TodoEditPage> {
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Titel darf nicht leer sein';
+                  }
+                  if (titleController.text != todo.title &&
+                      !manager.isTodoTitleVacant(value, todo.listScope!)) {
+                    return 'Titel ist bereits vergeben';
                   }
                   return null;
                 },
@@ -75,8 +97,18 @@ class _TodoEditPageState extends State<TodoEditPage> {
                       decoration: InputDecoration(labelText: 'Liste: '),
                       items: listScopeDropDownItems,
                       initialValue: selectedScope,
-                      onChanged: (newScope) {
-                        selectedScope = newScope;
+                      onChanged: (value) {
+                        selectedScope = value;
+                      },
+                      validator: (value) {
+                        if (selectedScope != todo.listScope &&
+                            !manager.isTodoTitleVacant(
+                              titleController.text,
+                              value as ListScope,
+                            )) {
+                          return 'Aufgabe bereits vohanden in Zielliste';
+                        }
+                        return null;
                       },
                     ),
                   ),
@@ -87,9 +119,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Fällig am: ${formatDate(widget.todo.expirationDate)}'),
+                  Text('Fällig am: ${formatDate(todo.expirationDate)}'),
                   if (widget.todo.expirationDate != null &&
-                      DateTime.now().isAfter(widget.todo.expirationDate!)) ...[
+                      DateTime.now().isAfter(todo.expirationDate!)) ...[
                     SizedBox(width: 5),
                     Icon(
                       Icons.access_time_rounded,
@@ -100,7 +132,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                 ],
               ),
               SizedBox(height: 16),
-              Text('Erstellt am: ${formatDate(widget.todo.creationDate)}'),
+              Text('Erstellt am: ${formatDate(todo.creationDate)}'),
             ],
           ),
         ),
@@ -121,13 +153,17 @@ class _TodoEditPageState extends State<TodoEditPage> {
           ),
           child: const Text('Speichern'),
           onPressed: () {
-            if (formKey.currentState!.validate()) {
-              final updatedTodo = widget.todo.copyWith(
-                title: titleController.text,
-                description: descriptionController.text,
-                listScope: selectedScope,
-              );
-              Navigator.of(context).pop(updatedTodo);
+            if (isChanged) {
+              if (formKey.currentState!.validate()) {
+                final updatedTodo = todo.copyWith(
+                  title: titleController.text,
+                  description: descriptionController.text,
+                  listScope: selectedScope,
+                );
+                Navigator.of(context).pop(updatedTodo);
+              }
+            } else {
+              Navigator.of(context).pop();
             }
           },
         ),

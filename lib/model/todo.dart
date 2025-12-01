@@ -17,7 +17,11 @@ class Todo {
   }
 
   @HiveField(1)
-  String? description;
+  String? _description;
+  String? get description => _description;
+  set description(String? description) {
+    _description = description?.trim();
+  }
 
   @HiveField(2)
   final DateTime creationDate;
@@ -31,20 +35,22 @@ class Todo {
   @HiveField(5)
   ListScope? listScope;
 
-  Todo({required String title, this.description})
+  Todo({required String title, String? description})
     : creationDate = DateTime.now() {
     this.title = title;
+    this.description = description;
   }
 
   Todo._internal({
     required String title,
-    this.description,
+    String? description,
     required this.creationDate,
     this.expirationDate,
     this.completionDate,
     this.listScope,
   }) {
     this.title = title;
+    this.description = description;
   }
 
   Todo copyWith({
@@ -66,12 +72,12 @@ class Todo {
   }
 
   Todo.copy(Todo other)
-    : description = other.description,
-      creationDate = other.creationDate,
+    : creationDate = other.creationDate,
       expirationDate = other.expirationDate,
       completionDate = other.completionDate,
       listScope = other.listScope {
     title = other.title;
+    description = other.description;
   }
 
   bool get isExpired {
