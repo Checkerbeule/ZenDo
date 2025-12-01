@@ -312,6 +312,22 @@ void main() {
       );
 
       test(
+        '$className replaceTodo replacement with edited descriptioin successfull',
+        () {
+          final list = TodoList(ListScope.daily);
+          final original = Todo(title: 'todo 1');
+          final copy = original.copyWith(description: 'new description');
+
+          list.addTodo(original);
+          final isReplaced = list.replaceTodo(original, copy);
+
+          expect(isReplaced, isTrue);
+          expect(list.todos.length, 1);
+          expect(list.todos.first, copy);
+        },
+      );
+
+      test(
         '$className replaceTodo modified copy of todo successfully replaced',
         () {
           final list = TodoList(ListScope.daily);
