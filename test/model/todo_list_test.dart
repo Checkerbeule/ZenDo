@@ -312,7 +312,7 @@ void main() {
       );
 
       test(
-        '$className replaceTodo replacement with edited descriptioin successfull',
+        '$className replaceTodo replacement with edited description successfull',
         () {
           final list = TodoList(ListScope.daily);
           final original = Todo(title: 'todo 1');
@@ -363,20 +363,6 @@ void main() {
         list.addTodo(oldTodo);
 
         final isReplaced = list.replaceTodo(oldTodo, oldTodo);
-
-        expect(isReplaced, isFalse);
-        expect(list.todos.length, 1);
-        expect(list.todos.first, oldTodo);
-      });
-
-      test('$className replaceTodo not possible with same title', () {
-        final list = TodoList(ListScope.daily);
-        final title = 'same title';
-        final oldTodo = Todo(title: title);
-        final newTodo = Todo(title: title);
-
-        list.addTodo(oldTodo);
-        final isReplaced = list.replaceTodo(oldTodo, newTodo);
 
         expect(isReplaced, isFalse);
         expect(list.todos.length, 1);

@@ -100,10 +100,10 @@ class TodoList implements Comparable<TodoList> {
     bool isReplaced = false;
     if (todos.contains(oldTodo) && oldTodo != newTodo) {
       final indexOfOldTodo = todos.indexOf(oldTodo);
-      final titleVacant = !todos.any(
-        (t) => t != oldTodo && t.title == newTodo.title.trim(),
+      final isTitleVacant = !todos.any(
+        (t) => t != oldTodo && t.title == newTodo.title,
       );
-      if (titleVacant) {
+      if (isTitleVacant) {
         todos[indexOfOldTodo] = newTodo;
         isReplaced = true;
       }
