@@ -65,11 +65,11 @@ class _TodoEditPageState extends State<TodoEditPage> {
             children: [
               TextFormField(
                 controller: titleController,
+                autocorrect: true,
                 decoration: InputDecoration(
                   labelText: 'Titel',
                   hintText: 'Titel der Aufgabe',
                 ),
-                autocorrect: true,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Titel darf nicht leer sein';
@@ -83,11 +83,14 @@ class _TodoEditPageState extends State<TodoEditPage> {
               ),
               TextFormField(
                 controller: descriptionController,
+                autocorrect: true,
+                keyboardType: TextInputType.multiline,
+                minLines: 1,
+                maxLines: 3,
                 decoration: InputDecoration(
                   labelText: 'Beschreibung',
                   hintText: 'Beschreibung',
                 ),
-                autocorrect: true,
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -120,7 +123,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Fällig am: ${formatDate(todo.expirationDate)}'),
-                  if (widget.todo.expirationDate != null &&
+                  if (todo.expirationDate != null &&
                       DateTime.now().isAfter(todo.expirationDate!)) ...[
                     SizedBox(width: 5),
                     Icon(
