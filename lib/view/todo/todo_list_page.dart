@@ -100,8 +100,9 @@ class _TodoListPageState extends State<TodoListPage> {
                                       const SizedBox(height: 4),
                                       Text(
                                         todo.description!,
-                                        style: const TextStyle(
-                                          color: Colors.grey,
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          color: Theme.of(context).disabledColor,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
