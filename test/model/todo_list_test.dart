@@ -369,7 +369,7 @@ void main() {
         expect(list.todos.first, oldTodo);
       });
 
-      test('$className replaceTodo oldTodo not existent fails', () {
+      test('$className replaceTodo with non existent fails', () {
         final list = TodoList(ListScope.daily);
         final oldTodo = Todo(title: 'original');
         final newTodo = Todo(title: 'original');
@@ -378,6 +378,24 @@ void main() {
 
         expect(isReplaced, isFalse);
         expect(list.todos.length, 0);
+      });
+
+      test('$className replaceTodo with same titile fails', () {
+        final list = TodoList(ListScope.daily);
+        final title = 'title';
+        final oldTodo = Todo(title: 'todo to replace');
+        final newTodo = Todo(title: title);
+        final todo_1 = Todo(title: 'another todo');
+        final todoWithConflictingTitle = Todo(title: title);
+        list.addAll([todo_1, oldTodo, todoWithConflictingTitle]);
+
+        final isReplaced = list.replaceTodo(oldTodo, newTodo);
+
+        expect(isReplaced, isFalse);
+        expect(list.todos.length, 3);
+        expect(list.todos.first, todo_1);
+        expect(list.todos[1], oldTodo);
+        expect(list.todos.last, todoWithConflictingTitle);
       });
     });
 

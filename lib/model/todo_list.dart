@@ -100,12 +100,13 @@ class TodoList implements Comparable<TodoList> {
     bool isReplaced = false;
     if (todos.contains(oldTodo) && oldTodo != newTodo) {
       final indexOfOldTodo = todos.indexOf(oldTodo);
-      final isTitleVacant = !todos.any(
-        (t) => t != oldTodo && t.title == newTodo.title,
-      );
-      if (isTitleVacant) {
-        todos[indexOfOldTodo] = newTodo;
+      todos.removeAt(indexOfOldTodo);
+      if (isTodoTitleVacant(newTodo.title)) {
+        todos.insert(indexOfOldTodo, newTodo);
         isReplaced = true;
+      } else {
+        // restore old todo
+        todos.insert(indexOfOldTodo, oldTodo);
       }
       if (isReplaced) {
         unawaited(PersistenceHelper.saveList(this));
