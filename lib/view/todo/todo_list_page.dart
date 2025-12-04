@@ -5,6 +5,7 @@ import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/dialog_helper.dart';
+import 'package:zen_do/view/todo/add_todo_page.dart';
 import 'package:zen_do/view/todo/todo_edit_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
 
@@ -99,8 +100,9 @@ class _TodoListPageState extends State<TodoListPage> {
                                       const SizedBox(height: 4),
                                       Text(
                                         todo.description!,
-                                        style: const TextStyle(
-                                          color: Colors.grey,
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          color: Theme.of(context).disabledColor,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -144,7 +146,7 @@ class _TodoListPageState extends State<TodoListPage> {
                             ),
                           );
                           if (delete != null && delete) {
-                            todoState.performAcitionOnList<Null>(
+                            todoState.performAcitionOnList<bool>(
                               () => widget.list.deleteTodo(todo),
                             );
                           }
@@ -185,91 +187,29 @@ class _TodoListPageState extends State<TodoListPage> {
             ],
           ),
 
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () {
-              _showAddToDoDialog(context, widget.list);
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              Todo? newTodo = await showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (BuildContext context) {
+                  return AddTodoPage(
+                    listManager: todoState.listManager!,
+                    listScope: widget.list.scope,
+                  );
+                },
+              );
+              if(newTodo != null){
+                todoState.performAcitionOnList<bool>(
+                  () => widget.list.addTodo(newTodo),
+                );
+              }
             },
-            tooltip: 'ToDo hinzufügen',
-            label: const Text('Neue Aufgabe'),
-            icon: const Icon(Icons.add),
+            tooltip: 'Aufgabe hinzufügen',
+            child: const Icon(Icons.add),
           ),
         );
       },
     );
   }
-}
-
-void _showAddToDoDialog(BuildContext context, TodoList list) async {
-  final todoState = context.read<TodoState>();
-  String title = '';
-  String description = '';
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Neue Aufgabe hinzufügen'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              autofocus: true,
-              decoration: const InputDecoration(hintText: 'Titel'),
-              onChanged: (value) {
-                title = value;
-              },
-            ),
-            TextField(
-              decoration: const InputDecoration(hintText: 'Beschreibung'),
-              onChanged: (value) {
-                description = value;
-              },
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Abbrechen'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-            ),
-            child: const Text('Ok'),
-            onPressed: () {
-              if (title.trim().isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Der Titel darf nicht leer sein.'),
-                  ),
-                );
-                return;
-              }
-              bool added = todoState.performAcitionOnList<bool>(
-                () =>
-                    list.addTodo(Todo(title: title, description: description)),
-              );
-              if (!added) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Eine Aufgabe mit diesem Titel existiert bereits.',
-                    ),
-                  ),
-                );
-                return;
-              }
-              Navigator.of(context).pop(true);
-            },
-          ),
-        ],
-      );
-    },
-  );
 }
