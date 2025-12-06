@@ -6,9 +6,9 @@ import 'package:mockito/mockito.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
-import 'package:zen_do/persistance/file_lock_helper.dart';
-import 'package:zen_do/persistance/hive_initializer.dart';
-import 'package:zen_do/persistance/persistence_helper.dart';
+import 'package:zen_do/persistence/file_lock_helper.dart';
+import 'package:zen_do/persistence/hive_initializer.dart';
+import 'package:zen_do/persistence/persistence_helper.dart';
 
 import '../mocks/mocks.mocks.dart';
 

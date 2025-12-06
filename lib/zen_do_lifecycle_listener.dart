@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:zen_do/persistance/persistence_helper.dart';
+import 'package:zen_do/persistence/persistence_helper.dart';
 
 class ZenDoLifecycleListener extends WidgetsBindingObserver {
   @override

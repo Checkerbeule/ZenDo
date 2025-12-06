@@ -5,8 +5,9 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/callback_dispatcher.dart';
-import 'package:zen_do/persistance/hive_initializer.dart';
+import 'package:zen_do/persistence/hive_initializer.dart';
 import 'package:zen_do/utils/time_util.dart';
+import 'package:zen_do/view/habits/habit_page.dart';
 import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
 import 'package:zen_do/zen_do_lifecycle_listener.dart';
@@ -91,9 +92,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             index: pageIndex,
             children: [
               TodoPage(),
-              Center(
-                child: Text(PageType.habits.label(context)),
-              ), //TODO implement Habit Page
+              HabitPage(), //TODO implement Habit Page
               Center(
                 child: Text(PageType.notes.label(context)),
               ), //TODO implement notes Page

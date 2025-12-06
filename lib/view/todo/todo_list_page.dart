@@ -30,159 +30,192 @@ class _TodoListPageState extends State<TodoListPage> {
       builder: (context, todoState, child) {
         final listManager = todoState.listManager;
         return Scaffold(
-          body: ListView(
-            //shrinkWrap: true, //TODO needed?
-            children: [
+          body: CustomScrollView(
+            slivers: [
               if (widget.list.todos.isEmpty)
-                ListTile(
-                  title: Text(
-                    'Keine offenen Aufgaben vorhanden.',
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              else ...[
-                for (var todo in widget.list.todos)
-                  InkWell(
-                    onTapDown: (tapDetails) {
-                      tapPosition = tapDetails.globalPosition;
-                    },
-                    onTap: () async {
-                      final updatedTodo =
-                          await showDialogWithScaleTransition<Todo>(
-                            context: context,
-                            //tapPosition: tapPosition, not used at the moment
-                            child: TodoEditPage(
-                              todo: todo,
-                              todoState: todoState,
-                            ),
-                            barrierDismissable: false,
-                          );
-                      if (updatedTodo != null) {
-                        if (updatedTodo.listScope != todo.listScope) {
-                          todoState.performAcitionOnList(
-                            () => listManager!.moveToOtherList(
-                              todo,
-                              updatedTodo.listScope!,
-                            ),
-                          );
-                        }
-                        todoState.performAcitionOnList<bool>(
-                          () => listManager!
-                              .getListByScope(updatedTodo.listScope!)!
-                              .replaceTodo(todo, updatedTodo),
-                        );
-                      }
-                    },
-                    child: ListTile(
-                      leading: IconButton(
-                        onPressed: () => {
-                          todoState.performAcitionOnList<Null>(
-                            () => widget.list.markAsDone(todo),
-                          ),
-                        },
-                        icon: Icon(Icons.circle_outlined),
-                      ),
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          todo.description != null &&
-                                  todo.description!.isNotEmpty
-                              ? Flexible(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        todo.title,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        todo.description!,
-                                        maxLines: 1,
-                                        style: TextStyle(
-                                          color: Theme.of(context).disabledColor,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : Flexible(
-                                  child: Text(
-                                    todo.title,
-                                    textAlign: TextAlign.start,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                          if (listManager != null &&
-                              (listManager.toBeTransferredTomorrow(todo) ||
-                                  (todo.expirationDate != null &&
-                                      todo.expirationDate!.isBefore(
-                                        DateTime.now(),
-                                      )))) ...[
-                            SizedBox(width: 5),
-                            Tooltip(
-                              message:
-                                  'Fällig am ${formatDate(todo.expirationDate!)} !',
-                              child: Icon(
-                                Icons.access_time_rounded,
-                                color: Theme.of(context).colorScheme.error,
-                                size: 18,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      trailing: IconButton(
-                        onPressed: () async {
-                          final delete = await showDialogWithScaleTransition<bool>(
-                            context: context,
-                            child: DeleteDialog(
-                              title: 'Aufgabe löschen ?',
-                              text:
-                                  'Diese Aufgabe wirklich unwiederbringlich löschen?',
-                            ),
-                          );
-                          if (delete != null && delete) {
-                            todoState.performAcitionOnList<bool>(
-                              () => widget.list.deleteTodo(todo),
-                            );
-                          }
-                        },
-                        //_showDeleteDialog(context, widget.list, todo),
-                        icon: Icon(Icons.delete_forever),
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                    ),
-                  ),
-              ],
-              ExpansionTile(
-                initiallyExpanded: expanded,
-                onExpansionChanged: (bool expanding) => expanded = expanding,
-                title: const Text('Erledigte Aufgaben'),
-                subtitle: Text('${widget.list.doneCount} erledigt'),
-                collapsedIconColor: Theme.of(context).primaryColor,
-                children: [
-                  for (var todo in widget.list.doneTodos)
+                SliverList(
+                  delegate: SliverChildListDelegate.fixed([
                     ListTile(
-                      leading: IconButton(
-                        onPressed: () => todoState.performAcitionOnList<bool>(
-                          () => widget.list.restoreTodo(todo),
-                        ),
-                        icon: Icon(Icons.check_circle),
-                        color: Theme.of(context).primaryColor,
-                      ),
                       title: Text(
-                        todo.title,
-                        style: TextStyle(
-                          decoration: TextDecoration.lineThrough,
-                          color: Theme.of(context).disabledColor,
-                        ),
+                        'Keine offenen Aufgaben vorhanden.',
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                ],
+                  ]),
+                )
+              else
+                SliverReorderableList(
+                  itemCount: widget.list.todos.length,
+                  onReorder: (oldIndex, newIndex) {
+                    setState(() {
+                      if (newIndex > oldIndex) {
+                        newIndex--;
+                      }
+                      final todo = widget.list.todos.removeAt(oldIndex);
+                      widget.list.todos.insert(newIndex, todo);
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    final todo = widget.list.todos[index];
+                    return ReorderableDelayedDragStartListener(
+                      key: ValueKey(todo.hashCode),
+                      index: index,
+                      child: Material(
+                        child: Listener(
+                          onPointerUp: (event) {
+                            tapPosition = event.position;
+                          },
+                          child: ListTile(
+                            onTap: () async {
+                              final updatedTodo =
+                                  await showDialogWithScaleTransition<Todo>(
+                                    context: context,
+                                    //tapPosition: tapPosition, not used at the moment
+                                    child: TodoEditPage(
+                                      todo: todo,
+                                      todoState: todoState,
+                                    ),
+                                    barrierDismissable: false,
+                                  );
+                              if (updatedTodo != null) {
+                                if (updatedTodo.listScope != todo.listScope) {
+                                  todoState.performAcitionOnList(
+                                    () => listManager!.moveToOtherList(
+                                      todo,
+                                      updatedTodo.listScope!,
+                                    ),
+                                  );
+                                }
+                                todoState.performAcitionOnList<bool>(
+                                  () => listManager!
+                                      .getListByScope(updatedTodo.listScope!)!
+                                      .replaceTodo(todo, updatedTodo),
+                                );
+                              }
+                            },
+                            leading: IconButton(
+                              onPressed: () => {
+                                todoState.performAcitionOnList<Null>(
+                                  () => widget.list.markAsDone(todo),
+                                ),
+                              },
+                              icon: Icon(Icons.circle_outlined),
+                            ),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                todo.description != null &&
+                                        todo.description!.isNotEmpty
+                                    ? Flexible(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              todo.title,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              todo.description!,
+                                              maxLines: 1,
+                                              style: TextStyle(
+                                                color: Theme.of(
+                                                  context,
+                                                ).disabledColor,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : Flexible(
+                                        child: Text(
+                                          todo.title,
+                                          textAlign: TextAlign.start,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                if (listManager != null &&
+                                    (listManager.toBeTransferredTomorrow(
+                                          todo,
+                                        ) ||
+                                        (todo.expirationDate != null &&
+                                            todo.expirationDate!.isBefore(
+                                              DateTime.now(),
+                                            )))) ...[
+                                  SizedBox(width: 5),
+                                  Tooltip(
+                                    message:
+                                        'Fällig am ${formatDate(todo.expirationDate!)} !',
+                                    child: Icon(
+                                      Icons.access_time_rounded,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.error,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            trailing: IconButton(
+                              onPressed: () async {
+                                final delete =
+                                    await showDialogWithScaleTransition<bool>(
+                                      context: context,
+                                      child: DeleteDialog(
+                                        title: 'Aufgabe löschen ?',
+                                        text:
+                                            'Diese Aufgabe wirklich unwiederbringlich löschen?',
+                                      ),
+                                    );
+                                if (delete != null && delete) {
+                                  todoState.performAcitionOnList<bool>(
+                                    () => widget.list.deleteTodo(todo),
+                                  );
+                                }
+                              },
+                              //_showDeleteDialog(context, widget.list, todo),
+                              icon: Icon(Icons.delete_forever),
+                              color: Theme.of(context).colorScheme.tertiary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+              SliverToBoxAdapter(
+                child: ExpansionTile(
+                  initiallyExpanded: expanded,
+                  onExpansionChanged: (bool expanding) => expanded = expanding,
+                  title: const Text('Erledigte Aufgaben'),
+                  subtitle: Text('${widget.list.doneCount} erledigt'),
+                  collapsedIconColor: Theme.of(context).primaryColor,
+                  children: [
+                    for (var todo in widget.list.doneTodos)
+                      ListTile(
+                        leading: IconButton(
+                          onPressed: () => todoState.performAcitionOnList<bool>(
+                            () => widget.list.restoreTodo(todo),
+                          ),
+                          icon: Icon(Icons.check_circle),
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        title: Text(
+                          todo.title,
+                          style: TextStyle(
+                            decoration: TextDecoration.lineThrough,
+                            color: Theme.of(context).disabledColor,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -199,7 +232,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   );
                 },
               );
-              if(newTodo != null){
+              if (newTodo != null) {
                 todoState.performAcitionOnList<bool>(
                   () => widget.list.addTodo(newTodo),
                 );
