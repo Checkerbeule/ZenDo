@@ -32,6 +32,22 @@ class _TodoListPageState extends State<TodoListPage> {
         return Scaffold(
           body: CustomScrollView(
             slivers: [
+              SliverAppBar(
+                actionsPadding: const EdgeInsets.only(right: 10),
+                pinned: false,
+                toolbarHeight: 40,
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHigh,
+                title: Text(
+                  'Aufgaben sortieren und filtern',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                actions: [
+                  IconButton(icon: Icon(Icons.sort), onPressed: () {}),
+                  IconButton(icon: Icon(Icons.filter_alt), onPressed: () {}),
+                ],
+              ),
               if (widget.list.todos.isEmpty)
                 SliverList(
                   delegate: SliverChildListDelegate.fixed([
@@ -66,6 +82,9 @@ class _TodoListPageState extends State<TodoListPage> {
                             tapPosition = event.position;
                           },
                           child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                            ),
                             onTap: () async {
                               final updatedTodo =
                                   await showDialogWithScaleTransition<Todo>(

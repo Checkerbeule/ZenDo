@@ -123,6 +123,9 @@ class _TodoView extends StatelessWidget {
                     ).colorScheme.primaryContainer,
                     toolbarHeight: 0,
                     bottom: TabBar(
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.center,
                       dividerColor: Theme.of(context).primaryColor,
                       tabs: [
                         for (var list in listManager.allLists)
