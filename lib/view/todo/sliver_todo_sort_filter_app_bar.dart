@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
 class SliverTodoSortFilterAppBar extends StatelessWidget {
-  const SliverTodoSortFilterAppBar({
+  SliverTodoSortFilterAppBar({
     super.key,
     required this.sortOption,
     required this.sortOrder,
+    Set<SortOption>? excludedOptions,
     required this.onSortChanged,
     //required this.onFilterChanged,
-  });
+  }) : excludedOptions = excludedOptions ?? {};
 
   final SortOption sortOption;
   final SortOrder sortOrder;
+  final Set<SortOption> excludedOptions;
   final void Function(SortOption option, SortOrder order) onSortChanged;
   //final void Function() onFilterChanged;
 
@@ -31,32 +33,45 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
         MenuAnchor(
           menuChildren: <Widget>[
             for (final sortOption in SortOption.values)
-              MenuItemButton(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(sortOption.label(context)),
-                    if (this.sortOption == sortOption) ...[
-                      SizedBox(width: 5),
-                      if (this.sortOption == SortOption.custom)
-                        const Icon(Icons.swipe_vertical)
-                      else if (sortOrder == SortOrder.ascending)
-                        const Icon(Icons.arrow_upward)
-                      else
-                        const Icon(Icons.arrow_downward),
+              if (!excludedOptions.contains(sortOption))
+                MenuItemButton(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        sortOption.label(context),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      if (this.sortOption == sortOption) ...[
+                        SizedBox(width: 5),
+                        if (this.sortOption == SortOption.custom)
+                          Icon(
+                            Icons.swipe_vertical,
+                            color: Theme.of(context).colorScheme.primary,
+                          )
+                        else if (sortOrder == SortOrder.ascending)
+                          Icon(
+                            Icons.arrow_upward,
+                            color: Theme.of(context).colorScheme.primary,
+                          )
+                        else
+                          Icon(
+                            Icons.arrow_downward,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                      ],
                     ],
-                  ],
+                  ),
+                  onPressed: () {
+                    final order = this.sortOption == SortOption.custom
+                        ? SortOrder.ascending
+                        : this.sortOption == sortOption &&
+                              sortOrder == SortOrder.ascending
+                        ? SortOrder.descending
+                        : SortOrder.ascending;
+                    onSortChanged(sortOption, order);
+                  },
                 ),
-                onPressed: () {
-                  final order = this.sortOption == SortOption.custom
-                      ? SortOrder.ascending
-                      : this.sortOption == sortOption &&
-                            sortOrder == SortOrder.ascending
-                      ? SortOrder.descending
-                      : SortOrder.ascending;
-                  onSortChanged(sortOption, order);
-                },
-              ),
           ],
           builder: (context, controller, child) {
             return IconButton(
@@ -71,7 +86,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
             );
           },
         ),
-        IconButton(icon: Icon(Icons.filter_alt), onPressed: () {}),
+        IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
       ],
     );
   }

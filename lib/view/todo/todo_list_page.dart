@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
@@ -65,6 +66,10 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Set<SortOption> excludedSortOptions =
+        widget.list.scope == ListScope.backlog
+        ? {SortOption.expirationDate}
+        : {};
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
         final listManager = todoState.listManager;
@@ -74,6 +79,7 @@ class _TodoListPageState extends State<TodoListPage> {
               SliverTodoSortFilterAppBar(
                 sortOption: sortOption,
                 sortOrder: sortOrder,
+                excludedOptions: excludedSortOptions,
                 onSortChanged: (option, order) {
                   setState(() {
                     sortOption = option;
