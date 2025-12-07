@@ -6,6 +6,7 @@ import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/dialog_helper.dart';
 import 'package:zen_do/view/todo/add_todo_page.dart';
+import 'package:zen_do/view/todo/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/view/todo/todo_edit_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
 
@@ -23,6 +24,44 @@ class TodoListPage extends StatefulWidget {
 class _TodoListPageState extends State<TodoListPage> {
   bool expanded = false;
   Offset tapPosition = Offset.zero;
+  SortOption sortOption = SortOption.custom;
+  SortOrder sortOrder = SortOrder.ascending;
+
+  List<Todo> get sortedAndFilteredTodos {
+    final todos = List<Todo>.from(widget.list.todos);
+    //todos.sort((a, b) => a.order!.compareTo(b.order!));
+    switch (sortOption) {
+      case SortOption.custom:
+        /* todos.sort(
+          (a, b) => sortOrder == SortOrder.ascending
+              ? a.order!.compareTo(b.order!)
+              : b.order!.compareTo(a.order!),
+        ); */
+        break;
+      case SortOption.title:
+        todos.sort(
+          (a, b) => sortOrder == SortOrder.ascending
+              ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
+              : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+        );
+        break;
+      case SortOption.expirationDate:
+        todos.sort(
+          (a, b) => sortOrder == SortOrder.ascending
+              ? a.expirationDate!.compareTo(b.expirationDate!)
+              : b.expirationDate!.compareTo(a.expirationDate!),
+        );
+        break;
+      case SortOption.creationDate:
+        todos.sort(
+          (a, b) => sortOrder == SortOrder.ascending
+              ? a.creationDate.compareTo(b.creationDate)
+              : b.creationDate.compareTo(a.creationDate),
+        );
+        break;
+    }
+    return todos;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,21 +71,15 @@ class _TodoListPageState extends State<TodoListPage> {
         return Scaffold(
           body: CustomScrollView(
             slivers: [
-              SliverAppBar(
-                actionsPadding: const EdgeInsets.only(right: 10),
-                pinned: false,
-                toolbarHeight: 40,
-                backgroundColor: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHigh,
-                title: Text(
-                  'Aufgaben sortieren und filtern',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                actions: [
-                  IconButton(icon: Icon(Icons.sort), onPressed: () {}),
-                  IconButton(icon: Icon(Icons.filter_alt), onPressed: () {}),
-                ],
+              SliverTodoSortFilterAppBar(
+                sortOption: sortOption,
+                sortOrder: sortOrder,
+                onSortChanged: (option, order) {
+                  setState(() {
+                    sortOption = option;
+                    sortOrder = order;
+                  });
+                },
               ),
               if (widget.list.todos.isEmpty)
                 SliverList(
@@ -61,7 +94,7 @@ class _TodoListPageState extends State<TodoListPage> {
                 )
               else
                 SliverReorderableList(
-                  itemCount: widget.list.todos.length,
+                  itemCount: sortedAndFilteredTodos.length,
                   onReorder: (oldIndex, newIndex) {
                     setState(() {
                       if (newIndex > oldIndex) {
@@ -72,8 +105,9 @@ class _TodoListPageState extends State<TodoListPage> {
                     });
                   },
                   itemBuilder: (context, index) {
-                    final todo = widget.list.todos[index];
+                    final todo = sortedAndFilteredTodos[index];
                     return ReorderableDelayedDragStartListener(
+                      enabled: sortOption == SortOption.custom,
                       key: ValueKey(todo.hashCode),
                       index: index,
                       child: Material(
@@ -240,6 +274,9 @@ class _TodoListPageState extends State<TodoListPage> {
           ),
 
           floatingActionButton: FloatingActionButton(
+            tooltip: 'Aufgabe hinzufügen',
+            mini: true,
+            child: const Icon(Icons.add),
             onPressed: () async {
               Todo? newTodo = await showModalBottomSheet(
                 context: context,
@@ -257,8 +294,6 @@ class _TodoListPageState extends State<TodoListPage> {
                 );
               }
             },
-            tooltip: 'Aufgabe hinzufügen',
-            child: const Icon(Icons.add),
           ),
         );
       },

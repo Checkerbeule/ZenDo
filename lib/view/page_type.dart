@@ -9,7 +9,7 @@ enum PageType {
   const PageType(this.icon);
 }
 
-extension AppPageX on PageType {
+extension PageTypeX on PageType {
   String label(BuildContext context) {
     return name; //TODO #28 translate page name as label
     /* final loc = AppLocalizations.of(context)!;
