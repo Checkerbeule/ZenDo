@@ -42,7 +42,7 @@ class ZenDoApp extends StatelessWidget {
       child: MaterialApp(
         title: 'ZenDo',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreenAccent),
         ),
         home: ZenDoMainPage(),
       ),

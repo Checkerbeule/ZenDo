@@ -25,9 +25,29 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
       snap: true,
       toolbarHeight: 40,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      title: Text(
-        'Aufgaben sortieren und filtern',
-        style: Theme.of(context).textTheme.bodyLarge,
+      title: Row(
+        children: [
+          Text(
+            'Sortierung: ${sortOption.label(context)}',
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
+          if (sortOption != SortOption.custom) ...[
+            SizedBox(width: 5),
+            if (sortOrder == SortOrder.ascending) ...[
+              Icon(
+                Icons.arrow_upward,
+                size: 20,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ] else ...[
+              Icon(
+                Icons.arrow_downward,
+                size: 20,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ],
+          ],
+        ],
       ),
       actions: [
         MenuAnchor(
@@ -48,16 +68,19 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
                           Icon(
                             Icons.swipe_vertical,
                             color: Theme.of(context).colorScheme.primary,
+                            size: 20,
                           )
                         else if (sortOrder == SortOrder.ascending)
                           Icon(
                             Icons.arrow_upward,
                             color: Theme.of(context).colorScheme.primary,
+                            size: 20,
                           )
                         else
                           Icon(
                             Icons.arrow_downward,
                             color: Theme.of(context).colorScheme.primary,
+                            size: 20,
                           ),
                       ],
                     ],
@@ -86,7 +109,16 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
             );
           },
         ),
-        IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
+        if (true) ...[
+          Badge(
+            label: Text('0'),
+            offset: Offset(1, 15),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            child: IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
+          ),
+        ] else ...[
+          IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
+        ],
       ],
     );
   }
