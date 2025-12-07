@@ -100,6 +100,31 @@ class _TodoListPageState extends State<TodoListPage> {
                 )
               else
                 SliverReorderableList(
+                  proxyDecorator: (child, index, animation) {
+                    return AnimatedBuilder(
+                      animation: animation,
+                      builder: (context, _) {
+                        return Transform.scale(
+                          scale: 1.0,
+                          child: Material(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withValues(alpha: 0.4),
+                                width: 1,
+                              ),
+                            ),
+                            elevation: 5,
+                            color: Theme.of(context).colorScheme.surface,
+                            shadowColor: Theme.of(context).colorScheme.shadow,
+                            child: child,
+                          ),
+                        );
+                      },
+                    );
+                  },
                   itemCount: sortedAndFilteredTodos.length,
                   onReorder: (oldIndex, newIndex) {
                     setState(() {
