@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
@@ -64,6 +67,46 @@ class _TodoListPageState extends State<TodoListPage> {
     return todos;
   }
 
+  String getSortOptionPrefKey(ListScope scope) {
+    return 'todo.${scope.name}.list.sortOption';
+  }
+
+  String getSortOrderPrefKey(ListScope scope) {
+    return 'todo.${scope.name}.list.sortOrder';
+  }
+
+  Future<void> _saveSortPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(
+      getSortOptionPrefKey(widget.list.scope),
+      sortOption.index,
+    );
+    await prefs.setInt(getSortOrderPrefKey(widget.list.scope), sortOrder.index);
+  }
+
+  Future<void> _loadSortPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      sortOption =
+          SortOption.values[prefs.getInt(
+                getSortOptionPrefKey(widget.list.scope),
+              ) ??
+              SortOption.custom.index];
+      sortOrder =
+          SortOrder.values[prefs.getInt(
+                getSortOrderPrefKey(widget.list.scope),
+              ) ??
+              SortOrder.ascending.index];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSortPreferences();
+  }
+
   @override
   Widget build(BuildContext context) {
     final Set<SortOption> excludedSortOptions =
@@ -85,6 +128,7 @@ class _TodoListPageState extends State<TodoListPage> {
                     sortOption = option;
                     sortOrder = order;
                   });
+                  unawaited(_saveSortPreferences());
                 },
               ),
               if (widget.list.todos.isEmpty)
@@ -135,7 +179,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   },
                   itemBuilder: (context, index) {
                     final todo = sortedAndFilteredTodos[index];
-                    return ReorderableDragStartListener(
+                    return ReorderableDelayedDragStartListener(
                       enabled: sortOption == SortOption.custom,
                       key: ValueKey(todo.hashCode),
                       index: index,

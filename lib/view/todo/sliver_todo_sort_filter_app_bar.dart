@@ -109,14 +109,14 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
             );
           },
         ),
-        if (true) ...[
+        /* if (filter active) ...[
           Badge(
             label: Text('0'),
             offset: Offset(1, 15),
             backgroundColor: Theme.of(context).colorScheme.primary,
             child: IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
           ),
-        ] else ...[
+        ] else  */...[
           IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
         ],
       ],
