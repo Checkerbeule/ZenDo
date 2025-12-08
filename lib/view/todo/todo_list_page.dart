@@ -135,7 +135,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   },
                   itemBuilder: (context, index) {
                     final todo = sortedAndFilteredTodos[index];
-                    return ReorderableDelayedDragStartListener(
+                    return ReorderableDragStartListener(
                       enabled: sortOption == SortOption.custom,
                       key: ValueKey(todo.hashCode),
                       index: index,
