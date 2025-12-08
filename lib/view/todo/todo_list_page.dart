@@ -112,13 +112,11 @@ class _TodoListPageState extends State<TodoListPage> {
                               side: BorderSide(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.primary.withValues(alpha: 0.4),
+                                ).colorScheme.primary.withValues(alpha: 0.5),
                                 width: 1,
                               ),
                             ),
                             elevation: 5,
-                            color: Theme.of(context).colorScheme.surface,
-                            shadowColor: Theme.of(context).colorScheme.shadow,
                             child: child,
                           ),
                         );
