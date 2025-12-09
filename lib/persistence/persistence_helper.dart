@@ -113,6 +113,7 @@ class PersistenceHelper {
       for (final scope in ListScope.values) {
         final list = box.get(scope.name);
         if (list != null) {
+          list.initMaxOrderAfterLoad();
           lists.add(list);
         }
       }
