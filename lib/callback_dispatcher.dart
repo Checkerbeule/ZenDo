@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:logger/logger.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/model/list_manager.dart';
-import 'package:zen_do/persistance/hive_initializer.dart';
+import 'package:zen_do/persistence/hive_initializer.dart';
 
 Logger logger = Logger(level: Level.debug);
 

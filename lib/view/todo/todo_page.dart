@@ -7,7 +7,7 @@ import 'package:zen_do/main.dart';
 import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo_list.dart';
-import 'package:zen_do/persistance/persistence_helper.dart';
+import 'package:zen_do/persistence/persistence_helper.dart';
 import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/loading_screen.dart';
 import 'package:zen_do/view/todo/todo_list_page.dart';
@@ -123,6 +123,9 @@ class _TodoView extends StatelessWidget {
                     ).colorScheme.primaryContainer,
                     toolbarHeight: 0,
                     bottom: TabBar(
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.center,
                       dividerColor: Theme.of(context).primaryColor,
                       tabs: [
                         for (var list in listManager.allLists)

@@ -3,8 +3,8 @@ import 'package:mockito/mockito.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
-import 'package:zen_do/persistance/file_lock_helper.dart';
-import 'package:zen_do/persistance/persistence_helper.dart';
+import 'package:zen_do/persistence/file_lock_helper.dart';
+import 'package:zen_do/persistence/persistence_helper.dart';
 
 import '../mocks/mocks.mocks.dart';
 
@@ -490,6 +490,168 @@ void main() {
           expect(isVacant, isFalse);
         },
       );
+    });
+
+    group('$className todo order tests', () {
+      test(
+        '$className initMaxOrderAfterLoad sets _currentMaxOrder correctly',
+        () {
+          final list = TodoList(ListScope.daily);
+          final todo_1 = Todo(title: '1');
+          final todo_2 = Todo(title: '2');
+          final todo_3 = Todo(title: '3');
+          list.addAll([todo_1, todo_2]);
+
+          list.initMaxOrderAfterLoad();
+          list.addTodo(todo_3);
+
+          expect(todo_3.order, 3000);
+        },
+      );
+
+      test('$className addTodo sets order correctly', () {
+        final list = TodoList(ListScope.daily);
+        final todo_1 = Todo(title: '1');
+        final todo_2 = Todo(title: '2');
+        final todo_3 = Todo(title: '3');
+
+        list.addTodo(todo_3);
+        list.addTodo(todo_1);
+        list.addTodo(todo_2);
+
+        expect(list.todos.first, todo_3);
+        expect(todo_3.order, 1000);
+        expect(list.todos[1], todo_1);
+        expect(todo_1.order, 2000);
+        expect(list.todos.last, todo_2);
+        expect(todo_2.order, 3000);
+      });
+
+      test('$className addAll sets order correctly', () {
+        final list = TodoList(ListScope.daily);
+        final todo_1 = Todo(title: '1');
+        final todo_2 = Todo(title: '2');
+        final todo_3 = Todo(title: '3');
+
+        list.addAll([todo_3, todo_1, todo_2]);
+
+        expect(list.todos.first, todo_3);
+        expect(todo_3.order, 1000);
+        expect(list.todos[1], todo_1);
+        expect(todo_1.order, 2000);
+        expect(list.todos.last, todo_2);
+        expect(todo_2.order, 3000);
+      });
+
+      test('$className deleteTodo keeps order on todo', () {
+        final list = TodoList(ListScope.daily);
+        final todo = Todo(title: 'todo');
+
+        list.addTodo(todo);
+        list.deleteTodo(todo);
+
+        expect(todo.order, 1000);
+      });
+
+      test('$className deleteAll keeps order on todo', () {
+        final list = TodoList(ListScope.daily);
+        final todo_1 = Todo(title: '1');
+        final todo_2 = Todo(title: '2');
+
+        list.addAll([todo_1, todo_2]);
+        list.deleteAll([todo_1, todo_2]);
+
+        expect(todo_1.order, 1000);
+        expect(todo_2.order, 2000);
+      });
+
+      test('$className markAsDone keeps order on todo', () {
+        final list = TodoList(ListScope.daily);
+        final todo = Todo(title: 'todo');
+
+        list.addTodo(todo);
+        list.markAsDone(todo);
+
+        expect(todo.order, 1000);
+      });
+
+      test('$className restoreTodo sets keeps order on todo', () {
+        final list = TodoList(ListScope.daily);
+        final todo_1 = Todo(title: '1');
+        final todo_2 = Todo(title: '2');
+
+        list.addAll([todo_1, todo_2]);
+        list.markAsDone(todo_1);
+
+        expect(todo_1.order, 1000);
+        expect(todo_2.order, 2000);
+      });
+
+      test('$className reorder on moved todo thats not in list not possible', () {
+        final list = TodoList(ListScope.daily);
+        final todoNotInList = Todo(title: '0');
+
+        list.reorder(todoNotInList, null);
+
+        expect(todoNotInList.order, isNull);
+      });
+
+      test('$className reorder successfull', () {
+        final list = TodoList(ListScope.daily);
+        final todo_1 = Todo(title: '1');
+        final todo_2 = Todo(title: '2');
+        final todo_3 = Todo(title: '3');
+        list.addAll([todo_1, todo_2, todo_3]);
+
+        list.reorder(todo_3, todo_1);
+
+        expect(todo_1.order, 1000);
+        expect(todo_2.order, 2000);
+        expect(todo_3.order, 1500);
+      });
+
+      test('$className reorder to first elem successfull', () {
+        final list = TodoList(ListScope.daily);
+        final todo_1 = Todo(title: '1');
+        final todo_2 = Todo(title: '2');
+        final todo_3 = Todo(title: '3');
+        list.addAll([todo_1, todo_2, todo_3]);
+        list.reorder(todo_3, null);
+
+
+        expect(todo_1.order, 1000);
+        expect(todo_2.order, 2000);
+        expect(todo_3.order, 500);
+      });
+
+      test('$className reorder to last elem successfull', () {
+        final list = TodoList(ListScope.daily);
+        final todo_1 = Todo(title: '1');
+        final todo_2 = Todo(title: '2');
+        final todo_3 = Todo(title: '3');
+        list.addAll([todo_1, todo_2, todo_3]);
+        list.reorder(todo_2, todo_3);
+
+
+        expect(todo_1.order, 1000);
+        expect(todo_2.order, 4000);
+        expect(todo_3.order, 3000);
+      });
+
+      test('$className reorder with _normalizeOrder successfull', () {
+        final list = TodoList(ListScope.daily);
+        final todo_1 = Todo(title: '1');
+        final todo_2 = Todo(title: '2');
+        final todo_3 = Todo(title: '3');
+        list.addAll([todo_1, todo_2, todo_3]);
+        todo_2.order = todo_1.order! + 1;
+
+        list.reorder(todo_3, todo_1);
+
+        expect(todo_1.order, 1000);
+        expect(todo_2.order, 2000);
+        expect(todo_3.order, 1500);
+      });
     });
   });
 }

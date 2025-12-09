@@ -34,6 +34,9 @@ class Todo {
   @HiveField(5)
   ListScope? listScope;
 
+  @HiveField(6)
+  int? order;
+
   Todo({required String title, String? description})
     : creationDate = DateTime.now() {
     this.title = title;
@@ -47,6 +50,7 @@ class Todo {
     this.expirationDate,
     this.completionDate,
     this.listScope,
+    this.order,
   }) {
     this.title = title;
     this.description = description;
@@ -59,6 +63,7 @@ class Todo {
     DateTime? expirationDate,
     DateTime? completionDate,
     ListScope? listScope,
+    int? order,
   }) {
     return Todo._internal(
       title: title ?? this.title,
@@ -67,6 +72,7 @@ class Todo {
       expirationDate: expirationDate ?? this.expirationDate,
       completionDate: completionDate ?? this.completionDate,
       listScope: listScope ?? this.listScope,
+      order: order ?? this.order,
     );
   }
 
@@ -74,7 +80,8 @@ class Todo {
     : creationDate = other.creationDate,
       expirationDate = other.expirationDate,
       completionDate = other.completionDate,
-      listScope = other.listScope {
+      listScope = other.listScope,
+      order = other.order {
     title = other.title;
     description = other.description;
   }

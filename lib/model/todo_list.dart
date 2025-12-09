@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:hive/hive.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/persistance/persistence_helper.dart';
+import 'package:zen_do/persistence/persistence_helper.dart';
 
 part 'todo_list.g.dart';
 
@@ -21,6 +22,40 @@ class TodoList implements Comparable<TodoList> {
   @HiveField(3)
   TodoList(this.scope);
 
+  int get doneCount {
+    return doneTodos.length;
+  }
+
+  List<Todo> get allTodos {
+    return [...todos, ...doneTodos];
+  }
+
+  /// Cache for todo ordering. Not persitet!
+  int _currentMaxOrder = 0;
+
+  /// Initialize [_currentMaxOrder].
+  /// Call this method once after loading data from persistence.
+  void initMaxOrderAfterLoad() {
+    final maxOrder = allTodos.map((todo) => todo.order ?? 0).fold(0, max);
+    _currentMaxOrder = maxOrder;
+  }
+
+  void _setExpirationDate(Todo todo) {
+    if (scope != ListScope.backlog) {
+      final now = DateTime.now();
+      todo.expirationDate = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).add(scope.duration);
+    }
+  }
+
+  void _setOrder(Todo todo) {
+    _currentMaxOrder += 1000;
+    todo.order = _currentMaxOrder;
+  }
+
   /// Adds the [todo] to the list.
   /// Calculates the expirationDate based on the ListScope.
   /// Uses [PersistenceHelper] to store the list with the added [todo]
@@ -30,6 +65,7 @@ class TodoList implements Comparable<TodoList> {
     if (isTodoTitleVacant(todo.title)) {
       todos.add(todo);
       _setExpirationDate(todo);
+      _setOrder(todo);
       todo.listScope = scope;
       unawaited(PersistenceHelper.saveList(this));
       return true;
@@ -46,6 +82,7 @@ class TodoList implements Comparable<TodoList> {
     for (final todo in todosToAdd) {
       if (isTodoTitleVacant(todo.title)) {
         todos.add(todo);
+        _setOrder(todo);
         todo.listScope = scope;
         addedTodos.add(todo);
       }
@@ -57,11 +94,11 @@ class TodoList implements Comparable<TodoList> {
   }
 
   bool deleteTodo(Todo todo) {
-    final bool deleted = todos.remove(todo);
-    if (deleted) {
+    final isDeleted = todos.remove(todo);
+    if (isDeleted) {
       unawaited(PersistenceHelper.saveList(this));
     }
-    return deleted;
+    return isDeleted;
   }
 
   void deleteAll(Iterable<Todo> todosToDelete) {
@@ -103,6 +140,8 @@ class TodoList implements Comparable<TodoList> {
       todos.removeAt(indexOfOldTodo);
       if (isTodoTitleVacant(newTodo.title)) {
         todos.insert(indexOfOldTodo, newTodo);
+        newTodo.order = oldTodo.order;
+        newTodo.listScope = scope;
         isReplaced = true;
       } else {
         // restore old todo
@@ -115,19 +154,41 @@ class TodoList implements Comparable<TodoList> {
     return isReplaced;
   }
 
-  int get doneCount {
-    return doneTodos.length;
+  void reorder(Todo moved, Todo? previous) {
+    if (!allTodos.contains(moved)) return;
+    final lowerOrder = previous?.order ?? 0;
+    final upperOrder = _findNextHigher(lowerOrder)?.order ?? lowerOrder + 2000;
+
+    final difference = upperOrder - lowerOrder;
+    if (difference <= 1) {
+      _normalizeOrders();
+      reorder(moved, previous);
+      return;
+    }
+    moved.order = lowerOrder + difference ~/ 2;
+    unawaited(PersistenceHelper.saveList(this));
   }
 
-  void _setExpirationDate(Todo todo) {
-    if (scope != ListScope.backlog) {
-      final now = DateTime.now();
-      todo.expirationDate = DateTime(
-        now.year,
-        now.month,
-        now.day,
-      ).add(scope.duration);
+  Todo? _findNextHigher(int lowerOrder) {
+    return allTodos.where((t) => (t.order ?? 0) > lowerOrder).fold<Todo?>(
+      null,
+      (previous, elem) {
+        if (previous == null || previous.order! > elem.order!) {
+          return elem;
+        }
+        return previous;
+      },
+    );
+  }
+
+  void _normalizeOrders() {
+    final allTodos = [...todos, ...doneTodos]
+      ..sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
+    _currentMaxOrder = 0;
+    for (var i = 0; i < allTodos.length; i++) {
+      allTodos[i].order = (i + 1) * 1000;
     }
+    _currentMaxOrder = allTodos.isEmpty ? 0 : allTodos.last.order!;
   }
 
   /// Checks wether a [Todo] allready exists with the given [title].
