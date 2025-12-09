@@ -313,30 +313,41 @@ class _TodoListPageState extends State<TodoListPage> {
                 ),
 
               SliverToBoxAdapter(
-                child: ExpansionTile(
-                  initiallyExpanded: expanded,
-                  onExpansionChanged: (bool expanding) => expanded = expanding,
-                  title: const Text('Erledigte Aufgaben'),
-                  subtitle: Text('${widget.list.doneCount} erledigt'),
-                  collapsedIconColor: Theme.of(context).primaryColor,
+                child: Column(
                   children: [
-                    for (var todo in widget.list.doneTodos)
-                      ListTile(
-                        leading: IconButton(
-                          onPressed: () => todoState.performAcitionOnList<bool>(
-                            () => widget.list.restoreTodo(todo),
-                          ),
-                          icon: Icon(Icons.check_circle),
-                          color: Theme.of(context).primaryColor,
-                        ),
-                        title: Text(
-                          todo.title,
-                          style: TextStyle(
-                            decoration: TextDecoration.lineThrough,
-                            color: Theme.of(context).disabledColor,
-                          ),
-                        ),
+                    Divider(),
+                    ExpansionTile(
+                      title: const Text('Erledigte Aufgaben'),
+                      subtitle: Text('${widget.list.doneCount} erledigt'),
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide.none,
                       ),
+                      collapsedIconColor: Theme.of(context).primaryColor,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      initiallyExpanded: expanded,
+                      onExpansionChanged: (bool expanding) =>
+                          expanded = expanding,
+                      children: [
+                        for (var todo in widget.list.doneTodos)
+                          ListTile(
+                            leading: IconButton(
+                              onPressed: () =>
+                                  todoState.performAcitionOnList<bool>(
+                                    () => widget.list.restoreTodo(todo),
+                                  ),
+                              icon: Icon(Icons.check_circle),
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            title: Text(
+                              todo.title,
+                              style: TextStyle(
+                                decoration: TextDecoration.lineThrough,
+                                color: Theme.of(context).disabledColor,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),
