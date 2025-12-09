@@ -166,6 +166,7 @@ class TodoList implements Comparable<TodoList> {
       return;
     }
     moved.order = lowerOrder + difference ~/ 2;
+    unawaited(PersistenceHelper.saveList(this));
   }
 
   Todo? _findNextHigher(int lowerOrder) {

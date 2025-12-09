@@ -164,13 +164,15 @@ class _TodoListPageState extends State<TodoListPage> {
                   },
                   itemCount: sortedAndFilteredTodos.length,
                   onReorder: (oldIndex, newIndex) {
-                    setState(() {
-                      if (newIndex > oldIndex) {
-                        newIndex--;
-                      }
-                      final todo = widget.list.todos.removeAt(oldIndex);
-                      widget.list.todos.insert(newIndex, todo);
-                    });
+                    if (sortOption == SortOption.custom) {
+                      setState(() {
+                        final moved = sortedAndFilteredTodos[oldIndex];
+                        final previous = newIndex == 0
+                            ? null
+                            : sortedAndFilteredTodos[newIndex - 1];
+                        widget.list.reorder(moved, previous);
+                      });
+                    }
                   },
                   itemBuilder: (context, index) {
                     final todo = sortedAndFilteredTodos[index];
