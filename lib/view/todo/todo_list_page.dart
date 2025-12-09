@@ -33,14 +33,9 @@ class _TodoListPageState extends State<TodoListPage> {
 
   List<Todo> get sortedAndFilteredTodos {
     final todos = List<Todo>.from(widget.list.todos);
-    //todos.sort((a, b) => a.order!.compareTo(b.order!));
     switch (sortOption) {
       case SortOption.custom:
-        /* todos.sort(
-          (a, b) => sortOrder == SortOrder.ascending
-              ? a.order!.compareTo(b.order!)
-              : b.order!.compareTo(a.order!),
-        ); */
+        todos.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
         break;
       case SortOption.title:
         todos.sort(
