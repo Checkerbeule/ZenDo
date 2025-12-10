@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zen_do/config/localization/app_localizations.dart';
 
 class SliverTodoSortFilterAppBar extends StatelessWidget {
   SliverTodoSortFilterAppBar({
@@ -18,6 +19,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SliverAppBar(
       actionsPadding: const EdgeInsets.only(right: 10),
       pinned: false,
@@ -28,7 +30,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
       title: Row(
         children: [
           Text(
-            'Sortierung: ${sortOption.label(context)}',
+            '${loc.sorting}: ${sortOption.label(context)}',
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           if (sortOption != SortOption.custom) ...[
@@ -116,9 +118,8 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
             backgroundColor: Theme.of(context).colorScheme.primary,
             child: IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
           ),
-        ] else  */...[
-          IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
-        ],
+        ] else  */
+        ...[IconButton(icon: Icon(Icons.filter_alt), onPressed: null)],
       ],
     );
   }
@@ -128,7 +129,17 @@ enum SortOption { custom, title, expirationDate, creationDate }
 
 extension SortOptionX on SortOption {
   String label(BuildContext context) {
-    return name;
+    final loc = AppLocalizations.of(context)!;
+    switch (this) {
+      case SortOption.custom:
+        return loc.custom;
+      case SortOption.title:
+        return loc.todoTitle;
+      case SortOption.expirationDate:
+        return loc.expirationDate;
+      case SortOption.creationDate:
+        return loc.creationDate;
+    }
   }
 }
 

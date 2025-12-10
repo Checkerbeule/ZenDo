@@ -54,7 +54,7 @@ class _DeleteDialogState extends State<DeleteDialog> {
           style: TextButton.styleFrom(
             foregroundColor: Theme.of(context).colorScheme.primary,
           ),
-          child: const Text('Abbrechen'),
+          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
           onPressed: () {
             Navigator.of(context).pop(false);
           },
@@ -64,7 +64,7 @@ class _DeleteDialogState extends State<DeleteDialog> {
             foregroundColor: Theme.of(context).colorScheme.error,
             backgroundColor: Theme.of(context).colorScheme.errorContainer,
           ),
-          child: const Text('Ok'),
+          child: Text(MaterialLocalizations.of(context).deleteButtonTooltip),
           onPressed: () {
             Navigator.of(context).pop(true);
           },

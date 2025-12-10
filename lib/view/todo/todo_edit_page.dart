@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zen_do/config/localization/app_localizations.dart';
 import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
@@ -39,24 +40,24 @@ class _TodoEditPageState extends State<TodoEditPage> {
     selectedScope = todo.listScope!;
     titleController = TextEditingController(text: todo.title);
     descriptionController = TextEditingController(text: todo.description);
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     for (final scope in manager.allScopes) {
       listScopeDropDownItems.add(
         DropdownMenuItem(
           value: scope,
           child: Text(
             style: TextStyle(fontWeight: FontWeight.normal),
-            scope.label,
+            scope.label(context),
           ),
         ),
       );
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Aufgabe bearbeiten'),
+      title: Text(loc.editTodo),
       content: Form(
         key: formKey,
         child: SingleChildScrollView(
@@ -67,16 +68,16 @@ class _TodoEditPageState extends State<TodoEditPage> {
                 controller: titleController,
                 autocorrect: true,
                 decoration: InputDecoration(
-                  labelText: 'Titel',
-                  hintText: 'Titel der Aufgabe',
+                  labelText: loc.titleLable,
+                  hintText: loc.titleHintText,
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Titel darf nicht leer sein';
+                    return loc.errorTitleEmpty;
                   }
                   if (titleController.text != todo.title &&
                       !manager.isTodoTitleVacant(value, todo.listScope!)) {
-                    return 'Titel ist bereits vergeben';
+                    return loc.errorTitleUnavailable;
                   }
                   return null;
                 },
@@ -88,8 +89,8 @@ class _TodoEditPageState extends State<TodoEditPage> {
                 minLines: 1,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  labelText: 'Beschreibung',
-                  hintText: 'Beschreibung',
+                  labelText: loc.descriptionLabel,
+                  hintText: loc.descriptionHintText,
                 ),
               ),
               Row(
@@ -97,7 +98,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                 children: [
                   Flexible(
                     child: DropdownButtonFormField(
-                      decoration: InputDecoration(labelText: 'Liste: '),
+                      decoration: InputDecoration(labelText: '${loc.list}: '),
                       items: listScopeDropDownItems,
                       initialValue: selectedScope,
                       onChanged: (value) {
@@ -109,7 +110,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                               titleController.text,
                               value as ListScope,
                             )) {
-                          return 'Aufgabe bereits vohanden in Zielliste';
+                          return loc.errorTodoAllreadyExistsInDestinationList;
                         }
                         return null;
                       },
@@ -122,7 +123,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Fällig am: ${formatDate(todo.expirationDate)}'),
+                  Text('${loc.dueOn}: ${formatDate(todo.expirationDate)}'),
                   if (todo.expirationDate != null &&
                       DateTime.now().isAfter(todo.expirationDate!)) ...[
                     SizedBox(width: 5),
@@ -135,7 +136,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                 ],
               ),
               SizedBox(height: 16),
-              Text('Erstellt am: ${formatDate(todo.creationDate)}'),
+              Text('${loc.createdOn}: ${formatDate(todo.creationDate)}'),
             ],
           ),
         ),
@@ -145,7 +146,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
           style: TextButton.styleFrom(
             foregroundColor: Theme.of(context).colorScheme.error,
           ),
-          child: const Text('Abbrechen'),
+          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -154,7 +155,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
           style: TextButton.styleFrom(
             foregroundColor: Theme.of(context).colorScheme.primary,
           ),
-          child: const Text('Speichern'),
+          child: Text(MaterialLocalizations.of(context).saveButtonLabel),
           onPressed: () {
             if (isChanged) {
               if (formKey.currentState!.validate()) {

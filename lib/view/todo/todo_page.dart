@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:zen_do/config/localization/app_localizations.dart';
 import 'package:zen_do/main.dart';
 import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
@@ -102,6 +103,7 @@ class TodoState extends ChangeNotifier {
 class _TodoView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
         final listManager = todoState.listManager;
@@ -112,7 +114,7 @@ class _TodoView extends StatelessWidget {
         }
 
         return listManager == null
-            ? LoadingScreen(message: 'Lade Aufgaben...')
+            ? LoadingScreen(message: loc.loadingTodosIndicator)
             : DefaultTabController(
                 initialIndex: 0,
                 length: listManager.listCount,
@@ -145,7 +147,7 @@ class _TodoView extends StatelessWidget {
                                     child: Icon(list.scope.icon),
                                   )
                                 : Icon(list.scope.icon),
-                            text: list.scope.label,
+                            text: list.scope.label(context),
                           ),
                       ],
                     ),
@@ -169,19 +171,15 @@ void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
+      final loc = AppLocalizations.of(context)!;
       return AlertDialog(
-        title: const Text('Laden der Daten fehlgeschlagen !'),
+        title: Text(loc.dataLoadErrorHeadline),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(errorMessage),
             SizedBox(height: 16),
-            Text(
-              'Schließen Sie die App und öffenen Sie sie zu einem späteren Zeitpunkt erneut.',
-            ),
-            Text(
-              'Sollte der Fehler anschließend weiterhin bestehen, löschen Sie den App-Cache (Ihre Daten bleiben erhalten).',
-            ),
+            Text(loc.dataLoadErrorMessage),
           ],
         ),
         actions: <Widget>[
@@ -189,7 +187,7 @@ void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.primary,
             ),
-            child: const Text('Einstellungen öffnen'),
+            child: Text(loc.openSettings),
             onPressed: () {
               AppSettings.openAppSettings(
                 type: AppSettingsType.settings,
@@ -201,7 +199,7 @@ void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.primary,
             ),
-            child: const Text('App schließen'),
+            child: Text(loc.closeApp),
             onPressed: () {
               SystemNavigator.pop();
             },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zen_do/config/localization/app_localizations.dart';
 
 enum PageType {
   todos(Icons.view_list_outlined),
@@ -11,15 +12,14 @@ enum PageType {
 
 extension PageTypeX on PageType {
   String label(BuildContext context) {
-    return name; //TODO #28 translate page name as label
-    /* final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context)!;
     switch (this) {
-      case AppPage.todos:
+      case PageType.todos:
         return loc.todos;
-      case AppPage.habits:
+      case PageType.habits:
         return loc.habits;
-      case AppPage.notes:
+      case PageType.notes:
         return loc.notes;
-    } */
+    }
   }
 }

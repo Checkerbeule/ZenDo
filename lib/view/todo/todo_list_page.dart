@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:zen_do/config/localization/app_localizations.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
 import 'package:zen_do/model/todo_list.dart';
@@ -110,6 +111,7 @@ class _TodoListPageState extends State<TodoListPage> {
         : {};
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
+        final loc = AppLocalizations.of(context)!;
         final listManager = todoState.listManager;
         return Scaffold(
           body: CustomScrollView(
@@ -131,7 +133,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   delegate: SliverChildListDelegate.fixed([
                     ListTile(
                       title: Text(
-                        'Keine offenen Aufgaben vorhanden.',
+                        loc.noOpenTodosLeft,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -274,7 +276,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                   SizedBox(width: 5),
                                   Tooltip(
                                     message:
-                                        'Fällig am ${formatDate(todo.expirationDate!)} !',
+                                        '${loc.dueOn} ${formatDate(todo.expirationDate!)} !',
                                     child: Icon(
                                       Icons.access_time_rounded,
                                       color: Theme.of(
@@ -292,9 +294,8 @@ class _TodoListPageState extends State<TodoListPage> {
                                     await showDialogWithScaleTransition<bool>(
                                       context: context,
                                       child: DeleteDialog(
-                                        title: 'Aufgabe löschen ?',
-                                        text:
-                                            'Diese Aufgabe wirklich unwiederbringlich löschen?',
+                                        title: '${loc.deleteTodo} ?',
+                                        text: loc.deleteTodoQuestion,
                                       ),
                                     );
                                 if (delete != null && delete) {
@@ -319,8 +320,8 @@ class _TodoListPageState extends State<TodoListPage> {
                   children: [
                     Divider(),
                     ExpansionTile(
-                      title: const Text('Erledigte Aufgaben'),
-                      subtitle: Text('${widget.list.doneCount} erledigt'),
+                      title: Text(loc.completedTodos),
+                      subtitle: Text('${widget.list.doneCount} ${loc.completed}'),
                       shape: RoundedRectangleBorder(side: BorderSide.none),
                       collapsedIconColor: Theme.of(context).primaryColor,
                       controlAffinity: ListTileControlAffinity.leading,
@@ -355,7 +356,7 @@ class _TodoListPageState extends State<TodoListPage> {
           ),
 
           floatingActionButton: FloatingActionButton(
-            tooltip: 'Aufgabe hinzufügen',
+            tooltip: loc.addTodo,
             mini: true,
             child: const Icon(Icons.add),
             onPressed: () async {
