@@ -142,51 +142,73 @@ class ListManager {
     if (nextList == null) {
       return false;
     }
-    return moveToOtherList(todo, nextList.scope);
+    return moveAndUpdateTodo(todo: todo, destination: nextList.scope);
   }
 
   bool moveToPreviousList(Todo todo) {
     if (todo.listScope == null) {
       return false;
     }
-    final nextList = getPreviousList(todo.listScope!);
-    if (nextList == null) {
+    final previousList = getPreviousList(todo.listScope!);
+    if (previousList == null) {
       return false;
     }
-    return moveToOtherList(todo, nextList.scope);
+    return moveAndUpdateTodo(todo: todo, destination: previousList.scope);
   }
 
   /// Moves the given [todo] from its containing list, to another [destination] list
-  bool moveToOtherList(Todo todo, ListScope destination) {
+  bool moveAndUpdateTodo({
+    Todo? oldTodo,
+    required Todo todo,
+    required ListScope destination,
+  }) {
     String errorMessage =
         '[ListManager] Shift of todo ${todo.title} not possible!';
+
+    final ListScope? originScope = oldTodo == null
+        ? todo.listScope
+        : oldTodo.listScope;
+    final Todo todoToUpdate = oldTodo ?? todo;
+    TodoList? originList;
+    TodoList? destinationList;
     bool isDeleted = false;
     bool isAdded = false;
 
-    // do some pre-checks
-    if (!allScopes.contains(destination)) {
+    if (allScopes.contains(destination)) {
+      destinationList = getListByScope(destination);
+    }
+    if (destinationList == null) {
       logger.i(
         '$errorMessage The destination list with the given scope ${destination.name} does not exist!',
       );
       return false;
     }
+
+    if (originScope != null) {
+      originList = getListByScope(originScope);
+    }
+    if (originList == null) {
+      logger.i(
+        '$errorMessage No origin list could be determined!'
+        '[todo] or [oldTodo] must have a ListScope that represents the origin list!'
+        '[ListManager] must have the given origin list!',
+      );
+      return false;
+    }
+
     if (!isTodoTitleVacant(todo.title, destination)) {
       logger.i(
         '$errorMessage The todo allready exists in the destinatin list $destination!',
       );
       return false;
     }
-    if (todo.listScope == null) {
-      logger.i('$errorMessage The given todo does not have a containing list!');
-      return false;
-    }
 
-    isDeleted = getListByScope(todo.listScope!)!.deleteTodo(todo);
+    isDeleted = originList.deleteTodo(todoToUpdate);
     if (isDeleted) {
-      isAdded = getListByScope(destination)!.addTodo(todo);
+      isAdded = destinationList.addTodo(todo);
       if (!isAdded) {
         //revert if add to destination not possible
-        getListByScope(todo.listScope!)!.addTodo(todo);
+        originList.addTodo(todoToUpdate);
         logger.i(
           '$errorMessage The given todo could not be added to the destinatin list $destination!',
         );
@@ -202,7 +224,7 @@ class ListManager {
   /// Checks wether a [Todo] allready exists with the given title in the list of the given [ListScope].
   bool isTodoTitleVacant(String title, ListScope scopeOfList) {
     final listOfScope = getListByScope(scopeOfList);
-    if(listOfScope == null) {
+    if (listOfScope == null) {
       return false;
     }
     return listOfScope.isTodoTitleVacant(title);
