@@ -79,13 +79,12 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    AppLocalizations loc = AppLocalizations.of(context)!;
     return Consumer<ZenDoAppState>(
       builder: (context, appState, child) {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              'ZenDo ${appState.pageMessages.keys.elementAt(pageIndex).label(context)}',
+              'ZenDo ꞏ ${appState.pageMessages.keys.elementAt(pageIndex).label(context)}',
             ),
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             actions: [

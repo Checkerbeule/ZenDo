@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:zen_do/config/localization/app_localizations.dart';
 
 enum PageType {
-  todos(Icons.view_list_outlined),
-  habits(Icons.track_changes),
-  notes(Icons.edit_note);
+  todos(),
+  habits(),
+  notes();
 
-  final IconData icon;
-  const PageType(this.icon);
+  const PageType();
 }
 
 extension PageTypeX on PageType {
@@ -20,6 +19,17 @@ extension PageTypeX on PageType {
         return loc.habits;
       case PageType.notes:
         return loc.notes;
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case PageType.todos:
+        return Icons.view_list_outlined;
+      case PageType.habits:
+        return Icons.track_changes;
+      case PageType.notes:
+        return Icons.edit_note;
     }
   }
 }
