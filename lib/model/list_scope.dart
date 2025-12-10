@@ -1,19 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:zen_do/config/localization/app_localizations.dart';
 
 enum ListScope {
-  daily('Täglich', Icons.today, Duration(days: 1), true),
-  weekly('Wöchentlich', Icons.calendar_view_week, Duration(days: 7), true),
-  monthly('Monatlich', Icons.calendar_month, Duration(days: 30), true),
-  yearly('Jährlich', Icons.calendar_today, Duration(days: 365), true),
-  backlog('Backlog', Icons.list_rounded, Duration.zero, false);
+  daily(Duration(days: 1), true),
+  weekly(Duration(days: 7), true),
+  monthly(Duration(days: 30), true),
+  yearly(Duration(days: 365), true),
+  backlog(Duration.zero, false);
 
-  final String label; //TODO use extension for multilanguage support on label
-  final IconData icon;
   final Duration duration;
   final bool isAutoTransfer;
 
-  const ListScope(this.label, this.icon, this.duration, this.isAutoTransfer);
+  const ListScope(this.duration, this.isAutoTransfer);
+}
+
+extension ListScopeX on ListScope {
+  String label(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    switch (this) {
+      case ListScope.daily:
+        return loc.daily;
+      case ListScope.weekly:
+        return loc.weekly;
+      case ListScope.monthly:
+        return loc.monthly;
+      case ListScope.yearly:
+        return loc.yearly;
+      case ListScope.backlog:
+        return loc.backlog;
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case ListScope.daily:
+        return Icons.today;
+      case ListScope.weekly:
+        return Icons.calendar_view_week;
+      case ListScope.monthly:
+        return Icons.calendar_month;
+      case ListScope.yearly:
+        return Icons.calendar_today;
+      case ListScope.backlog:
+        return Icons.list_rounded;
+    }
+  }
 }
 
 class ListScopeAdapter extends TypeAdapter<ListScope> {

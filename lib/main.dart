@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/callback_dispatcher.dart';
+import 'package:zen_do/config/localization/app_localizations.dart';
 import 'package:zen_do/persistence/hive_initializer.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/habits/habit_page.dart';
@@ -44,6 +45,8 @@ class ZenDoApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreenAccent),
         ),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: ZenDoMainPage(),
       ),
     );
@@ -81,7 +84,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              'ZenDo ${appState.pageMessages.keys.elementAt(pageIndex).label(context)}',
+              'ZenDo ꞏ ${appState.pageMessages.keys.elementAt(pageIndex).label(context)}',
             ),
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             actions: [

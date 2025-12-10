@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zen_do/config/localization/app_localizations.dart';
 import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
@@ -26,6 +27,7 @@ class _AddTodoPageState extends State<AddTodoPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return SafeArea(
       minimum: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -39,7 +41,7 @@ class _AddTodoPageState extends State<AddTodoPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Neue Aufgabe hinzufügen',
+                  loc.addNewTodo,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 SizedBox(height: 10),
@@ -48,18 +50,18 @@ class _AddTodoPageState extends State<AddTodoPage> {
                   autocorrect: true,
                   autofocus: true,
                   decoration: InputDecoration(
-                    labelText: 'Titel',
-                    hintText: 'Titel der Aufgabe',
+                    labelText: loc.titleLable,
+                    hintText: loc.titleHintText,
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Titel darf nicht leer sein';
+                      return loc.errorTitleEmpty;
                     }
                     if (!widget.listManager.isTodoTitleVacant(
                       value,
                       widget.listScope,
                     )) {
-                      return 'Titel ist bereits vergeben';
+                      return loc.errorTitleUnavailable;
                     }
                     return null;
                   },
@@ -71,8 +73,8 @@ class _AddTodoPageState extends State<AddTodoPage> {
                   minLines: 1,
                   maxLines: 5,
                   decoration: InputDecoration(
-                    labelText: 'Beschreibung',
-                    hintText: 'Beschreibung',
+                    labelText: loc.descriptionLabel,
+                    hintText: loc.descriptionHintText,
                   ),
                 ),
                 SizedBox(height: 10),
@@ -83,7 +85,7 @@ class _AddTodoPageState extends State<AddTodoPage> {
                       style: TextButton.styleFrom(
                         foregroundColor: Theme.of(context).colorScheme.error,
                       ),
-                      child: const Text('Abbrechen'),
+                      child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -92,7 +94,7 @@ class _AddTodoPageState extends State<AddTodoPage> {
                       style: TextButton.styleFrom(
                         foregroundColor: Theme.of(context).colorScheme.primary,
                       ),
-                      child: const Text('Speichern'),
+                      child: Text(MaterialLocalizations.of(context).saveButtonLabel),
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
                           final newTodo = Todo(
