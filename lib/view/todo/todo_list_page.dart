@@ -147,7 +147,7 @@ class _TodoListPageState extends State<TodoListPage> {
                           scale: 1.0,
                           child: Material(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(3),
                               side: BorderSide(
                                 color: Theme.of(
                                   context,
@@ -203,17 +203,19 @@ class _TodoListPageState extends State<TodoListPage> {
                               if (updatedTodo != null) {
                                 if (updatedTodo.listScope != todo.listScope) {
                                   todoState.performAcitionOnList(
-                                    () => listManager!.moveToOtherList(
-                                      todo,
-                                      updatedTodo.listScope!,
+                                    () => listManager!.moveAndUpdateTodo(
+                                      oldTodo: todo,
+                                      todo: updatedTodo,
+                                      destination: updatedTodo.listScope!,
                                     ),
                                   );
+                                } else {
+                                  todoState.performAcitionOnList<bool>(
+                                    () => listManager!
+                                        .getListByScope(updatedTodo.listScope!)!
+                                        .replaceTodo(todo, updatedTodo),
+                                  );
                                 }
-                                todoState.performAcitionOnList<bool>(
-                                  () => listManager!
-                                      .getListByScope(updatedTodo.listScope!)!
-                                      .replaceTodo(todo, updatedTodo),
-                                );
                               }
                             },
                             leading: IconButton(
@@ -319,9 +321,7 @@ class _TodoListPageState extends State<TodoListPage> {
                     ExpansionTile(
                       title: const Text('Erledigte Aufgaben'),
                       subtitle: Text('${widget.list.doneCount} erledigt'),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide.none,
-                      ),
+                      shape: RoundedRectangleBorder(side: BorderSide.none),
                       collapsedIconColor: Theme.of(context).primaryColor,
                       controlAffinity: ListTileControlAffinity.leading,
                       initiallyExpanded: expanded,

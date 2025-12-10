@@ -48,6 +48,8 @@ class TodoList implements Comparable<TodoList> {
         now.month,
         now.day,
       ).add(scope.duration);
+    } else {
+      todo.expirationDate = null;
     }
   }
 

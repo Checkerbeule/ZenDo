@@ -917,21 +917,49 @@ void main() {
         },
       );
 
-      test('$className moveToOtherList sucessfully', () {
+      test('$className moveAndUpdateTodo sucessfully moves todo', () {
         final manager = ListManager([]);
         final todo = Todo(title: 'todo to move to next list');
         manager.getListByScope(ListScope.daily)!.addTodo(todo);
+        final now = DateTime.now();
+          final expectedDate = DateTime(
+            now.year,
+            now.month,
+            now.day,
+          ).add(Duration(days: 365));
 
-        final moved = manager.moveToOtherList(todo, ListScope.backlog);
+        final moved = manager.moveAndUpdateTodo(
+          todo: todo,
+          destination: ListScope.yearly,
+        );
 
         expect(moved, isTrue);
         expect(manager.getListByScope(ListScope.daily)!.todos.length, 0);
-        expect(manager.getListByScope(ListScope.backlog)!.todos.length, 1);
-        expect(manager.getListByScope(ListScope.backlog)!.todos.first, todo);
+        expect(manager.getListByScope(ListScope.yearly)!.todos.length, 1);
+        expect(manager.getListByScope(ListScope.yearly)!.todos.first, todo);
+        expect(manager.getListByScope(ListScope.yearly)!.todos.first.expirationDate, expectedDate);
+      });
+
+      test('$className moveAndUpdateTodo sucessfully moves updated todo', () {
+        final manager = ListManager([]);
+        final todo = Todo(title: 'todo to move to next list');
+        manager.getListByScope(ListScope.daily)!.addTodo(todo);
+        final updatedTodo = todo.copyWith(title: 'updated title', description: 'updated description');
+
+        final moved = manager.moveAndUpdateTodo(
+          oldTodo: todo,
+          todo: updatedTodo,
+          destination: ListScope.yearly,
+        );
+
+        expect(moved, isTrue);
+        expect(manager.getListByScope(ListScope.daily)!.todos.length, 0);
+        expect(manager.getListByScope(ListScope.yearly)!.todos.length, 1);
+        expect(manager.getListByScope(ListScope.yearly)!.todos.first, updatedTodo);
       });
 
       test(
-        '$className moveToOtherList not possible if destination list does not exist',
+        '$className moveAndUpdateTodo not possible if destination list does not exist',
         () {
           final manager = ListManager(
             [],
@@ -945,7 +973,10 @@ void main() {
           final todo = Todo(title: 'todo to move to next list');
           manager.getListByScope(ListScope.daily)!.addTodo(todo);
 
-          final moved = manager.moveToOtherList(todo, ListScope.monthly);
+          final moved = manager.moveAndUpdateTodo(
+            todo: todo,
+            destination: ListScope.monthly,
+          );
 
           expect(moved, isFalse);
           expect(manager.getListByScope(ListScope.daily)!.todos.length, 1);
