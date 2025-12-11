@@ -192,27 +192,33 @@ class _TodoListPageState extends State<TodoListPage> {
                       index: index,
                       child: Dismissible(
                         key: ValueKey(todo.id),
-                        background: !isLastList
-                            ? Container(
-                                padding: EdgeInsetsGeometry.symmetric(
-                                  horizontal: 10,
-                                  vertical: 5,
-                                ),
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainer,
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  loc.moveToXList(
-                                    previousListScope.labelAdj(context),
-                                  ),
-                                ),
-                              )
-                            : Container(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainer,
-                              ),
+                        background: Container(
+                          padding: EdgeInsetsGeometry.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          alignment: Alignment.centerLeft,
+                          child: !isLastList
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      loc.moveToXList(
+                                        previousListScope.labelAdj(context),
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Icon(
+                                      Icons.arrow_forward,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                                  ],
+                                )
+                              : null,
+                        ),
                         secondaryBackground: !isFirstList
                             ? Container(
                                 padding: EdgeInsetsGeometry.symmetric(
@@ -222,9 +228,23 @@ class _TodoListPageState extends State<TodoListPage> {
                                 color: Theme.of(
                                   context,
                                 ).colorScheme.surfaceContainer,
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  loc.moveToXList(nextListScope.labelAdj(context)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_back,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      loc.moveToXList(
+                                        nextListScope.labelAdj(context),
+                                      ),
+                                      textAlign: TextAlign.end,
+                                    ),
+                                  ],
                                 ),
                               )
                             : null,
@@ -280,7 +300,9 @@ class _TodoListPageState extends State<TodoListPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  loc.todoMovedToX(destination.labelAdj(context)),
+                                  loc.todoMovedToX(
+                                    destination.labelAdj(context),
+                                  ),
                                 ),
                                 action: SnackBarAction(
                                   label: loc.undo,
