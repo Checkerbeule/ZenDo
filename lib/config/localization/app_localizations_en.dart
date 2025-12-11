@@ -99,7 +99,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get expirationDate => 'Due date';
 
   @override
-  String get creationDate => 'creation date';
+  String get creationDate => 'Creation date';
 
   @override
   String get daily => 'Daily';

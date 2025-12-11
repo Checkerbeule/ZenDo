@@ -275,7 +275,7 @@ abstract class AppLocalizations {
   /// No description provided for @creationDate.
   ///
   /// In en, this message translates to:
-  /// **'creation date'**
+  /// **'Creation date'**
   String get creationDate;
 
   /// No description provided for @daily.

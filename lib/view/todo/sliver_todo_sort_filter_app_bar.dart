@@ -23,8 +23,8 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
     return SliverAppBar(
       actionsPadding: const EdgeInsets.only(right: 10),
       pinned: false,
-      floating: true,
-      snap: true,
+      floating: false,
+      snap: false,
       toolbarHeight: 40,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       title: Row(
