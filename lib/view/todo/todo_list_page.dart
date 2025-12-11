@@ -204,7 +204,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   loc.moveToXList(
-                                    previousListScope.label(context),
+                                    previousListScope.labelAdj(context),
                                   ),
                                 ),
                               )
@@ -224,7 +224,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                 ).colorScheme.surfaceContainer,
                                 alignment: Alignment.centerRight,
                                 child: Text(
-                                  loc.moveToXList(nextListScope.label(context)),
+                                  loc.moveToXList(nextListScope.labelAdj(context)),
                                 ),
                               )
                             : null,
@@ -280,7 +280,7 @@ class _TodoListPageState extends State<TodoListPage> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  loc.todoMovedToX(destination.label(context)),
+                                  loc.todoMovedToX(destination.labelAdj(context)),
                                 ),
                                 action: SnackBarAction(
                                   label: loc.undo,

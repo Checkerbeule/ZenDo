@@ -278,29 +278,53 @@ abstract class AppLocalizations {
   /// **'Creation date'**
   String get creationDate;
 
-  /// No description provided for @daily.
+  /// No description provided for @daily_adv.
   ///
   /// In en, this message translates to:
   /// **'Daily'**
-  String get daily;
+  String get daily_adv;
 
-  /// No description provided for @weekly.
+  /// No description provided for @daily_adj.
+  ///
+  /// In en, this message translates to:
+  /// **'daily'**
+  String get daily_adj;
+
+  /// No description provided for @weekly_adv.
   ///
   /// In en, this message translates to:
   /// **'Weekly'**
-  String get weekly;
+  String get weekly_adv;
 
-  /// No description provided for @monthly.
+  /// No description provided for @weekly_adj.
+  ///
+  /// In en, this message translates to:
+  /// **'weekly'**
+  String get weekly_adj;
+
+  /// No description provided for @monthly_adv.
   ///
   /// In en, this message translates to:
   /// **'Monthly'**
-  String get monthly;
+  String get monthly_adv;
 
-  /// No description provided for @yearly.
+  /// No description provided for @monthly_adj.
+  ///
+  /// In en, this message translates to:
+  /// **'monthly'**
+  String get monthly_adj;
+
+  /// No description provided for @yearly_adv.
   ///
   /// In en, this message translates to:
   /// **'Yearly'**
-  String get yearly;
+  String get yearly_adv;
+
+  /// No description provided for @yearly_adj.
+  ///
+  /// In en, this message translates to:
+  /// **'yearly'**
+  String get yearly_adj;
 
   /// No description provided for @backlog.
   ///

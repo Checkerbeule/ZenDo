@@ -102,16 +102,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creationDate => 'Creation date';
 
   @override
-  String get daily => 'Daily';
+  String get daily_adv => 'Daily';
 
   @override
-  String get weekly => 'Weekly';
+  String get daily_adj => 'daily';
 
   @override
-  String get monthly => 'Monthly';
+  String get weekly_adv => 'Weekly';
 
   @override
-  String get yearly => 'Yearly';
+  String get weekly_adj => 'weekly';
+
+  @override
+  String get monthly_adv => 'Monthly';
+
+  @override
+  String get monthly_adj => 'monthly';
+
+  @override
+  String get yearly_adv => 'Yearly';
+
+  @override
+  String get yearly_adj => 'yearly';
 
   @override
   String get backlog => 'Backlog';
