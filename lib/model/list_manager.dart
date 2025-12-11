@@ -134,26 +134,37 @@ class ListManager {
     return allLists.elementAt(indexOfCurrentList - 1);
   }
 
-  bool moveToNextList(Todo todo) {
+  ListScope? moveToNextList(Todo todo) {
     if (todo.listScope == null) {
-      return false;
+      return null;
     }
     final nextList = getNextList(todo.listScope!);
     if (nextList == null) {
-      return false;
+      return null;
     }
-    return moveAndUpdateTodo(todo: todo, destination: nextList.scope);
+    final isMoved = moveAndUpdateTodo(todo: todo, destination: nextList.scope);
+    if (isMoved) {
+      return nextList.scope;
+    }
+    return null;
   }
 
-  bool moveToPreviousList(Todo todo) {
+  ListScope? moveToPreviousList(Todo todo) {
     if (todo.listScope == null) {
-      return false;
+      return null;
     }
     final previousList = getPreviousList(todo.listScope!);
     if (previousList == null) {
-      return false;
+      return null;
     }
-    return moveAndUpdateTodo(todo: todo, destination: previousList.scope);
+    final isMoved = moveAndUpdateTodo(
+      todo: todo,
+      destination: previousList.scope,
+    );
+    if (isMoved) {
+      return previousList.scope;
+    }
+    return null;
   }
 
   /// Moves the given [todo] from its containing list, to another [destination] list

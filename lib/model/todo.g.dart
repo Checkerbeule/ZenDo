@@ -27,7 +27,9 @@ class TodoAdapter extends TypeAdapter<Todo> {
   @override
   void write(BinaryWriter writer, Todo obj) {
     writer
+      ..writeByte(8)
       ..writeByte(7)
+      ..write(obj.id)
       ..writeByte(0)
       ..write(obj._title)
       ..writeByte(1)

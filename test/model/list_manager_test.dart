@@ -855,7 +855,7 @@ void main() {
 
         final moved = manager.moveToNextList(todo);
 
-        expect(moved, isTrue);
+        expect(moved, ListScope.weekly);
         expect(manager.getListByScope(ListScope.monthly)!.todos.length, 0);
         expect(manager.getListByScope(ListScope.weekly)!.todos.length, 1);
         expect(manager.getListByScope(ListScope.weekly)!.todos.first, todo);
@@ -873,7 +873,7 @@ void main() {
 
           final moved = manager.moveToNextList(todo_1);
 
-          expect(moved, isFalse);
+          expect(moved, isNull);
           expect(manager.getListByScope(ListScope.monthly)!.todos.length, 1);
           expect(
             manager.getListByScope(ListScope.monthly)!.todos.first,
@@ -891,7 +891,7 @@ void main() {
 
         final moved = manager.moveToPreviousList(todo);
 
-        expect(moved, isTrue);
+        expect(moved, ListScope.weekly);
         expect(manager.getListByScope(ListScope.daily)!.todos.length, 0);
         expect(manager.getListByScope(ListScope.weekly)!.todos.length, 1);
         expect(manager.getListByScope(ListScope.weekly)!.todos.first, todo);
@@ -909,7 +909,7 @@ void main() {
 
           final moved = manager.moveToPreviousList(todo_1);
 
-          expect(moved, isFalse);
+          expect(moved, isNull);
           expect(manager.getListByScope(ListScope.daily)!.todos.length, 1);
           expect(manager.getListByScope(ListScope.daily)!.todos.first, todo_1);
           expect(manager.getListByScope(ListScope.weekly)!.todos.length, 1);

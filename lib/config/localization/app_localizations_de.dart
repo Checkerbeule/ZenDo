@@ -118,4 +118,20 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get addNewTodo => 'Neue Aufgabe hinzufügen';
+
+  @override
+  String moveToXList(String ListScopeLabel) {
+    return 'Verschieben in\n$ListScopeLabel Liste';
+  }
+
+  @override
+  String get shiftNotPossible => 'Verschieben der Aufgabe nicht möglich!';
+
+  @override
+  String todoMovedToX(String ListScopeLabel) {
+    return 'Aufgabe wurde in $ListScopeLabel Liste verschoben';
+  }
+
+  @override
+  String get undo => 'Rückgängig';
 }

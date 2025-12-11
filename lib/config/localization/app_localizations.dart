@@ -313,6 +313,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add a new todo'**
   String get addNewTodo;
+
+  /// No description provided for @moveToXList.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to\n{ListScopeLabel} list'**
+  String moveToXList(String ListScopeLabel);
+
+  /// No description provided for @shiftNotPossible.
+  ///
+  /// In en, this message translates to:
+  /// **'Todo can not be moved!'**
+  String get shiftNotPossible;
+
+  /// No description provided for @todoMovedToX.
+  ///
+  /// In en, this message translates to:
+  /// **'Todo was moved to {ListScopeLabel} list'**
+  String todoMovedToX(String ListScopeLabel);
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
 }
 
 class _AppLocalizationsDelegate

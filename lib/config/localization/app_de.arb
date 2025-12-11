@@ -34,5 +34,25 @@
     "monthly": "Monatlich",
     "yearly": "Jährlich",
     "backlog": "Backlog",
-    "addNewTodo": "Neue Aufgabe hinzufügen"
+    "addNewTodo": "Neue Aufgabe hinzufügen",
+    "moveToXList": "Verschieben in\n{ListScopeLabel} Liste",
+    "@moveToXList": {
+        "placeholders": {
+            "ListScopeLabel": {
+                "type": "String",
+                "example": "Wöchentlich"
+            }
+        }
+    },
+    "shiftNotPossible": "Verschieben der Aufgabe nicht möglich!",
+    "todoMovedToX": "Aufgabe wurde in {ListScopeLabel} Liste verschoben",
+    "@todoMovedToX": {
+        "placeholders": {
+            "ListScopeLabel": {
+                "type": "String",
+                "example": "Wöchentlich"
+            }
+        }
+    },
+    "undo": "Rückgängig"
 }

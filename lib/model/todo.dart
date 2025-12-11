@@ -1,10 +1,14 @@
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 import 'package:zen_do/model/list_scope.dart';
 
 part 'todo.g.dart';
 
 @HiveType(typeId: 0)
 class Todo {
+  @HiveField(7)
+  final String id;
+
   @HiveField(0)
   late String _title;
   String get title => _title;
@@ -38,12 +42,14 @@ class Todo {
   int? order;
 
   Todo({required String title, String? description})
-    : creationDate = DateTime.now() {
+    : id = Uuid().v4(),
+      creationDate = DateTime.now() {
     this.title = title;
     this.description = description;
   }
 
   Todo._internal({
+    required this.id,
     required String title,
     String? description,
     required this.creationDate,
@@ -66,6 +72,7 @@ class Todo {
     int? order,
   }) {
     return Todo._internal(
+      id: id,
       title: title ?? this.title,
       description: description ?? this.description,
       creationDate: creationDate ?? this.creationDate,
@@ -77,7 +84,8 @@ class Todo {
   }
 
   Todo.copy(Todo other)
-    : creationDate = other.creationDate,
+    : id = other.id,
+      creationDate = other.creationDate,
       expirationDate = other.expirationDate,
       completionDate = other.completionDate,
       listScope = other.listScope,

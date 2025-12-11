@@ -34,5 +34,25 @@
     "monthly": "Monthly",
     "yearly": "Yearly",
     "backlog": "Backlog",
-    "addNewTodo": "Add a new todo"
+    "addNewTodo": "Add a new todo",
+    "moveToXList": "Move to\n{ListScopeLabel} list",
+    "@moveToXList": {
+        "placeholders": {
+            "ListScopeLabel": {
+                "type": "String",
+                "example": "Daily"
+            }
+        }
+    },
+    "shiftNotPossible": "Todo can not be moved!",
+    "todoMovedToX": "Todo was moved to {ListScopeLabel} list",
+    "@todoMovedToX": {
+        "placeholders": {
+            "ListScopeLabel": {
+                "type": "String",
+                "example": "Weekly"
+            }
+        }
+    },
+    "undo": "Undo"
 }

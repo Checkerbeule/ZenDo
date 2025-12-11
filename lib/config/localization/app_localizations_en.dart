@@ -118,4 +118,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addNewTodo => 'Add a new todo';
+
+  @override
+  String moveToXList(String ListScopeLabel) {
+    return 'Move to\n$ListScopeLabel list';
+  }
+
+  @override
+  String get shiftNotPossible => 'Todo can not be moved!';
+
+  @override
+  String todoMovedToX(String ListScopeLabel) {
+    return 'Todo was moved to $ListScopeLabel list';
+  }
+
+  @override
+  String get undo => 'Undo';
 }
