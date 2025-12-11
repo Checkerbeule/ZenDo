@@ -102,20 +102,48 @@ class AppLocalizationsDe extends AppLocalizations {
   String get creationDate => 'Erstalldatum';
 
   @override
-  String get daily => 'Täglich';
+  String get daily_adv => 'Täglich';
 
   @override
-  String get weekly => 'Wöchentlich';
+  String get daily_adj => 'tägliche';
 
   @override
-  String get monthly => 'Monatlich';
+  String get weekly_adv => 'Wöchentlich';
 
   @override
-  String get yearly => 'Jährlich';
+  String get weekly_adj => 'wöchentliche';
+
+  @override
+  String get monthly_adv => 'Monatlich';
+
+  @override
+  String get monthly_adj => 'monatliche';
+
+  @override
+  String get yearly_adv => 'Jährlich';
+
+  @override
+  String get yearly_adj => 'jährliche';
 
   @override
   String get backlog => 'Backlog';
 
   @override
   String get addNewTodo => 'Neue Aufgabe hinzufügen';
+
+  @override
+  String moveToXList(String ListScopeLabel) {
+    return 'Verschieben in\n$ListScopeLabel Liste';
+  }
+
+  @override
+  String get shiftNotPossible => 'Verschieben der Aufgabe nicht möglich!';
+
+  @override
+  String todoMovedToX(String ListScopeLabel) {
+    return 'Aufgabe wurde in $ListScopeLabel Liste verschoben';
+  }
+
+  @override
+  String get undo => 'Rückgängig';
 }

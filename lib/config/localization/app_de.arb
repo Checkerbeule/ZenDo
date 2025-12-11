@@ -29,10 +29,34 @@
     "todoTitle": "Aufgaben-Titel",
     "expirationDate": "Fälligkeitsdatum",
     "creationDate": "Erstalldatum",
-    "daily": "Täglich",
-    "weekly": "Wöchentlich",
-    "monthly": "Monatlich",
-    "yearly": "Jährlich",
+    "daily_adv": "Täglich",
+    "daily_adj": "tägliche",
+    "weekly_adv": "Wöchentlich",
+    "weekly_adj": "wöchentliche",
+    "monthly_adv": "Monatlich",
+    "monthly_adj": "monatliche",
+    "yearly_adv": "Jährlich",
+    "yearly_adj": "jährliche",
     "backlog": "Backlog",
-    "addNewTodo": "Neue Aufgabe hinzufügen"
+    "addNewTodo": "Neue Aufgabe hinzufügen",
+    "moveToXList": "Verschieben in\n{ListScopeLabel} Liste",
+    "@moveToXList": {
+        "placeholders": {
+            "ListScopeLabel": {
+                "type": "String",
+                "example": "Wöchentlich"
+            }
+        }
+    },
+    "shiftNotPossible": "Verschieben der Aufgabe nicht möglich!",
+    "todoMovedToX": "Aufgabe wurde in {ListScopeLabel} Liste verschoben",
+    "@todoMovedToX": {
+        "placeholders": {
+            "ListScopeLabel": {
+                "type": "String",
+                "example": "Wöchentlich"
+            }
+        }
+    },
+    "undo": "Rückgängig"
 }

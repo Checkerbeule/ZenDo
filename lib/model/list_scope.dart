@@ -20,15 +20,31 @@ extension ListScopeX on ListScope {
     final loc = AppLocalizations.of(context)!;
     switch (this) {
       case ListScope.daily:
-        return loc.daily;
+        return loc.daily_adv;
       case ListScope.weekly:
-        return loc.weekly;
+        return loc.weekly_adv;
       case ListScope.monthly:
-        return loc.monthly;
+        return loc.monthly_adv;
       case ListScope.yearly:
-        return loc.yearly;
+        return loc.yearly_adv;
       case ListScope.backlog:
         return loc.backlog;
+    }
+  }
+
+  String labelAdj(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    switch (this) {
+      case ListScope.daily:
+        return loc.daily_adj;
+      case ListScope.weekly:
+        return loc.weekly_adj;
+      case ListScope.monthly:
+        return loc.monthly_adj;
+      case ListScope.yearly:
+        return loc.yearly_adj;
+      case ListScope.backlog:
+        return loc.backlog.toLowerCase();
     }
   }
 

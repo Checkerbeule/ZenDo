@@ -29,10 +29,34 @@
     "todoTitle": "Todo-Title",
     "expirationDate": "Due date",
     "creationDate": "Creation date",
-    "daily": "Daily",
-    "weekly": "Weekly",
-    "monthly": "Monthly",
-    "yearly": "Yearly",
+    "daily_adv": "Daily",
+    "daily_adj": "daily",
+    "weekly_adv": "Weekly",
+    "weekly_adj": "weekly",
+    "monthly_adv": "Monthly",
+    "monthly_adj": "monthly",
+    "yearly_adv": "Yearly",
+    "yearly_adj": "yearly",
     "backlog": "Backlog",
-    "addNewTodo": "Add a new todo"
+    "addNewTodo": "Add a new todo",
+    "moveToXList": "Move to\n{ListScopeLabel} list",
+    "@moveToXList": {
+        "placeholders": {
+            "ListScopeLabel": {
+                "type": "String",
+                "example": "Daily"
+            }
+        }
+    },
+    "shiftNotPossible": "Todo can not be moved!",
+    "todoMovedToX": "Todo was moved to {ListScopeLabel} list",
+    "@todoMovedToX": {
+        "placeholders": {
+            "ListScopeLabel": {
+                "type": "String",
+                "example": "Weekly"
+            }
+        }
+    },
+    "undo": "Undo"
 }
