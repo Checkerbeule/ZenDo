@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
-import 'package:zen_do/model/list_scope.dart';
+import 'package:zen_do/model/todo/list_scope.dart';
 
 part 'todo.g.dart';
 

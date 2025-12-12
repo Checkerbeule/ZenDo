@@ -1,8 +1,8 @@
 import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
 import 'package:synchronized/synchronized.dart';
-import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/model/todo/list_scope.dart';
+import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/persistence/file_lock_helper.dart';
 
 class PersistenceHelper {

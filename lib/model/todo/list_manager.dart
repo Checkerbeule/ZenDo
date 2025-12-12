@@ -1,7 +1,7 @@
 import 'package:logger/logger.dart';
-import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo.dart';
-import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/model/todo/list_scope.dart';
+import 'package:zen_do/model/todo/todo.dart';
+import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/persistence/persistence_helper.dart';
 
 Logger logger = Logger(level: Level.debug);

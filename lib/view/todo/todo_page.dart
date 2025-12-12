@@ -5,9 +5,9 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/config/localization/app_localizations.dart';
 import 'package:zen_do/main.dart';
-import 'package:zen_do/model/list_manager.dart';
-import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/model/todo/list_manager.dart';
+import 'package:zen_do/model/todo/list_scope.dart';
+import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/persistence/persistence_helper.dart';
 import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/loading_screen.dart';
@@ -31,7 +31,7 @@ class TodoPage extends StatelessWidget {
 
 class TodoState extends ChangeNotifier {
   final ZenDoAppState appState;
-  late final ListManager? listManager;
+  ListManager? listManager;
   bool isLoadingDataFailed = false;
   String? errorMessage;
   Map<ListScope, bool> doneTodosExpanded = {};

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:zen_do/config/localization/app_localizations.dart';
-import 'package:zen_do/model/list_manager.dart';
-import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo.dart';
-import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/model/todo/list_manager.dart';
+import 'package:zen_do/model/todo/list_scope.dart';
+import 'package:zen_do/model/todo/todo.dart';
+import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/dialog_helper.dart';
 import 'package:zen_do/view/todo/todo_page.dart';

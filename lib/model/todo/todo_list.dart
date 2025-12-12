@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:hive/hive.dart';
-import 'package:zen_do/model/todo.dart';
-import 'package:zen_do/model/list_scope.dart';
+import 'package:zen_do/model/todo/todo.dart';
+import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/persistence/persistence_helper.dart';
 
 part 'todo_list.g.dart';
