@@ -27,7 +27,6 @@ class TodoListPage extends StatefulWidget {
 }
 
 class _TodoListPageState extends State<TodoListPage> {
-  bool expanded = false;
   Offset tapPosition = Offset.zero;
   SortOption sortOption = SortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
@@ -105,19 +104,20 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Set<SortOption> excludedSortOptions =
-        widget.list.scope == ListScope.backlog
+    final loc = AppLocalizations.of(context)!;
+    final list = widget.list;
+    final listScope = list.scope;
+    final Set<SortOption> excludedSortOptions = listScope == ListScope.backlog
         ? {SortOption.expirationDate}
         : {};
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
-        final loc = AppLocalizations.of(context)!;
         final listManager = todoState.listManager!;
         final ListScope? nextListScope = listManager
-            .getNextList(widget.list.scope)
+            .getNextList(listScope)
             ?.scope;
         final ListScope? previousListScope = listManager
-            .getPreviousList(widget.list.scope)
+            .getPreviousList(listScope)
             ?.scope;
         final isFirstList = nextListScope == null;
         final isLastList = previousListScope == null;
@@ -136,7 +136,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   unawaited(_saveSortPreferences());
                 },
               ),
-              if (widget.list.todos.isEmpty)
+              if (list.todos.isEmpty)
                 SliverList(
                   delegate: SliverChildListDelegate.fixed([
                     ListTile(
@@ -180,7 +180,7 @@ class _TodoListPageState extends State<TodoListPage> {
                         final previous = newIndex == 0
                             ? null
                             : sortedAndFilteredTodos[newIndex - 1];
-                        widget.list.reorder(moved, previous);
+                        list.reorder(moved, previous);
                       });
                     }
                   },
@@ -260,11 +260,11 @@ class _TodoListPageState extends State<TodoListPage> {
                           late final TodoList? destinationList;
                           if (direction == DismissDirection.startToEnd) {
                             destinationList = listManager.getPreviousList(
-                              widget.list.scope,
+                              listScope,
                             );
                           } else if (direction == DismissDirection.endToStart) {
                             destinationList = listManager.getNextList(
-                              widget.list.scope,
+                              listScope,
                             );
                           }
                           isMovable =
@@ -311,7 +311,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                         .performAcitionOnList<bool>(
                                           () => listManager.moveAndUpdateTodo(
                                             todo: todoToMove,
-                                            destination: widget.list.scope,
+                                            destination: listScope,
                                           ),
                                         );
                                     if (isUndone) {
@@ -372,7 +372,7 @@ class _TodoListPageState extends State<TodoListPage> {
                               leading: IconButton(
                                 onPressed: () => {
                                   todoState.performAcitionOnList<Null>(
-                                    () => widget.list.markAsDone(todo),
+                                    () => list.markAsDone(todo),
                                   ),
                                 },
                                 icon: Icon(Icons.circle_outlined),
@@ -449,7 +449,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                       );
                                   if (delete != null && delete) {
                                     todoState.performAcitionOnList<bool>(
-                                      () => widget.list.deleteTodo(todo),
+                                      () => list.deleteTodo(todo),
                                     );
                                   }
                                 },
@@ -471,22 +471,22 @@ class _TodoListPageState extends State<TodoListPage> {
                     Divider(),
                     ExpansionTile(
                       title: Text(loc.completedTodos),
-                      subtitle: Text(
-                        '${widget.list.doneCount} ${loc.completed}',
-                      ),
+                      subtitle: Text('${list.doneCount} ${loc.completed}'),
                       shape: RoundedRectangleBorder(side: BorderSide.none),
                       collapsedIconColor: Theme.of(context).primaryColor,
                       controlAffinity: ListTileControlAffinity.leading,
-                      initiallyExpanded: expanded,
+                      initiallyExpanded:
+                          todoState.doneTodosExpanded[listScope] ?? false,
                       onExpansionChanged: (bool expanding) =>
-                          expanded = expanding,
+                          todoState.toggleExpansion(listScope),
+                      //expanded = expanding,
                       children: [
-                        for (var todo in widget.list.doneTodos)
+                        for (var todo in list.doneTodos)
                           ListTile(
                             leading: IconButton(
                               onPressed: () =>
                                   todoState.performAcitionOnList<bool>(
-                                    () => widget.list.restoreTodo(todo),
+                                    () => list.restoreTodo(todo),
                                   ),
                               icon: Icon(Icons.check_circle),
                               color: Theme.of(context).primaryColor,
@@ -518,13 +518,13 @@ class _TodoListPageState extends State<TodoListPage> {
                 builder: (BuildContext context) {
                   return AddTodoPage(
                     listManager: todoState.listManager!,
-                    listScope: widget.list.scope,
+                    listScope: listScope,
                   );
                 },
               );
               if (newTodo != null) {
                 todoState.performAcitionOnList<bool>(
-                  () => widget.list.addTodo(newTodo),
+                  () => list.addTodo(newTodo),
                 );
               }
             },

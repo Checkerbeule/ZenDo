@@ -31,9 +31,10 @@ class TodoPage extends StatelessWidget {
 
 class TodoState extends ChangeNotifier {
   final ZenDoAppState appState;
-  ListManager? listManager;
+  late final ListManager? listManager;
   bool isLoadingDataFailed = false;
   String? errorMessage;
+  Map<ListScope, bool> doneTodosExpanded = {};
 
   TodoState(this.appState) {
     _initData();
@@ -54,6 +55,9 @@ class TodoState extends ChangeNotifier {
         PageType.todos,
         listManager!.expiredTodosCount,
       );
+      for (var l in listManager!.allLists) {
+        doneTodosExpanded[l.scope] = false;
+      }
     } catch (e, s) {
       logger.e('Loading todo lists failed: : $e\n$s');
       isLoadingDataFailed = true;
@@ -62,6 +66,10 @@ class TodoState extends ChangeNotifier {
     } finally {
       notifyListeners();
     }
+  }
+
+  void toggleExpansion(ListScope key) {
+    doneTodosExpanded[key] = !(doneTodosExpanded[key] ?? true);
   }
 
   T performAcitionOnList<T>(Function() action) {
