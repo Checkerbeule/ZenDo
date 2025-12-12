@@ -153,7 +153,6 @@ class _TodoView extends StatelessWidget {
                     ),
                   ),
                   body: TabBarView(
-                    physics: const NeverScrollableScrollPhysics(),
                     children: <Widget>[
                       for (var list in listManager.allLists)
                         TodoListPage(list: list),
