@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:zen_do/config/localization/app_localizations.dart';
 import 'package:zen_do/model/list_manager.dart';
 import 'package:zen_do/model/list_scope.dart';
 import 'package:zen_do/model/todo.dart';
+import 'package:zen_do/model/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
+import 'package:zen_do/view/dialog_helper.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
+
+Logger logger = Logger(level: Level.debug);
 
 class TodoEditPage extends StatefulWidget {
   const TodoEditPage({super.key, required this.todo, required this.todoState});
@@ -57,7 +62,39 @@ class _TodoEditPageState extends State<TodoEditPage> {
       );
     }
     return AlertDialog(
-      title: Text(loc.editTodo),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(loc.editTodo),
+          IconButton(
+            icon: Icon(Icons.delete_forever),
+            color: Theme.of(context).colorScheme.error,
+            onPressed: () async {
+              final navigator = Navigator.of(context);
+              final delete = await showDialogWithScaleTransition<bool>(
+                context: context,
+                child: DeleteDialog(
+                  title: '${loc.deleteTodo}?',
+                  text: loc.deleteTodoQuestion,
+                ),
+              );
+              if (delete != null && delete) {
+                try {
+                  final TodoList list = manager.getListByScope(
+                    todo.listScope!,
+                  )!;
+                  widget.todoState.performAcitionOnList<bool>(
+                    () => list.deleteTodo(todo),
+                  );
+                  navigator.pop();
+                } catch (e) {
+                  logger.e('Error deleting todo: $todo\n${e.toString()}');
+                }
+              }
+            },
+          ),
+        ],
+      ),
       content: Form(
         key: formKey,
         child: SingleChildScrollView(

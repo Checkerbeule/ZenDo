@@ -443,7 +443,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                       await showDialogWithScaleTransition<bool>(
                                         context: context,
                                         child: DeleteDialog(
-                                          title: '${loc.deleteTodo} ?',
+                                          title: '${loc.deleteTodo}?',
                                           text: loc.deleteTodoQuestion,
                                         ),
                                       );
