@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/config/localization/app_localizations.dart';
 import 'package:zen_do/main.dart';
+import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/model/todo/todo_list.dart';
@@ -41,7 +42,8 @@ class TodoState extends ChangeNotifier {
   }
 
   Future<void> _initData() async {
-    Set<ListScope> scopes = {
+    final SettingsService settings = await SharedPrefsSettingsService.getInstance();
+    Set<ListScope> scopes = settings.getActiveListScopes() ?? {
       //TODO #46 make dynamic based on user preferences
       ListScope.daily,
       ListScope.weekly,

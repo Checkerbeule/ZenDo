@@ -10,6 +10,7 @@ import 'package:zen_do/persistence/hive_initializer.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/habits/habit_page.dart';
 import 'package:zen_do/view/page_type.dart';
+import 'package:zen_do/view/settings/settings_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
 import 'package:zen_do/zen_do_lifecycle_listener.dart';
 
@@ -88,7 +89,15 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             ),
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             actions: [
-              IconButton(icon: Icon(Icons.settings), onPressed: () => {}),
+              IconButton(
+                icon: Icon(Icons.settings),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const SettingsPage(),
+                  ),
+                ),
+              ),
             ], //TODO implement settings,
           ),
           body: IndexedStack(
