@@ -19,6 +19,7 @@ Logger logger = Logger(level: Level.debug);
 class TodoState extends ChangeNotifier {
   ZenDoAppState? appState;
   ListManager? listManager;
+  bool isLoading = true;
   bool isLoadingDataFailed = false;
   String? errorMessage;
   Map<ListScope, bool> doneTodosExpanded = {};
@@ -32,6 +33,8 @@ class TodoState extends ChangeNotifier {
   }
 
   Future<void> reload() async {
+    isLoading = true;
+    notifyListeners();
     await _initData();
     notifyListeners();
   }
@@ -56,10 +59,13 @@ class TodoState extends ChangeNotifier {
     try {
       List<TodoList> loadedLists = await PersistenceHelper.loadAll();
       listManager = ListManager(loadedLists, activeScopes: activeScopes);
+      isLoading = false;
+
       appState?.updateMessageCount(
         PageType.todos,
         listManager!.expiredTodosCount,
       );
+
       for (var l in listManager!.allLists) {
         doneTodosExpanded[l.scope] = false;
       }
@@ -117,11 +123,11 @@ class TodoPage extends StatelessWidget {
           });
         }
 
-        return listManager == null
+        return todoState.isLoading
             ? LoadingScreen(message: loc.loadingTodosIndicator)
             : DefaultTabController(
                 initialIndex: 0,
-                length: listManager.listCount,
+                length: listManager!.listCount,
                 child: Scaffold(
                   appBar: AppBar(
                     backgroundColor: Theme.of(
