@@ -5,9 +5,10 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/config/localization/app_localizations.dart';
 import 'package:zen_do/main.dart';
-import 'package:zen_do/model/list_manager.dart';
-import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/model/appsettings/settings_service.dart';
+import 'package:zen_do/model/todo/list_manager.dart';
+import 'package:zen_do/model/todo/list_scope.dart';
+import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/persistence/persistence_helper.dart';
 import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/loading_screen.dart';
@@ -15,46 +16,56 @@ import 'package:zen_do/view/todo/todo_list_page.dart';
 
 Logger logger = Logger(level: Level.debug);
 
-class TodoPage extends StatelessWidget {
-  const TodoPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => TodoState(context.read<ZenDoAppState>()),
-      builder: (context, child) {
-        return _TodoView();
-      },
-    );
-  }
-}
-
 class TodoState extends ChangeNotifier {
-  final ZenDoAppState appState;
-  late final ListManager? listManager;
+  ZenDoAppState? appState;
+  ListManager? listManager;
+  bool isLoading = true;
   bool isLoadingDataFailed = false;
   String? errorMessage;
   Map<ListScope, bool> doneTodosExpanded = {};
 
-  TodoState(this.appState) {
+  TodoState() {
     _initData();
   }
 
+  void setAppState(ZenDoAppState appState) {
+    this.appState = appState;
+  }
+
+  Future<void> reload() async {
+    isLoading = true;
+    notifyListeners();
+    await _initData();
+    notifyListeners();
+  }
+
   Future<void> _initData() async {
-    Set<ListScope> scopes = {
-      //TODO #46 make dynamic based on user preferences
-      ListScope.daily,
-      ListScope.weekly,
-      ListScope.yearly,
-      ListScope.backlog,
-    };
+    final SettingsService settings =
+        await SharedPrefsSettingsService.getInstance();
+    final loadedScopes = settings.getActiveListScopes();
+    final Set<ListScope> activeScopes;
+    if (loadedScopes != null) {
+      activeScopes = loadedScopes;
+    } else {
+      activeScopes = {
+        ListScope.daily,
+        ListScope.weekly,
+        ListScope.yearly,
+        ListScope.backlog,
+      };
+      settings.saveActiveListScopes(activeScopes);
+    }
+
     try {
       List<TodoList> loadedLists = await PersistenceHelper.loadAll();
-      listManager = ListManager(loadedLists, activeScopes: scopes);
-      appState.updateMessageCount(
+      listManager = ListManager(loadedLists, activeScopes: activeScopes);
+      isLoading = false;
+
+      appState?.updateMessageCount(
         PageType.todos,
         listManager!.expiredTodosCount,
       );
+
       for (var l in listManager!.allLists) {
         doneTodosExpanded[l.scope] = false;
       }
@@ -62,7 +73,7 @@ class TodoState extends ChangeNotifier {
       logger.e('Loading todo lists failed: : $e\n$s');
       isLoadingDataFailed = true;
       errorMessage = e.toString();
-      listManager = ListManager([], activeScopes: scopes);
+      listManager = ListManager([], activeScopes: activeScopes);
     } finally {
       notifyListeners();
     }
@@ -76,7 +87,7 @@ class TodoState extends ChangeNotifier {
     T result;
     if (listManager != null) {
       result = action();
-      appState.updateMessageCount(
+      appState!.updateMessageCount(
         PageType.todos,
         listManager!.expiredTodosCount,
       );
@@ -95,20 +106,11 @@ class TodoState extends ChangeNotifier {
     }
     return result;
   }
-
-  //TODO #46 make dynamic based on user preferences
-  /* void addList(TodoList list) {
-    listManager?.addList(list);
-    notifyListeners();
-  }
-
-  void removeList(TodoList list) {
-    listManager?.removeList(list);
-    notifyListeners();
-  } */
 }
 
-class _TodoView extends StatelessWidget {
+class TodoPage extends StatelessWidget {
+  const TodoPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
@@ -121,11 +123,11 @@ class _TodoView extends StatelessWidget {
           });
         }
 
-        return listManager == null
+        return todoState.isLoading
             ? LoadingScreen(message: loc.loadingTodosIndicator)
             : DefaultTabController(
                 initialIndex: 0,
-                length: listManager.listCount,
+                length: listManager!.listCount,
                 child: Scaffold(
                   appBar: AppBar(
                     backgroundColor: Theme.of(

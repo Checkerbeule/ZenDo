@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zen_do/config/localization/app_localizations.dart';
-import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo.dart';
-import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/model/appsettings/settings_service.dart';
+import 'package:zen_do/model/todo/list_scope.dart';
+import 'package:zen_do/model/todo/todo.dart';
+import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/dialog_helper.dart';
 import 'package:zen_do/view/todo/add_todo_page.dart';
@@ -27,9 +27,10 @@ class TodoListPage extends StatefulWidget {
 }
 
 class _TodoListPageState extends State<TodoListPage> {
-  Offset tapPosition = Offset.zero;
+  late final SettingsService settings;
   SortOption sortOption = SortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
+  Offset tapPosition = Offset.zero;
 
   List<Todo> get sortedAndFilteredTodos {
     final todos = List<Todo>.from(widget.list.todos);
@@ -62,44 +63,29 @@ class _TodoListPageState extends State<TodoListPage> {
     return todos;
   }
 
-  String getSortOptionPrefKey(ListScope scope) {
-    return 'todo.${scope.name}.list.sortOption';
-  }
+  Future<void> _loadSettings() async {
+    final settingsService = await SharedPrefsSettingsService.getInstance();
+    if (!mounted) return;
 
-  String getSortOrderPrefKey(ListScope scope) {
-    return 'todo.${scope.name}.list.sortOrder';
-  }
-
-  Future<void> _saveSortPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(
-      getSortOptionPrefKey(widget.list.scope),
-      sortOption.index,
+    settings = settingsService;
+    final loadedSortOption = await settingsService.getSortOption(
+      widget.list.scope,
     );
-    await prefs.setInt(getSortOrderPrefKey(widget.list.scope), sortOrder.index);
-  }
+    final loadedSortOrder = await settingsService.getSortOrder(
+      widget.list.scope,
+    );
 
-  Future<void> _loadSortPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
     setState(() {
-      sortOption =
-          SortOption.values[prefs.getInt(
-                getSortOptionPrefKey(widget.list.scope),
-              ) ??
-              SortOption.custom.index];
-      sortOrder =
-          SortOrder.values[prefs.getInt(
-                getSortOrderPrefKey(widget.list.scope),
-              ) ??
-              SortOrder.ascending.index];
+      sortOption = loadedSortOption ?? sortOption;
+      sortOrder = loadedSortOrder ?? sortOrder;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    _loadSortPreferences();
+    _loadSettings();
   }
 
   @override
@@ -133,7 +119,8 @@ class _TodoListPageState extends State<TodoListPage> {
                     sortOption = option;
                     sortOrder = order;
                   });
-                  unawaited(_saveSortPreferences());
+                  unawaited(settings.saveSortOption(listScope, sortOption));
+                  unawaited(settings.saveSortOrder(listScope, sortOrder));
                 },
               ),
               if (list.todos.isEmpty)

@@ -1,7 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:zen_do/model/list_scope.dart';
-import 'package:zen_do/model/todo.dart';
-import 'package:zen_do/model/todo_list.dart';
+import 'package:zen_do/model/todo/list_scope.dart';
+import 'package:zen_do/model/todo/todo.dart';
+import 'package:zen_do/model/todo/todo_list.dart';
 
 class HiveInitializer {
   static Future<void> initFlutter() async {

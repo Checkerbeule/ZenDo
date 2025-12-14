@@ -10,6 +10,7 @@ import 'package:zen_do/persistence/hive_initializer.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/habits/habit_page.dart';
 import 'package:zen_do/view/page_type.dart';
+import 'package:zen_do/view/settings/settings_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
 import 'package:zen_do/zen_do_lifecycle_listener.dart';
 
@@ -38,8 +39,15 @@ class ZenDoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ZenDoAppState(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ZenDoAppState>(create: (_) => ZenDoAppState()),
+        ChangeNotifierProxyProvider<ZenDoAppState, TodoState>(
+          create: (_) => TodoState(),
+          update: (_, appState, todoState) =>
+              todoState!..setAppState(appState),
+        ),
+      ],
       child: MaterialApp(
         title: 'ZenDo',
         theme: ThemeData(
@@ -88,8 +96,22 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             ),
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             actions: [
-              IconButton(icon: Icon(Icons.settings), onPressed: () => {}),
-            ], //TODO implement settings,
+              IconButton(
+                icon: Icon(Icons.settings),
+                onPressed: () async {
+                  final hasChanged = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute<bool>(
+                      builder: (context) => const SettingsPage(),
+                    ),
+                  );
+                  if (!context.mounted) return;
+                  if (hasChanged ?? false) {
+                    context.read<TodoState>().reload();
+                  }
+                },
+              ),
+            ],
           ),
           body: IndexedStack(
             index: pageIndex,
