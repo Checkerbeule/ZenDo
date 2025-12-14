@@ -13,8 +13,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   // TODO implement hasChanged properly for multiple settings changes
   bool hasChanged = false;
-  late final String appVersion;
-  late final String appBuildNumber;
+  String? appVersion = '';
+  String? appBuildNumber = '';
 
   void _close() {
     Navigator.pop(context, hasChanged);
