@@ -16,44 +16,47 @@ import 'package:zen_do/view/todo/todo_list_page.dart';
 
 Logger logger = Logger(level: Level.debug);
 
-class TodoPage extends StatelessWidget {
-  const TodoPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => TodoState(context.read<ZenDoAppState>()),
-      builder: (context, child) {
-        return _TodoView();
-      },
-    );
-  }
-}
-
 class TodoState extends ChangeNotifier {
-  final ZenDoAppState appState;
+  ZenDoAppState? appState;
   ListManager? listManager;
   bool isLoadingDataFailed = false;
   String? errorMessage;
   Map<ListScope, bool> doneTodosExpanded = {};
 
-  TodoState(this.appState) {
+  TodoState() {
     _initData();
   }
 
+  void setAppState(ZenDoAppState appState) {
+    this.appState = appState;
+  }
+
+  Future<void> reload() async {
+    await _initData();
+    notifyListeners();
+  }
+
   Future<void> _initData() async {
-    final SettingsService settings = await SharedPrefsSettingsService.getInstance();
-    Set<ListScope> scopes = settings.getActiveListScopes() ?? {
-      //TODO #46 make dynamic based on user preferences
-      ListScope.daily,
-      ListScope.weekly,
-      ListScope.yearly,
-      ListScope.backlog,
-    };
+    final SettingsService settings =
+        await SharedPrefsSettingsService.getInstance();
+    final loadedScopes = settings.getActiveListScopes();
+    final Set<ListScope> activeScopes;
+    if (loadedScopes != null) {
+      activeScopes = loadedScopes;
+    } else {
+      activeScopes = {
+        ListScope.daily,
+        ListScope.weekly,
+        ListScope.yearly,
+        ListScope.backlog,
+      };
+      settings.saveActiveListScopes(activeScopes);
+    }
+
     try {
       List<TodoList> loadedLists = await PersistenceHelper.loadAll();
-      listManager = ListManager(loadedLists, activeScopes: scopes);
-      appState.updateMessageCount(
+      listManager = ListManager(loadedLists, activeScopes: activeScopes);
+      appState?.updateMessageCount(
         PageType.todos,
         listManager!.expiredTodosCount,
       );
@@ -64,7 +67,7 @@ class TodoState extends ChangeNotifier {
       logger.e('Loading todo lists failed: : $e\n$s');
       isLoadingDataFailed = true;
       errorMessage = e.toString();
-      listManager = ListManager([], activeScopes: scopes);
+      listManager = ListManager([], activeScopes: activeScopes);
     } finally {
       notifyListeners();
     }
@@ -78,7 +81,7 @@ class TodoState extends ChangeNotifier {
     T result;
     if (listManager != null) {
       result = action();
-      appState.updateMessageCount(
+      appState!.updateMessageCount(
         PageType.todos,
         listManager!.expiredTodosCount,
       );
@@ -97,20 +100,11 @@ class TodoState extends ChangeNotifier {
     }
     return result;
   }
-
-  //TODO #46 make dynamic based on user preferences
-  /* void addList(TodoList list) {
-    listManager?.addList(list);
-    notifyListeners();
-  }
-
-  void removeList(TodoList list) {
-    listManager?.removeList(list);
-    notifyListeners();
-  } */
 }
 
-class _TodoView extends StatelessWidget {
+class TodoPage extends StatelessWidget {
+  const TodoPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;

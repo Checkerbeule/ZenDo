@@ -39,8 +39,15 @@ class ZenDoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ZenDoAppState(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ZenDoAppState>(create: (_) => ZenDoAppState()),
+        ChangeNotifierProxyProvider<ZenDoAppState, TodoState>(
+          create: (_) => TodoState(),
+          update: (_, appState, todoState) =>
+              todoState!..setAppState(appState),
+        ),
+      ],
       child: MaterialApp(
         title: 'ZenDo',
         theme: ThemeData(
@@ -91,14 +98,20 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             actions: [
               IconButton(
                 icon: Icon(Icons.settings),
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => const SettingsPage(),
-                  ),
-                ),
+                onPressed: () async {
+                  final hasChanged = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute<bool>(
+                      builder: (context) => const SettingsPage(),
+                    ),
+                  );
+                  if (!context.mounted) return;
+                  if (hasChanged ?? false) {
+                    context.read<TodoState>().reload();
+                  }
+                },
               ),
-            ], //TODO implement settings,
+            ],
           ),
           body: IndexedStack(
             index: pageIndex,
