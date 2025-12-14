@@ -89,7 +89,7 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
         ),
         body: isLoading
             ? LoadingScreen(message: 'Lade Einstellungen')
-            : SettingsList(
+            : SettingsList(contentPadding: EdgeInsets.only(right: 10),
                 sections: [
                   SettingsSection(
                     title: Text(

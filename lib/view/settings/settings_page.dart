@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:zen_do/view/settings/lists_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -12,9 +13,22 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   // TODO implement hasChanged properly for multiple settings changes
   bool hasChanged = false;
+  late final String appVersion;
+  late final String appBuildNumber;
 
   void _close() {
     Navigator.pop(context, hasChanged);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    PackageInfo.fromPlatform().then((PackageInfo info) {
+      setState(() {
+        appVersion = info.version;
+        appBuildNumber = info.appName;
+      });
+    });
   }
 
   @override
@@ -37,6 +51,7 @@ class _SettingsPageState extends State<SettingsPage> {
           title: Text('Settings'),
         ),
         body: SettingsList(
+          contentPadding: EdgeInsets.only(bottom: 10),
           sections: [
             SettingsSection(
               title: Text('Allgemein', style: sectionsTextStyle),
@@ -103,7 +118,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: Text('AGB / LIzenz'),
                   leading: Icon(Icons.description),
                 ),
-                SettingsTile(title: Text('Version'), leading: Icon(Icons.tag)),
+                SettingsTile(
+                  title: Text('Version'),
+                  description: Text('$appVersion\n$appBuildNumber'),
+                  leading: Icon(Icons.tag),
+                ),
               ],
             ),
           ],
