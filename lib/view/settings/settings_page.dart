@@ -16,10 +16,6 @@ class _SettingsPageState extends State<SettingsPage> {
   String? appVersion = '';
   String? appBuildNumber = '';
 
-  void _close() {
-    Navigator.pop(context, hasChanged);
-  }
-
   @override
   void initState() {
     super.initState();
@@ -31,12 +27,17 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
+  void _close() {
+    Navigator.pop(context, hasChanged);
+  }
+
   @override
   Widget build(BuildContext context) {
     final sectionsTextStyle = TextStyle(
       color: Theme.of(context).primaryColorDark,
     );
     return PopScope<bool>(
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         _close();
