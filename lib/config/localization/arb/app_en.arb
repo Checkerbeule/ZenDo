@@ -58,5 +58,25 @@
             }
         }
     },
-    "undo": "Undo"
+    "undo": "Undo",
+    "settings": "Settings",
+    "commonSettingsSection": "Common",
+    "themeSettingsLabel": "Theme",
+    "notificationsSettingsLabel": "Notifications",
+    "organizationSettingsLabel": "Organization",
+    "lists": "Lists",
+    "listsSettingsDescription": "Chose your preffered lists",
+    "labelsSettingsLabel": "Labels",
+    "feedbackSettingsSection": "Feddback & Support",
+    "feedbackInStore": "Rate the App",
+    "feedbackViaMail": "Send feedback",
+    "supportTheDev": "Support the developer",
+    "legalSettingsSection": "Legal",
+    "aboutSettingsLabel": "About",
+    "privacyPolicy": "Privacy Policy",
+    "termsAndConditions": "Terms and Conditions",
+    "versionSettingsLabel": "Version",
+    "minOneListErrorMessage": "There must be at least one list selected",
+    "loadingSettingsMessage": "Loading settings ...",
+    "choosePreferredListsSettingsLabel": "Choose the lists yout want to use"
 }

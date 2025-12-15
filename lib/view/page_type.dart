@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zen_do/config/localization/app_localizations.dart';
+import 'package:zen_do/config/localization/generated/app_localizations.dart';
 
 enum PageType {
   todos(),

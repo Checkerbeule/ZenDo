@@ -18,7 +18,7 @@ import 'app_localizations_en.dart';
 /// `supportedLocales` list. For example:
 ///
 /// ```dart
-/// import 'localization/app_localizations.dart';
+/// import 'generated/app_localizations.dart';
 ///
 /// return MaterialApp(
 ///   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -67,8 +67,8 @@ abstract class AppLocalizations {
 
   final String localeName;
 
-  static AppLocalizations? of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
   static const LocalizationsDelegate<AppLocalizations> delegate =
@@ -361,6 +361,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Undo'**
   String get undo;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @commonSettingsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Common'**
+  String get commonSettingsSection;
+
+  /// No description provided for @themeSettingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get themeSettingsLabel;
+
+  /// No description provided for @notificationsSettingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsSettingsLabel;
+
+  /// No description provided for @organizationSettingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Organization'**
+  String get organizationSettingsLabel;
+
+  /// No description provided for @lists.
+  ///
+  /// In en, this message translates to:
+  /// **'Lists'**
+  String get lists;
+
+  /// No description provided for @listsSettingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Chose your preffered lists'**
+  String get listsSettingsDescription;
+
+  /// No description provided for @labelsSettingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Labels'**
+  String get labelsSettingsLabel;
+
+  /// No description provided for @feedbackSettingsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Feddback & Support'**
+  String get feedbackSettingsSection;
+
+  /// No description provided for @feedbackInStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate the App'**
+  String get feedbackInStore;
+
+  /// No description provided for @feedbackViaMail.
+  ///
+  /// In en, this message translates to:
+  /// **'Send feedback'**
+  String get feedbackViaMail;
+
+  /// No description provided for @supportTheDev.
+  ///
+  /// In en, this message translates to:
+  /// **'Support the developer'**
+  String get supportTheDev;
+
+  /// No description provided for @legalSettingsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get legalSettingsSection;
+
+  /// No description provided for @aboutSettingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get aboutSettingsLabel;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @termsAndConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms and Conditions'**
+  String get termsAndConditions;
+
+  /// No description provided for @versionSettingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get versionSettingsLabel;
+
+  /// No description provided for @minOneListErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There must be at least one list selected'**
+  String get minOneListErrorMessage;
+
+  /// No description provided for @loadingSettingsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading settings ...'**
+  String get loadingSettingsMessage;
+
+  /// No description provided for @choosePreferredListsSettingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the lists yout want to use'**
+  String get choosePreferredListsSettingsLabel;
 }
 
 class _AppLocalizationsDelegate

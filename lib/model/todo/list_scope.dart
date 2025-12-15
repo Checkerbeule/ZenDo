@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:zen_do/config/localization/app_localizations.dart';
+import 'package:zen_do/config/localization/generated/app_localizations.dart';
 
 enum ListScope {
   daily(Duration(days: 1), true),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/config/localization/app_localizations.dart';
+import 'package:zen_do/config/localization/generated/app_localizations.dart';
 import 'package:zen_do/main.dart';
 import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
@@ -113,7 +113,7 @@ class TodoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
         final listManager = todoState.listManager;

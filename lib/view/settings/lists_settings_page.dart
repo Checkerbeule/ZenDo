@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
+import 'package:zen_do/config/localization/generated/app_localizations.dart';
 import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/view/loading_screen.dart';
@@ -48,9 +49,10 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
       if (value) activeScopesCount++;
     }
     if (activeScopesCount < 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Es muss mindest eine Liste ausgewählt sein!')),
-      );
+      AppLocalizations loc = AppLocalizations.of(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(loc.minOneListErrorMessage)));
     } else {
       final hasChanged = !mapEquals(initialLists, activeLists);
       Navigator.pop(context, hasChanged);
@@ -72,6 +74,7 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations loc = AppLocalizations.of(context);
     return PopScope<bool>(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -85,15 +88,16 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
             icon: Icon(Icons.arrow_back),
             onPressed: () => _close(),
           ),
-          title: Text('Listen'),
+          title: Text(loc.lists),
         ),
         body: isLoading
-            ? LoadingScreen(message: 'Lade Einstellungen')
-            : SettingsList(contentPadding: EdgeInsets.only(right: 10),
+            ? LoadingScreen(message: loc.loadingSettingsMessage)
+            : SettingsList(
+                contentPadding: EdgeInsets.only(right: 10),
                 sections: [
                   SettingsSection(
                     title: Text(
-                      'Wähle die Listen, die Du für deine Aufgaben-Organisation benutzen möchtest.',
+                      loc.choosePreferredListsSettingsLabel,
                       style: TextStyle(
                         color: Theme.of(context).primaryColorDark,
                       ),

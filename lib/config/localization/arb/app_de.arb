@@ -58,5 +58,25 @@
             }
         }
     },
-    "undo": "Rückgängig"
+    "undo": "Rückgängig",
+    "settings": "Einstellungen",
+    "commonSettingsSection": "Allgemein",
+    "themeSettingsLabel": "Erscheinungsbild",
+    "notificationsSettingsLabel": "Benachrichtigungen",
+    "organizationSettingsLabel": "Organisation",
+    "lists": "Listen",
+    "listsSettingsDescription": "Aufgaben-Listen wählen",
+    "labelsSettingsLabel": "Labels",
+    "feedbackSettingsSection": "Feddback & Support",
+    "feedbackInStore": "Bewerte die App",
+    "feedbackViaMail": "Feedback geben",
+    "supportTheDev": "Unterstütze den Entwickler",
+    "legalSettingsSection": "Rechtliches",
+    "aboutSettingsLabel": "Über",
+    "privacyPolicy": "Datenschutz",
+    "termsAndConditions": "AGB / Lizenz",
+    "versionSettingsLabel": "Version",
+    "minOneListErrorMessage": "Es muss mindest eine Liste ausgewählt sein!",
+    "loadingSettingsMessage": "Lade Einstellungen ...",
+    "choosePreferredListsSettingsLabel": "Lege fest, welche Listen Du verwenden möchtest"
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:zen_do/config/localization/generated/app_localizations.dart';
 import 'package:zen_do/view/settings/lists_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -33,6 +34,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context);
     final sectionsTextStyle = TextStyle(
       color: Theme.of(context).primaryColorDark,
     );
@@ -49,30 +51,30 @@ class _SettingsPageState extends State<SettingsPage> {
             icon: Icon(Icons.arrow_back),
             onPressed: () => _close(),
           ),
-          title: Text('Settings'),
+          title: Text(loc.settings),
         ),
         body: SettingsList(
           contentPadding: EdgeInsets.only(bottom: 10),
           sections: [
             SettingsSection(
-              title: Text('Allgemein', style: sectionsTextStyle),
+              title: Text(loc.commonSettingsSection, style: sectionsTextStyle),
               tiles: [
                 SettingsTile(
-                  title: Text('Theme'),
+                  title: Text(loc.themeSettingsLabel),
                   leading: Icon(Icons.color_lens),
                 ),
                 SettingsTile(
-                  title: Text('Benachrichtigungen'),
+                  title: Text(loc.notificationsSettingsLabel),
                   leading: Icon(Icons.notifications),
                 ),
               ],
             ),
             SettingsSection(
-              title: Text('Organisation', style: sectionsTextStyle),
+              title: Text(loc.organizationSettingsLabel, style: sectionsTextStyle),
               tiles: [
                 SettingsTile.navigation(
-                  title: Text('Listen'),
-                  description: Text('Aufgaben-Listen wählen'),
+                  title: Text(loc.lists),
+                  description: Text(loc.listsSettingsDescription),
                   leading: Icon(Icons.view_column),
                   onPressed: (context) async {
                     final changed = await Navigator.push<bool>(
@@ -84,43 +86,43 @@ class _SettingsPageState extends State<SettingsPage> {
                     hasChanged = changed ?? false;
                   },
                 ),
-                SettingsTile(title: Text('Labels'), leading: Icon(Icons.label)),
+                SettingsTile(title: Text(loc.labelsSettingsLabel), leading: Icon(Icons.label)),
               ],
             ),
             SettingsSection(
-              title: Text('Support', style: sectionsTextStyle),
+              title: Text(loc.feedbackSettingsSection, style: sectionsTextStyle),
               tiles: [
                 SettingsTile(
-                  title: Text('Bewerten im Store'),
+                  title: Text(loc.feedbackInStore),
                   leading: Icon(Icons.star),
                 ),
                 SettingsTile(
-                  title: Text('Feddback geben'),
+                  title: Text(loc.feedbackViaMail),
                   leading: Icon(Icons.mail),
                 ),
                 SettingsTile(
-                  title: Text('Support the dev'),
+                  title: Text(loc.supportTheDev),
                   leading: Icon(Icons.volunteer_activism),
                 ),
               ],
             ),
             SettingsSection(
-              title: Text('Rechtliches', style: sectionsTextStyle),
+              title: Text(loc.legalSettingsSection, style: sectionsTextStyle),
               tiles: [
                 SettingsTile(
-                  title: Text('Über'),
+                  title: Text(loc.aboutSettingsLabel),
                   leading: Icon(Icons.info_outline),
                 ),
                 SettingsTile(
-                  title: Text('Datenschutz'),
+                  title: Text(loc.privacyPolicy),
                   leading: Icon(Icons.privacy_tip),
                 ),
                 SettingsTile(
-                  title: Text('AGB / LIzenz'),
+                  title: Text(loc.termsAndConditions),
                   leading: Icon(Icons.description),
                 ),
                 SettingsTile(
-                  title: Text('Version'),
+                  title: Text(loc.versionSettingsLabel),
                   description: Text('$appVersion\n$appBuildNumber'),
                   leading: Icon(Icons.tag),
                 ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zen_do/config/localization/app_localizations.dart';
+import 'package:zen_do/config/localization/generated/app_localizations.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/model/todo/todo.dart';

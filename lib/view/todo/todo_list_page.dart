@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/config/localization/app_localizations.dart';
+import 'package:zen_do/config/localization/generated/app_localizations.dart';
 import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/model/todo/todo.dart';

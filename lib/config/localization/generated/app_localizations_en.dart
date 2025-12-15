@@ -146,4 +146,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get undo => 'Undo';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get commonSettingsSection => 'Common';
+
+  @override
+  String get themeSettingsLabel => 'Theme';
+
+  @override
+  String get notificationsSettingsLabel => 'Notifications';
+
+  @override
+  String get organizationSettingsLabel => 'Organization';
+
+  @override
+  String get lists => 'Lists';
+
+  @override
+  String get listsSettingsDescription => 'Chose your preffered lists';
+
+  @override
+  String get labelsSettingsLabel => 'Labels';
+
+  @override
+  String get feedbackSettingsSection => 'Feddback & Support';
+
+  @override
+  String get feedbackInStore => 'Rate the App';
+
+  @override
+  String get feedbackViaMail => 'Send feedback';
+
+  @override
+  String get supportTheDev => 'Support the developer';
+
+  @override
+  String get legalSettingsSection => 'Legal';
+
+  @override
+  String get aboutSettingsLabel => 'About';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get termsAndConditions => 'Terms and Conditions';
+
+  @override
+  String get versionSettingsLabel => 'Version';
+
+  @override
+  String get minOneListErrorMessage =>
+      'There must be at least one list selected';
+
+  @override
+  String get loadingSettingsMessage => 'Loading settings ...';
+
+  @override
+  String get choosePreferredListsSettingsLabel =>
+      'Choose the lists yout want to use';
 }
