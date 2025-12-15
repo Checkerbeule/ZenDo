@@ -386,6 +386,30 @@ abstract class AppLocalizations {
   /// **'Notifications'**
   String get notificationsSettingsLabel;
 
+  /// No description provided for @languageSettingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageSettingsLabel;
+
+  /// No description provided for @languageGerman.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get languageGerman;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @chooseLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose app language'**
+  String get chooseLanguage;
+
   /// No description provided for @organizationSettingsLabel.
   ///
   /// In en, this message translates to:
@@ -419,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedbackInStore.
   ///
   /// In en, this message translates to:
-  /// **'Rate the App'**
+  /// **'Rate the app'**
   String get feedbackInStore;
 
   /// No description provided for @feedbackViaMail.

@@ -160,6 +160,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsSettingsLabel => 'Notifications';
 
   @override
+  String get languageSettingsLabel => 'Language';
+
+  @override
+  String get languageGerman => 'German';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get chooseLanguage => 'Choose app language';
+
+  @override
   String get organizationSettingsLabel => 'Organization';
 
   @override
@@ -175,7 +187,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackSettingsSection => 'Feddback & Support';
 
   @override
-  String get feedbackInStore => 'Rate the App';
+  String get feedbackInStore => 'Rate the app';
 
   @override
   String get feedbackViaMail => 'Send feedback';

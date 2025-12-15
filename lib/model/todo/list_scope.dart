@@ -17,7 +17,7 @@ enum ListScope {
 
 extension ListScopeX on ListScope {
   String label(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     switch (this) {
       case ListScope.daily:
         return loc.daily_adv;
@@ -33,7 +33,7 @@ extension ListScopeX on ListScope {
   }
 
   String labelAdj(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     switch (this) {
       case ListScope.daily:
         return loc.daily_adj;

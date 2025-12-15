@@ -19,7 +19,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     return SliverAppBar(
       actionsPadding: const EdgeInsets.only(right: 10),
       pinned: false,
@@ -129,7 +129,7 @@ enum SortOption { custom, title, expirationDate, creationDate }
 
 extension SortOptionX on SortOption {
   String label(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     switch (this) {
       case SortOption.custom:
         return loc.custom;

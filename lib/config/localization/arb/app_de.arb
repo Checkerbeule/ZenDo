@@ -1,4 +1,5 @@
 {
+    "@@locale": "de",
     "loadingTodosIndicator": "Lade Aufgaben...",
     "dataLoadErrorHeadline": "Laden der Daten fehlgeschlagen !",
     "dataLoadErrorMessage": "Schließen Sie die App und öffenen Sie sie zu einem späteren Zeitpunkt erneut.\nSollte der Fehler anschließend weiterhin bestehen, löschen Sie den App-Cache (Ihre Daten bleiben erhalten).",
@@ -63,6 +64,10 @@
     "commonSettingsSection": "Allgemein",
     "themeSettingsLabel": "Erscheinungsbild",
     "notificationsSettingsLabel": "Benachrichtigungen",
+    "languageSettingsLabel": "Sprache",
+    "languageGerman": "Deutsch",
+    "languageEnglish": "Englisch",
+    "chooseLanguage": "App-Sprache festlegen",
     "organizationSettingsLabel": "Organisation",
     "lists": "Listen",
     "listsSettingsDescription": "Aufgaben-Listen wählen",

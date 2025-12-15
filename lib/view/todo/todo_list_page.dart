@@ -68,10 +68,10 @@ class _TodoListPageState extends State<TodoListPage> {
     if (!mounted) return;
 
     settings = settingsService;
-    final loadedSortOption = await settingsService.getSortOption(
+    final loadedSortOption = settingsService.getSortOption(
       widget.list.scope,
     );
-    final loadedSortOrder = await settingsService.getSortOrder(
+    final loadedSortOrder = settingsService.getSortOrder(
       widget.list.scope,
     );
 
@@ -90,7 +90,7 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     final list = widget.list;
     final listScope = list.scope;
     final Set<SortOption> excludedSortOptions = listScope == ListScope.backlog

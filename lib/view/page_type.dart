@@ -11,7 +11,7 @@ enum PageType {
 
 extension PageTypeX on PageType {
   String label(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     switch (this) {
       case PageType.todos:
         return loc.todos;

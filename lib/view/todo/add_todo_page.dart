@@ -27,7 +27,7 @@ class _AddTodoPageState extends State<AddTodoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     return SafeArea(
       minimum: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,

@@ -180,7 +180,7 @@ void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
-      final loc = AppLocalizations.of(context)!;
+      final loc = AppLocalizations.of(context);
       return AlertDialog(
         title: Text(loc.dataLoadErrorHeadline),
         content: Column(

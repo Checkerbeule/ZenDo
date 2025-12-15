@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:arb_utils/state_managers/l10n_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -41,21 +42,26 @@ class ZenDoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<ProviderL10n>(create: (_) => ProviderL10n()),
         ChangeNotifierProvider<ZenDoAppState>(create: (_) => ZenDoAppState()),
         ChangeNotifierProxyProvider<ZenDoAppState, TodoState>(
           create: (_) => TodoState(),
-          update: (_, appState, todoState) =>
-              todoState!..setAppState(appState),
+          update: (_, appState, todoState) => todoState!..setAppState(appState),
         ),
       ],
-      child: MaterialApp(
-        title: 'ZenDo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
-        ),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: ZenDoMainPage(),
+      child: Consumer<ProviderL10n>(
+        builder: (context, l10n, child) {
+          return MaterialApp(
+            title: 'ZenDo',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
+            ),
+            locale: l10n.locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: ZenDoMainPage(),
+          );
+        },
       ),
     );
   }

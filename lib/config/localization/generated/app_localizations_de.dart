@@ -160,6 +160,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notificationsSettingsLabel => 'Benachrichtigungen';
 
   @override
+  String get languageSettingsLabel => 'Sprache';
+
+  @override
+  String get languageGerman => 'Deutsch';
+
+  @override
+  String get languageEnglish => 'Englisch';
+
+  @override
+  String get chooseLanguage => 'App-Sprache festlegen';
+
+  @override
   String get organizationSettingsLabel => 'Organisation';
 
   @override

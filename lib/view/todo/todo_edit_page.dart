@@ -49,7 +49,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     for (final scope in manager.allScopes) {
       listScopeDropDownItems.add(
         DropdownMenuItem(

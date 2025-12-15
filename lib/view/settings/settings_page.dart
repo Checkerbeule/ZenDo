@@ -1,7 +1,11 @@
+import 'package:arb_utils/state_managers/l10n_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/utils/locale_helper.dart';
+import 'package:zen_do/view/settings/language_settings_page.dart';
 import 'package:zen_do/view/settings/lists_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -67,10 +71,27 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: Text(loc.notificationsSettingsLabel),
                   leading: Icon(Icons.notifications),
                 ),
+                SettingsTile.navigation(
+                  title: Text(loc.languageSettingsLabel),
+                  leading: Icon(Icons.translate),
+                  description: Text(
+                    '${getLanguageLabel(context, context.read<ProviderL10n>().locale ?? Localizations.localeOf(context))}\n'
+                    '${context.read<ProviderL10n>().locale?.languageCode ?? loc.localeName}',
+                  ),
+                  onPressed: (context) => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LanguageSettingsPage(),
+                    ),
+                  ),
+                ),
               ],
             ),
             SettingsSection(
-              title: Text(loc.organizationSettingsLabel, style: sectionsTextStyle),
+              title: Text(
+                loc.organizationSettingsLabel,
+                style: sectionsTextStyle,
+              ),
               tiles: [
                 SettingsTile.navigation(
                   title: Text(loc.lists),
@@ -86,11 +107,17 @@ class _SettingsPageState extends State<SettingsPage> {
                     hasChanged = changed ?? false;
                   },
                 ),
-                SettingsTile(title: Text(loc.labelsSettingsLabel), leading: Icon(Icons.label)),
+                SettingsTile(
+                  title: Text(loc.labelsSettingsLabel),
+                  leading: Icon(Icons.label),
+                ),
               ],
             ),
             SettingsSection(
-              title: Text(loc.feedbackSettingsSection, style: sectionsTextStyle),
+              title: Text(
+                loc.feedbackSettingsSection,
+                style: sectionsTextStyle,
+              ),
               tiles: [
                 SettingsTile(
                   title: Text(loc.feedbackInStore),
