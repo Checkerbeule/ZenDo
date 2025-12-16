@@ -71,12 +71,19 @@ class _SettingsPageState extends State<SettingsPage> {
                   title: Text(loc.notificationsSettingsLabel),
                   leading: Icon(Icons.notifications),
                 ),
+                SettingsTile(
+                  title: Text(loc.backupSettingsLable),
+                  leading: Icon(Icons.backup),
+                ),
                 SettingsTile.navigation(
                   title: Text(loc.languageSettingsLabel),
                   leading: Icon(Icons.translate),
                   description: Text(
-                    '${getLanguageLabel(context, context.read<ProviderL10n>().locale ?? Localizations.localeOf(context))}\n'
-                    '${context.read<ProviderL10n>().locale?.languageCode ?? loc.localeName}',
+                    getLanguageLabel(
+                      context,
+                      context.read<ProviderL10n>().locale ??
+                          Localizations.localeOf(context),
+                    ),
                   ),
                   onPressed: (context) => Navigator.push(
                     context,

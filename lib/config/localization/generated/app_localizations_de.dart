@@ -160,7 +160,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get notificationsSettingsLabel => 'Benachrichtigungen';
 
   @override
+  String get backupSettingsLable => 'Sicherung';
+
+  @override
   String get languageSettingsLabel => 'Sprache';
+
+  @override
+  String get languageSettingsHeadline => 'Spracheinstellungen';
 
   @override
   String get languageGerman => 'Deutsch';
@@ -170,6 +176,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chooseLanguage => 'App-Sprache festlegen';
+
+  @override
+  String get useSystemLanguageLabel => 'Systemsprache nutzen';
 
   @override
   String get organizationSettingsLabel => 'Organisation';

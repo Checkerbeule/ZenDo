@@ -160,7 +160,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsSettingsLabel => 'Notifications';
 
   @override
+  String get backupSettingsLable => 'Backup';
+
+  @override
   String get languageSettingsLabel => 'Language';
+
+  @override
+  String get languageSettingsHeadline => 'Language settings';
 
   @override
   String get languageGerman => 'German';
@@ -170,6 +176,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseLanguage => 'Choose app language';
+
+  @override
+  String get useSystemLanguageLabel => 'Use system language';
 
   @override
   String get organizationSettingsLabel => 'Organization';

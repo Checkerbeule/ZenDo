@@ -386,11 +386,23 @@ abstract class AppLocalizations {
   /// **'Notifications'**
   String get notificationsSettingsLabel;
 
+  /// No description provided for @backupSettingsLable.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get backupSettingsLable;
+
   /// No description provided for @languageSettingsLabel.
   ///
   /// In en, this message translates to:
   /// **'Language'**
   String get languageSettingsLabel;
+
+  /// No description provided for @languageSettingsHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Language settings'**
+  String get languageSettingsHeadline;
 
   /// No description provided for @languageGerman.
   ///
@@ -409,6 +421,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose app language'**
   String get chooseLanguage;
+
+  /// No description provided for @useSystemLanguageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Use system language'**
+  String get useSystemLanguageLabel;
 
   /// No description provided for @organizationSettingsLabel.
   ///

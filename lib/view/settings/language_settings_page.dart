@@ -17,6 +17,7 @@ class LanguageSettingsPage extends StatefulWidget {
 
 class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
   Locale? _localeName;
+  bool _useSystemLangugage = true;
 
   @override
   void didChangeDependencies() {
@@ -25,6 +26,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
       _localeName =
           context.read<ProviderL10n>().locale ??
           Localizations.localeOf(context);
+      _useSystemLangugage = context.read<ProviderL10n>().locale == null;
     });
   }
 
@@ -38,7 +40,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(loc.lists),
+        title: Text(loc.languageSettingsHeadline),
       ),
       body: RadioGroup<Locale>(
         groupValue: _localeName,
@@ -61,10 +63,26 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
                 style: TextStyle(color: Theme.of(context).primaryColorDark),
               ),
               tiles: [
+                SettingsTile.switchTile(
+                  initialValue: _useSystemLangugage,
+                  title: Text(loc.useSystemLanguageLabel),
+                  onToggle: (value) {
+                    setState(() {
+                      _useSystemLangugage = value;
+                      if (_useSystemLangugage) {
+                        context.read<ProviderL10n>().locale = null;
+                      }
+                    });
+                  },
+                ),
                 for (final Locale locale in AppLocalizations.supportedLocales)
                   SettingsTile(
+                    enabled: !_useSystemLangugage,
                     title: Text(getLanguageLabel(context, locale)),
-                    trailing: Radio(value: locale),
+                    trailing: Radio(
+                      value: locale,
+                      enabled: !_useSystemLangugage,
+                    ),
                   ),
               ],
             ),
