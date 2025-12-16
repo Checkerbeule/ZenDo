@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/model/todo/todo.dart';
@@ -27,7 +27,7 @@ class _AddTodoPageState extends State<AddTodoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = TodoLocalizations.of(context);
     return SafeArea(
       minimum: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,

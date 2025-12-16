@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 
 enum ListScope {
   daily(Duration(days: 1), true),
@@ -17,7 +17,7 @@ enum ListScope {
 
 extension ListScopeX on ListScope {
   String label(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = TodoLocalizations.of(context);
     switch (this) {
       case ListScope.daily:
         return loc.daily_adv;
@@ -33,7 +33,7 @@ extension ListScopeX on ListScope {
   }
 
   String labelAdj(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = TodoLocalizations.of(context);
     switch (this) {
       case ListScope.daily:
         return loc.daily_adj;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/localization/generated/settings/settings_localizations.dart';
 
 String getLanguageLabel(BuildContext context, Locale? locale) {
-  AppLocalizations loc = AppLocalizations.of(context);
+  final loc = SettingsLocalizations.of(context);
   if (locale == null) return '';
   switch (locale.languageCode) {
     case 'en':

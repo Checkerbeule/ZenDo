@@ -1,6 +1,0 @@
-arb-dir: lib/config/localization/arb
-output-dir: lib/config/localization/generated
-template-arb-file: app_en.arb
-output-localization-file: app_localizations.dart
-nullable-getter: false
-#untranslated-messages-file: untranslated-messages.txt 

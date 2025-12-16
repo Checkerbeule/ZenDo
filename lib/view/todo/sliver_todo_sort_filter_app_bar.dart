@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/localization/generated/app/app_localizations.dart';
+import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 
 class SliverTodoSortFilterAppBar extends StatelessWidget {
   SliverTodoSortFilterAppBar({
@@ -129,10 +130,10 @@ enum SortOption { custom, title, expirationDate, creationDate }
 
 extension SortOptionX on SortOption {
   String label(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = TodoLocalizations.of(context);
     switch (this) {
       case SortOption.custom:
-        return loc.custom;
+        return AppLocalizations.of(context).custom;
       case SortOption.title:
         return loc.todoTitle;
       case SortOption.expirationDate:

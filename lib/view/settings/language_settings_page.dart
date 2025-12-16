@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/localization/generated/settings/settings_localizations.dart';
 import 'package:zen_do/utils/locale_helper.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -32,7 +32,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    AppLocalizations loc = AppLocalizations.of(context);
+    final loc = SettingsLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -75,7 +75,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
                     });
                   },
                 ),
-                for (final Locale locale in AppLocalizations.supportedLocales)
+                for (final Locale locale in SettingsLocalizations.supportedLocales)
                   SettingsTile(
                     enabled: !_useSystemLangugage,
                     title: Text(getLanguageLabel(context, locale)),

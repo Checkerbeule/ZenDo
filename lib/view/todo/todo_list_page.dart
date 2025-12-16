@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/model/todo/todo.dart';
@@ -14,6 +14,8 @@ import 'package:zen_do/view/todo/add_todo_page.dart';
 import 'package:zen_do/view/todo/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/view/todo/todo_edit_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
+
+import '../../localization/generated/app/app_localizations.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -90,7 +92,7 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = TodoLocalizations.of(context);
     final list = widget.list;
     final listScope = list.scope;
     final Set<SortOption> excludedSortOptions = listScope == ListScope.backlog
@@ -292,7 +294,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                   ),
                                 ),
                                 action: SnackBarAction(
-                                  label: loc.undo,
+                                  label: AppLocalizations.of(context).undo,
                                   onPressed: () {
                                     final isUndone = todoState
                                         .performAcitionOnList<bool>(

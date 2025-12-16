@@ -3,15 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/localization/generated/app/app_localizations.dart';
+import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/main.dart';
 import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/persistence/persistence_helper.dart';
-import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/loading_screen.dart';
+import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/todo/todo_list_page.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -113,7 +114,7 @@ class TodoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = TodoLocalizations.of(context);
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
         final listManager = todoState.listManager;
@@ -196,7 +197,7 @@ void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.primary,
             ),
-            child: Text(loc.openSettings),
+            child: Text(loc.openAppSettings),
             onPressed: () {
               AppSettings.openAppSettings(
                 type: AppSettingsType.settings,

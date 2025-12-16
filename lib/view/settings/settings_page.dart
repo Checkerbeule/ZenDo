@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/localization/generated/settings/settings_localizations.dart';
 import 'package:zen_do/utils/locale_helper.dart';
 import 'package:zen_do/view/settings/language_settings_page.dart';
 import 'package:zen_do/view/settings/lists_settings_page.dart';
@@ -38,7 +38,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = SettingsLocalizations.of(context);
     final sectionsTextStyle = TextStyle(
       color: Theme.of(context).primaryColorDark,
     );

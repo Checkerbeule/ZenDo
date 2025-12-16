@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
-import 'package:zen_do/config/localization/generated/app_localizations.dart';
+import 'package:zen_do/localization/generated/settings/settings_localizations.dart';
 import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/view/loading_screen.dart';
@@ -49,7 +49,7 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
       if (value) activeScopesCount++;
     }
     if (activeScopesCount < 1) {
-      AppLocalizations loc = AppLocalizations.of(context);
+      final loc = SettingsLocalizations.of(context);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(loc.minOneListErrorMessage)));
@@ -74,7 +74,7 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    AppLocalizations loc = AppLocalizations.of(context);
+    final loc = SettingsLocalizations.of(context);
     return PopScope<bool>(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
