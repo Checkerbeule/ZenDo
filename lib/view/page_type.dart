@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zen_do/config/localization/app_localizations.dart';
+import 'package:zen_do/localization/generated/app/app_localizations.dart';
 
 enum PageType {
   todos(),
@@ -11,7 +11,7 @@ enum PageType {
 
 extension PageTypeX on PageType {
   String label(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
+    final loc = AppLocalizations.of(context);
     switch (this) {
       case PageType.todos:
         return loc.todos;

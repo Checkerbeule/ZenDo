@@ -1,6 +1,11 @@
+import 'package:arb_utils/state_managers/l10n_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
+import 'package:zen_do/localization/generated/settings/settings_localizations.dart';
+import 'package:zen_do/utils/locale_helper.dart';
+import 'package:zen_do/view/settings/language_settings_page.dart';
 import 'package:zen_do/view/settings/lists_settings_page.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -16,10 +21,6 @@ class _SettingsPageState extends State<SettingsPage> {
   String? appVersion = '';
   String? appBuildNumber = '';
 
-  void _close() {
-    Navigator.pop(context, hasChanged);
-  }
-
   @override
   void initState() {
     super.initState();
@@ -31,12 +32,19 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
+  void _close() {
+    Navigator.pop(context, hasChanged);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final loc = SettingsLocalizations.of(context);
     final sectionsTextStyle = TextStyle(
       color: Theme.of(context).primaryColorDark,
     );
+
     return PopScope<bool>(
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         _close();
@@ -48,30 +56,54 @@ class _SettingsPageState extends State<SettingsPage> {
             icon: Icon(Icons.arrow_back),
             onPressed: () => _close(),
           ),
-          title: Text('Settings'),
+          title: Text(loc.settings),
         ),
         body: SettingsList(
           contentPadding: EdgeInsets.only(bottom: 10),
           sections: [
             SettingsSection(
-              title: Text('Allgemein', style: sectionsTextStyle),
+              title: Text(loc.commonSettingsSection, style: sectionsTextStyle),
               tiles: [
                 SettingsTile(
-                  title: Text('Theme'),
+                  title: Text(loc.themeSettingsLabel),
                   leading: Icon(Icons.color_lens),
                 ),
                 SettingsTile(
-                  title: Text('Benachrichtigungen'),
+                  title: Text(loc.notificationsSettingsLabel),
                   leading: Icon(Icons.notifications),
+                ),
+                SettingsTile(
+                  title: Text(loc.backupSettingsLable),
+                  leading: Icon(Icons.backup),
+                ),
+                SettingsTile.navigation(
+                  title: Text(loc.languageSettingsLabel),
+                  leading: Icon(Icons.translate),
+                  description: Text(
+                    getLanguageLabel(
+                      context,
+                      context.read<ProviderL10n>().locale ??
+                          Localizations.localeOf(context),
+                    ),
+                  ),
+                  onPressed: (context) => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LanguageSettingsPage(),
+                    ),
+                  ),
                 ),
               ],
             ),
             SettingsSection(
-              title: Text('Organisation', style: sectionsTextStyle),
+              title: Text(
+                loc.organizationSettingsLabel,
+                style: sectionsTextStyle,
+              ),
               tiles: [
                 SettingsTile.navigation(
-                  title: Text('Listen'),
-                  description: Text('Aufgaben-Listen wählen'),
+                  title: Text(loc.lists),
+                  description: Text(loc.listsSettingsDescription),
                   leading: Icon(Icons.view_column),
                   onPressed: (context) async {
                     final changed = await Navigator.push<bool>(
@@ -83,43 +115,49 @@ class _SettingsPageState extends State<SettingsPage> {
                     hasChanged = changed ?? false;
                   },
                 ),
-                SettingsTile(title: Text('Labels'), leading: Icon(Icons.label)),
+                SettingsTile(
+                  title: Text(loc.labelsSettingsLabel),
+                  leading: Icon(Icons.label),
+                ),
               ],
             ),
             SettingsSection(
-              title: Text('Support', style: sectionsTextStyle),
+              title: Text(
+                loc.feedbackSettingsSection,
+                style: sectionsTextStyle,
+              ),
               tiles: [
                 SettingsTile(
-                  title: Text('Bewerten im Store'),
+                  title: Text(loc.feedbackInStore),
                   leading: Icon(Icons.star),
                 ),
                 SettingsTile(
-                  title: Text('Feddback geben'),
+                  title: Text(loc.feedbackViaMail),
                   leading: Icon(Icons.mail),
                 ),
                 SettingsTile(
-                  title: Text('Support the dev'),
+                  title: Text(loc.supportTheDev),
                   leading: Icon(Icons.volunteer_activism),
                 ),
               ],
             ),
             SettingsSection(
-              title: Text('Rechtliches', style: sectionsTextStyle),
+              title: Text(loc.legalSettingsSection, style: sectionsTextStyle),
               tiles: [
                 SettingsTile(
-                  title: Text('Über'),
+                  title: Text(loc.aboutSettingsLabel),
                   leading: Icon(Icons.info_outline),
                 ),
                 SettingsTile(
-                  title: Text('Datenschutz'),
+                  title: Text(loc.privacyPolicy),
                   leading: Icon(Icons.privacy_tip),
                 ),
                 SettingsTile(
-                  title: Text('AGB / LIzenz'),
+                  title: Text(loc.termsAndConditions),
                   leading: Icon(Icons.description),
                 ),
                 SettingsTile(
-                  title: Text('Version'),
+                  title: Text(loc.versionSettingsLabel),
                   description: Text('$appVersion\n$appBuildNumber'),
                   leading: Icon(Icons.tag),
                 ),

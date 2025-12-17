@@ -1,0 +1,53 @@
+{
+  "@@locale": "en",
+  "addNewTodo": "Add new todo",
+  "addTodo": "Add todo",
+  "backlog": "Backlog",
+  "completed": "completed",
+  "completedTodos": "Completed todos",
+  "createdOn": "Created on",
+  "creationDate": "Creation date",
+  "daily_adj": "daily",
+  "daily_adv": "Daily",
+  "deleteTodo": "Delete todo",
+  "deleteTodoQuestion": "Do you really want to permanently delete this task?",
+  "descriptionHintText": "Description (optional)",
+  "descriptionLabel": "Description",
+  "dueOn": "Due on",
+  "editTodo": "Edit todo",
+  "errorTitleEmpty": "Title must not be empty",
+  "errorTitleUnavailable": "Title is allready taken",
+  "errorTodoAllreadyExistsInDestinationList": "Todo allready exists in destination list",
+  "expirationDate": "Due date",
+  "list": "List",
+  "loadingTodosIndicator": "Loading Todos...",
+  "monthly_adj": "monthly",
+  "monthly_adv": "Monthly",
+  "moveToXList": "Move to\n{ListScopeLabel} list",
+  "@moveToXList": {
+    "placeholders": {
+      "ListScopeLabel": {
+        "type": "String",
+        "example": "Daily"
+      }
+    }
+  },
+  "noOpenTodosLeft": "No open todos left",
+  "shiftNotPossible": "Todo can not be moved!",
+  "titleHintText": "The todo's title",
+  "titleLable": "Title",
+  "todoMovedToX": "Todo was moved to {ListScopeLabel} list",
+  "@todoMovedToX": {
+    "placeholders": {
+      "ListScopeLabel": {
+        "type": "String",
+        "example": "Weekly"
+      }
+    }
+  },
+  "todoTitle": "Todo-Title",
+  "weekly_adj": "weekly",
+  "weekly_adv": "Weekly",
+  "yearly_adj": "yearly",
+  "yearly_adv": "Yearly"
+}

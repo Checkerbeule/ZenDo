@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+  "closeApp": "Close app",
+  "custom": "Custom",
+  "dataLoadErrorHeadline": "Loading data failed!",
+  "dataLoadErrorMessage": "Close the app and reopen it later. If the error still exists, clear the app cache (your data will be retained).",
+  "habits": "Habits",
+  "notes": "Notes",
+  "openAppSettings": "Open settings",
+  "sorting": "Sorting",
+  "todos": "Todos",
+  "undo": "Undo"
+}

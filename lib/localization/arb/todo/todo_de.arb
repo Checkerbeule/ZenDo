@@ -1,0 +1,53 @@
+{
+  "@@locale": "de",
+  "addNewTodo": "Neue Aufgabe hinzufügen",
+  "addTodo": "Aufgabe hinzufügen",
+  "backlog": "Backlog",
+  "completed": "erledigt",
+  "completedTodos": "Erledigte Aufgaben",
+  "createdOn": "Erstellt am",
+  "creationDate": "Erstalldatum",
+  "daily_adj": "tägliche",
+  "daily_adv": "Täglich",
+  "deleteTodo": "Aufgabe löschen",
+  "deleteTodoQuestion": "Diese Aufgabe wirklich unwiederbringlich löschen?",
+  "descriptionHintText": "Beschreibung (optional)",
+  "descriptionLabel": "Beschreibung",
+  "dueOn": "Fällig am",
+  "editTodo": "Aufgabe bearbeiten",
+  "errorTitleEmpty": "Titel darf nicht leer sein",
+  "errorTitleUnavailable": "Titel ist bereits vergeben",
+  "errorTodoAllreadyExistsInDestinationList": "Aufgabe bereits vohanden in Zielliste",
+  "expirationDate": "Fälligkeitsdatum",
+  "list": "Liste",
+  "loadingTodosIndicator": "Lade Aufgaben...",
+  "monthly_adj": "monatliche",
+  "monthly_adv": "Monatlich",
+  "moveToXList": "Verschieben in\n{ListScopeLabel} Liste",
+  "@moveToXList": {
+    "placeholders": {
+      "ListScopeLabel": {
+        "type": "String",
+        "example": "Wöchentlich"
+      }
+    }
+  },
+  "noOpenTodosLeft": "Keine offenen Aufgaben vorhanden",
+  "shiftNotPossible": "Verschieben der Aufgabe nicht möglich!",
+  "titleHintText": "Titel der Aufgabe",
+  "titleLable": "Titel",
+  "todoMovedToX": "Aufgabe wurde in {ListScopeLabel} Liste verschoben",
+  "@todoMovedToX": {
+    "placeholders": {
+      "ListScopeLabel": {
+        "type": "String",
+        "example": "Wöchentlich"
+      }
+    }
+  },
+  "todoTitle": "Aufgaben-Titel",
+  "weekly_adj": "wöchentliche",
+  "weekly_adv": "Wöchentlich",
+  "yearly_adj": "jährliche",
+  "yearly_adv": "Jährlich"
+}
