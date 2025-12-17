@@ -42,6 +42,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final sectionsTextStyle = TextStyle(
       color: Theme.of(context).primaryColorDark,
     );
+    final locale =
+        context.read<ProviderL10n>().locale ?? Localizations.localeOf(context);
 
     return PopScope<bool>(
       canPop: false,
@@ -53,7 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () => _close(),
           ),
           title: Text(loc.settings),
@@ -66,26 +68,20 @@ class _SettingsPageState extends State<SettingsPage> {
               tiles: [
                 SettingsTile(
                   title: Text(loc.themeSettingsLabel),
-                  leading: Icon(Icons.color_lens),
+                  leading: const Icon(Icons.color_lens),
                 ),
                 SettingsTile(
                   title: Text(loc.notificationsSettingsLabel),
-                  leading: Icon(Icons.notifications),
+                  leading: const Icon(Icons.notifications),
                 ),
                 SettingsTile(
                   title: Text(loc.backupSettingsLable),
-                  leading: Icon(Icons.backup),
+                  leading: const Icon(Icons.backup),
                 ),
                 SettingsTile.navigation(
                   title: Text(loc.languageSettingsLabel),
-                  leading: Icon(Icons.translate),
-                  description: Text(
-                    getLanguageLabel(
-                      context,
-                      context.read<ProviderL10n>().locale ??
-                          Localizations.localeOf(context),
-                    ),
-                  ),
+                  leading: const Icon(Icons.translate),
+                  description: Text(getLanguageLabel(context, locale)),
                   onPressed: (context) => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -104,7 +100,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 SettingsTile.navigation(
                   title: Text(loc.lists),
                   description: Text(loc.listsSettingsDescription),
-                  leading: Icon(Icons.view_column),
+                  leading: const Icon(Icons.view_column),
                   onPressed: (context) async {
                     final changed = await Navigator.push<bool>(
                       context,
@@ -117,7 +113,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 SettingsTile(
                   title: Text(loc.labelsSettingsLabel),
-                  leading: Icon(Icons.label),
+                  leading: const Icon(Icons.label),
                 ),
               ],
             ),
@@ -129,15 +125,15 @@ class _SettingsPageState extends State<SettingsPage> {
               tiles: [
                 SettingsTile(
                   title: Text(loc.feedbackInStore),
-                  leading: Icon(Icons.star),
+                  leading: const Icon(Icons.star),
                 ),
                 SettingsTile(
                   title: Text(loc.feedbackViaMail),
-                  leading: Icon(Icons.mail),
+                  leading: const Icon(Icons.mail),
                 ),
                 SettingsTile(
                   title: Text(loc.supportTheDev),
-                  leading: Icon(Icons.volunteer_activism),
+                  leading: const Icon(Icons.volunteer_activism),
                 ),
               ],
             ),
@@ -146,20 +142,20 @@ class _SettingsPageState extends State<SettingsPage> {
               tiles: [
                 SettingsTile(
                   title: Text(loc.aboutSettingsLabel),
-                  leading: Icon(Icons.info_outline),
+                  leading: const Icon(Icons.info_outline),
                 ),
                 SettingsTile(
                   title: Text(loc.privacyPolicy),
-                  leading: Icon(Icons.privacy_tip),
+                  leading: const Icon(Icons.privacy_tip),
                 ),
                 SettingsTile(
                   title: Text(loc.termsAndConditions),
-                  leading: Icon(Icons.description),
+                  leading: const Icon(Icons.description),
                 ),
                 SettingsTile(
                   title: Text(loc.versionSettingsLabel),
                   description: Text('$appVersion\n$appBuildNumber'),
-                  leading: Icon(Icons.tag),
+                  leading: const Icon(Icons.tag),
                 ),
               ],
             ),
