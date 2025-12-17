@@ -4,6 +4,7 @@ import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/localization/generated/settings/settings_localizations.dart';
+import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/utils/locale_helper.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -16,23 +17,13 @@ class LanguageSettingsPage extends StatefulWidget {
 }
 
 class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
-  Locale? _localeName;
-  bool _useSystemLangugage = true;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    setState(() {
-      _localeName =
-          context.read<ProviderL10n>().locale ??
-          Localizations.localeOf(context);
-      _useSystemLangugage = context.read<ProviderL10n>().locale == null;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final loc = SettingsLocalizations.of(context);
+    final l10n = context.watch<ProviderL10n>();
+    final locale = l10n.locale ?? Localizations.localeOf(context);
+    final useSystemLanguage = l10n.locale == null;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -43,11 +34,8 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
         title: Text(loc.languageSettingsHeadline),
       ),
       body: RadioGroup<Locale>(
-        groupValue: _localeName,
+        groupValue: locale,
         onChanged: (Locale? value) {
-          setState(() {
-            _localeName = value;
-          });
           if (value != null) {
             context.read<ProviderL10n>().locale = value;
           } else {
@@ -64,24 +52,32 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
               ),
               tiles: [
                 SettingsTile.switchTile(
-                  initialValue: _useSystemLangugage,
+                  initialValue: useSystemLanguage,
                   title: Text(loc.useSystemLanguageLabel),
-                  onToggle: (value) {
-                    setState(() {
-                      _useSystemLangugage = value;
-                      if (_useSystemLangugage) {
-                        context.read<ProviderL10n>().locale = null;
-                      }
-                    });
+                  onToggle: (value) async {
+                    if ((!value)) {
+                      context.read<ProviderL10n>().locale = locale;
+                    } else {
+                      // sets "null" as string (bug in lib)
+                      context.read<ProviderL10n>().locale = null;
+                      // overrides "null" string and deletes the pref (fix)
+                      await Future.delayed(Duration(microseconds: 1));
+                      await SharedPrefsSettingsService.getInstance().then((
+                        settingsService,
+                      ) {
+                        settingsService.setLocale(null);
+                      });
+                    }
                   },
                 ),
-                for (final Locale locale in SettingsLocalizations.supportedLocales)
+                for (final Locale locale
+                    in SettingsLocalizations.supportedLocales)
                   SettingsTile(
-                    enabled: !_useSystemLangugage,
+                    enabled: !useSystemLanguage,
                     title: Text(getLanguageLabel(context, locale)),
                     trailing: Radio(
                       value: locale,
-                      enabled: !_useSystemLangugage,
+                      enabled: !useSystemLanguage,
                     ),
                   ),
               ],

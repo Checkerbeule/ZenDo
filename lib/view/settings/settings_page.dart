@@ -42,6 +42,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final sectionsTextStyle = TextStyle(
       color: Theme.of(context).primaryColorDark,
     );
+
     return PopScope<bool>(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
