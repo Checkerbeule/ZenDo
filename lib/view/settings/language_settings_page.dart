@@ -4,7 +4,6 @@ import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/localization/generated/settings/settings_localizations.dart';
-import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/utils/locale_helper.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -28,7 +27,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(loc.languageSettingsHeadline),
@@ -37,7 +36,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
         groupValue: locale,
         onChanged: (Locale? value) {
           if (value != null) {
-            context.read<ProviderL10n>().locale = value;
+            l10n.locale = value;
           } else {
             logger.w('Localization could not be changed!');
           }
@@ -54,19 +53,11 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
                 SettingsTile.switchTile(
                   initialValue: useSystemLanguage,
                   title: Text(loc.useSystemLanguageLabel),
-                  onToggle: (value) async {
-                    if ((!value)) {
-                      context.read<ProviderL10n>().locale = locale;
+                  onToggle: (useSystemDefault) async {
+                    if (useSystemDefault) {
+                      l10n.locale = null;
                     } else {
-                      // sets "null" as string (bug in lib)
-                      context.read<ProviderL10n>().locale = null;
-                      // overrides "null" string and deletes the pref (fix)
-                      await Future.delayed(Duration(microseconds: 1));
-                      await SharedPrefsSettingsService.getInstance().then((
-                        settingsService,
-                      ) {
-                        settingsService.setLocale(null);
-                      });
+                      l10n.locale = locale;
                     }
                   },
                 ),
@@ -75,10 +66,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
                   SettingsTile(
                     enabled: !useSystemLanguage,
                     title: Text(getLanguageLabel(context, locale)),
-                    trailing: Radio(
-                      value: locale,
-                      enabled: !useSystemLanguage,
-                    ),
+                    trailing: Radio(value: locale, enabled: !useSystemLanguage),
                   ),
               ],
             ),

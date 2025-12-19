@@ -70,12 +70,8 @@ class _TodoListPageState extends State<TodoListPage> {
     if (!mounted) return;
 
     settings = settingsService;
-    final loadedSortOption = settingsService.getSortOption(
-      widget.list.scope,
-    );
-    final loadedSortOrder = settingsService.getSortOrder(
-      widget.list.scope,
-    );
+    final loadedSortOption = settingsService.getSortOption(widget.list.scope);
+    final loadedSortOrder = settingsService.getSortOrder(widget.list.scope);
 
     if (!mounted) return;
     setState(() {
@@ -138,6 +134,7 @@ class _TodoListPageState extends State<TodoListPage> {
                 )
               else
                 SliverReorderableList(
+                  itemCount: sortedAndFilteredTodos.length,
                   proxyDecorator: (child, index, animation) {
                     return AnimatedBuilder(
                       animation: animation,
@@ -161,7 +158,6 @@ class _TodoListPageState extends State<TodoListPage> {
                       },
                     );
                   },
-                  itemCount: sortedAndFilteredTodos.length,
                   onReorder: (oldIndex, newIndex) {
                     if (sortOption == SortOption.custom) {
                       setState(() {
@@ -197,7 +193,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                         previousListScope.labelAdj(context),
                                       ),
                                     ),
-                                    SizedBox(width: 10),
+                                    const SizedBox(width: 10),
                                     Icon(
                                       Icons.arrow_forward,
                                       color: Theme.of(
@@ -226,7 +222,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                         context,
                                       ).colorScheme.primary,
                                     ),
-                                    SizedBox(width: 10),
+                                    const SizedBox(width: 10),
                                     Text(
                                       loc.moveToXList(
                                         nextListScope.labelAdj(context),
@@ -364,7 +360,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                     () => list.markAsDone(todo),
                                   ),
                                 },
-                                icon: Icon(Icons.circle_outlined),
+                                icon: const Icon(Icons.circle_outlined),
                               ),
                               title: Row(
                                 mainAxisAlignment:
@@ -411,7 +407,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                           todo.expirationDate!.isBefore(
                                             DateTime.now(),
                                           ))) ...[
-                                    SizedBox(width: 5),
+                                    const SizedBox(width: 5),
                                     Tooltip(
                                       message:
                                           '${loc.dueOn} ${formatDate(todo.expirationDate!)} !',
@@ -457,7 +453,7 @@ class _TodoListPageState extends State<TodoListPage> {
               SliverToBoxAdapter(
                 child: Column(
                   children: [
-                    Divider(),
+                    const Divider(),
                     ExpansionTile(
                       title: Text(loc.completedTodos),
                       subtitle: Text('${list.doneCount} ${loc.completed}'),
@@ -477,7 +473,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                   todoState.performAcitionOnList<bool>(
                                     () => list.restoreTodo(todo),
                                   ),
-                              icon: Icon(Icons.check_circle),
+                              icon: const Icon(Icons.check_circle),
                               color: Theme.of(context).primaryColor,
                             ),
                             title: Text(

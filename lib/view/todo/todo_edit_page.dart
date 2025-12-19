@@ -160,16 +160,22 @@ class _TodoEditPageState extends State<TodoEditPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('${loc.dueOn}: ${formatDate(todo.expirationDate)}'),
-                  if (todo.expirationDate != null &&
+                  Text('${loc.dueOn}: '),
+                  Text(
+                    formatDate(todo.expirationDate),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  /* if (todo.expirationDate != null &&
                       DateTime.now().isAfter(todo.expirationDate!)) ...[
                     SizedBox(width: 5),
                     Icon(
                       Icons.access_time_rounded,
                       color: Theme.of(context).colorScheme.error,
                       size: 18,
-                    ),
-                  ],
+                    ), */
+                  //],
                 ],
               ),
               SizedBox(height: 16),

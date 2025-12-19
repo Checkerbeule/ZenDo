@@ -44,6 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
     final locale =
         context.read<ProviderL10n>().locale ?? Localizations.localeOf(context);
+    final String language = getLanguageLabel(context, locale);
 
     return PopScope<bool>(
       canPop: false,
@@ -61,7 +62,7 @@ class _SettingsPageState extends State<SettingsPage> {
           title: Text(loc.settings),
         ),
         body: SettingsList(
-          contentPadding: EdgeInsets.only(bottom: 10),
+          contentPadding: const EdgeInsets.only(bottom: 10),
           sections: [
             SettingsSection(
               title: Text(loc.commonSettingsSection, style: sectionsTextStyle),
@@ -81,7 +82,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 SettingsTile.navigation(
                   title: Text(loc.languageSettingsLabel),
                   leading: const Icon(Icons.translate),
-                  description: Text(getLanguageLabel(context, locale)),
+                  description: Text(language),
                   onPressed: (context) => Navigator.push(
                     context,
                     MaterialPageRoute(

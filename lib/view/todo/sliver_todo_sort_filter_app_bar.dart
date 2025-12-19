@@ -30,12 +30,15 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       title: Row(
         children: [
-          Text(
-            '${loc.sorting}: ${sortOption.label(context)}',
-            style: Theme.of(context).textTheme.bodyLarge,
+          Expanded(
+            child: Text(
+              '${loc.sorting}: ${sortOption.label(context)}',
+              style: Theme.of(context).textTheme.bodyLarge,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           if (sortOption != SortOption.custom) ...[
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             if (sortOrder == SortOrder.ascending) ...[
               Icon(
                 Icons.arrow_upward,
@@ -66,7 +69,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       if (this.sortOption == sortOption) ...[
-                        SizedBox(width: 5),
+                        const SizedBox(width: 5),
                         if (this.sortOption == SortOption.custom)
                           Icon(
                             Icons.swipe_vertical,
@@ -120,7 +123,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
             child: IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
           ),
         ] else  */
-        ...[IconButton(icon: Icon(Icons.filter_alt), onPressed: null)],
+        ...[IconButton(icon: const Icon(Icons.filter_alt), onPressed: null)],
       ],
     );
   }

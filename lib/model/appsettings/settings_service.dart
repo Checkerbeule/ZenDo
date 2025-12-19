@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
@@ -15,8 +13,6 @@ abstract class SettingsService {
   Set<ListScope>? getActiveListScopes();
   Future<void> addActiveScope(ListScope activeScope);
   Future<void> removeActiveScope(ListScope activeScope);
-
-  Future<void> setLocale(Locale? locale);
 }
 
 class SharedPrefsSettingsService implements SettingsService {
@@ -109,14 +105,5 @@ class SharedPrefsSettingsService implements SettingsService {
         await prefs.setStringList(_activeListScopesPrefKey, scopeNames);
       }
     });
-  }
-
-  @override
-  Future<void> setLocale(Locale? locale) async {
-    if (locale == null) {
-      await prefs.remove('locale');
-    } else {
-      await prefs.setString('locale', locale.toString());
-    }
   }
 }
