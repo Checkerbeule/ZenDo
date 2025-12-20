@@ -85,7 +85,7 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () => _close(),
           ),
           title: Text(loc.lists),
@@ -93,7 +93,7 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
         body: isLoading
             ? LoadingScreen(message: loc.loadingSettingsMessage)
             : SettingsList(
-                contentPadding: EdgeInsets.only(right: 10),
+                contentPadding: const EdgeInsets.only(right: 10),
                 sections: [
                   SettingsSection(
                     title: Text(

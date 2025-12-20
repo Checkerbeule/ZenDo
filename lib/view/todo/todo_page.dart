@@ -188,7 +188,7 @@ void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(errorMessage),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(loc.dataLoadErrorMessage),
           ],
         ),

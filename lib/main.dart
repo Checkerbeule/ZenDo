@@ -60,7 +60,7 @@ class ZenDoApp extends StatelessWidget {
             locale: l10n.locale,
             localizationsDelegates: localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: ZenDoMainPage(),
+            home: const ZenDoMainPage(),
           );
         },
       ),
@@ -104,7 +104,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             actions: [
               IconButton(
-                icon: Icon(Icons.settings),
+                icon: const Icon(Icons.settings),
                 onPressed: () async {
                   final hasChanged = await Navigator.push<bool>(
                     context,
@@ -123,8 +123,8 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
           body: IndexedStack(
             index: pageIndex,
             children: [
-              TodoPage(),
-              HabitPage(), //TODO implement Habit Page
+              const TodoPage(),
+              const HabitPage(), //TODO implement Habit Page
               Center(
                 child: Text(PageType.notes.label(context)),
               ), //TODO implement notes Page
