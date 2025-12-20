@@ -42,7 +42,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
           }
         },
         child: SettingsList(
-          contentPadding: EdgeInsets.only(right: 10),
+          contentPadding: const EdgeInsets.only(right: 10),
           sections: [
             SettingsSection(
               title: Text(

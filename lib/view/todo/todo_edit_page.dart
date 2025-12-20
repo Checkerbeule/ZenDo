@@ -67,7 +67,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
         children: [
           Text(loc.editTodo),
           IconButton(
-            icon: Icon(Icons.delete_forever),
+            icon: const Icon(Icons.delete_forever),
             color: Theme.of(context).colorScheme.error,
             onPressed: () async {
               final navigator = Navigator.of(context);
@@ -156,7 +156,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                   //TODO add dropdown for labels with multi select
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -167,18 +167,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
                       color: Theme.of(context).colorScheme.error,
                     ),
                   ),
-                  /* if (todo.expirationDate != null &&
-                      DateTime.now().isAfter(todo.expirationDate!)) ...[
-                    SizedBox(width: 5),
-                    Icon(
-                      Icons.access_time_rounded,
-                      color: Theme.of(context).colorScheme.error,
-                      size: 18,
-                    ), */
-                  //],
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text('${loc.createdOn}: ${formatDate(todo.creationDate)}'),
             ],
           ),

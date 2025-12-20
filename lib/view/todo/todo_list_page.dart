@@ -206,7 +206,7 @@ class _TodoListPageState extends State<TodoListPage> {
                         ),
                         secondaryBackground: !isFirstList
                             ? Container(
-                                padding: EdgeInsetsGeometry.symmetric(
+                                padding: const EdgeInsetsGeometry.symmetric(
                                   horizontal: 10,
                                   vertical: 5,
                                 ),
@@ -439,7 +439,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                   }
                                 },
                                 //_showDeleteDialog(context, widget.list, todo),
-                                icon: Icon(Icons.delete_forever),
+                                icon: const Icon(Icons.delete_forever),
                                 color: Theme.of(context).colorScheme.tertiary,
                               ),
                             ),
@@ -457,7 +457,9 @@ class _TodoListPageState extends State<TodoListPage> {
                     ExpansionTile(
                       title: Text(loc.completedTodos),
                       subtitle: Text('${list.doneCount} ${loc.completed}'),
-                      shape: RoundedRectangleBorder(side: BorderSide.none),
+                      shape: const RoundedRectangleBorder(
+                        side: BorderSide.none,
+                      ),
                       collapsedIconColor: Theme.of(context).primaryColor,
                       controlAffinity: ListTileControlAffinity.leading,
                       initiallyExpanded:
