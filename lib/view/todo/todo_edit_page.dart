@@ -163,9 +163,11 @@ class _TodoEditPageState extends State<TodoEditPage> {
                   Text('${loc.dueOn}: '),
                   Text(
                     formatDate(todo.expirationDate),
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                    style:
+                        (todo.expirationDate != null &&
+                            DateTime.now().isAfter(todo.expirationDate!))
+                        ? TextStyle(color: Theme.of(context).colorScheme.error)
+                        : null,
                   ),
                 ],
               ),
