@@ -282,8 +282,11 @@ class _TodoListPageState extends State<TodoListPage> {
                                 }
                               });
                           if (destination != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            final messenger = ScaffoldMessenger.of(context);
+                            messenger.clearSnackBars();
+                            messenger.showSnackBar(
                               SnackBar(
+                                persist: false,
                                 content: Text(
                                   loc.todoMovedToX(
                                     destination.labelAdj(context),
