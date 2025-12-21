@@ -248,7 +248,7 @@ class _TodoListPageState extends State<TodoListPage> {
                               listScope,
                             );
                           } else if (direction == DismissDirection.endToStart) {
-                            destinationList = listManager.getNextList(
+                            destinationList = await listManager.getNextList(
                               listScope,
                             );
                           }
@@ -265,12 +265,16 @@ class _TodoListPageState extends State<TodoListPage> {
                           }
                           return true;
                         },
-                        onDismissed: (direction) {
+                        onDismissed: (direction) async {
                           final todoToMove = sortedAndFilteredTodos[index];
                           final retainedExpirationDate =
                               todoToMove.expirationDate;
                           final retainedOrder = todoToMove.order;
-                          final destination = todoState
+
+                          final messenger = ScaffoldMessenger.of(context);
+                          final appLocalizations = AppLocalizations.of(context);
+
+                          final destination = await todoState
                               .performAcitionOnList<ListScope?>(() {
                                 if (direction == DismissDirection.startToEnd) {
                                   return listManager.moveToPreviousList(
@@ -280,22 +284,24 @@ class _TodoListPageState extends State<TodoListPage> {
                                     DismissDirection.endToStart) {
                                   return listManager.moveToNextList(todoToMove);
                                 }
+                                return null;
                               });
                           if (destination != null) {
-                            final messenger = ScaffoldMessenger.of(context);
+                            if (!mounted) return;
+
                             messenger.clearSnackBars();
                             messenger.showSnackBar(
                               SnackBar(
                                 persist: false,
-                                content: Text(
-                                  loc.todoMovedToX(
+                                content: Text("Todo has moved to UNKOWN list" //TODO fix localized text
+                                  /* loc.todoMovedToX(
                                     destination.labelAdj(context),
-                                  ),
+                                  ), */
                                 ),
                                 action: SnackBarAction(
-                                  label: AppLocalizations.of(context).undo,
-                                  onPressed: () {
-                                    final isUndone = todoState
+                                  label: appLocalizations.undo,
+                                  onPressed: () async {
+                                    final isUndone = await todoState
                                         .performAcitionOnList<bool>(
                                           () => listManager.moveAndUpdateTodo(
                                             todo: todoToMove,
@@ -359,7 +365,7 @@ class _TodoListPageState extends State<TodoListPage> {
                               },
                               leading: IconButton(
                                 onPressed: () => {
-                                  todoState.performAcitionOnList<Null>(
+                                  todoState.performAcitionOnList<void>(
                                     () => list.markAsDone(todo),
                                   ),
                                 },

@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/model/todo/todo.dart';
 import 'package:zen_do/model/todo/todo_list.dart';
@@ -28,8 +29,12 @@ class ListManager {
   static Future<bool> autoTransferTodos() async {
     logger.d('AutoTransfer of expired todos started...');
     try {
-      var lists = await PersistenceHelper.loadAll();
-      final manager = ListManager(lists);
+      final lists = await PersistenceHelper.loadAll();
+      final SettingsService settings =
+          await SharedPrefsSettingsService.getInstance();
+      final scopes = settings.getActiveListScopes();
+      final manager = ListManager(lists, activeScopes: scopes);
+
       manager.transferTodos();
       await PersistenceHelper.closeAndRelease();
       logger.d('AutoTransfer of expired todos successfully finished!');
@@ -41,27 +46,27 @@ class ListManager {
   }
 
   /// Transfers todos that are expired from higher scope lists to lower scope lists.
-  void transferTodos() {
+  Future<void> transferTodos() async {
     // use only lists with enabled autotransfer
     final activeLists = listsWithAutotransfer;
 
     if (activeLists.length > 1) {
       for (int i = activeLists.length - 1; i > 0; i--) {
         final currentList = activeLists[i];
-        final previousList = activeLists[i - 1];
+        final nextList = activeLists[i - 1];
 
         final expiredTodos = getTodosToTransfer(
           currentList.todos,
-          previousList.scope,
+          nextList.scope,
         );
-        final addedTodos = previousList.addAll(expiredTodos);
+        final addedTodos = await nextList.addAll(expiredTodos);
         currentList.deleteAll(addedTodos);
 
         final difference = expiredTodos.length - addedTodos.length;
         if (difference > 0) {
           logger.d(
-            '$difference Todos could not be transfered from ${currentList.scope} to ${previousList.scope}!'
-            'The list migth allready contain Todos with the same titles.',
+            '$difference todos could not be transfered from ${currentList.scope} to ${nextList.scope}!'
+            'The list migth allready contain Todos with same titles.',
           );
         }
       }
@@ -134,22 +139,25 @@ class ListManager {
     return allLists.elementAt(indexOfCurrentList - 1);
   }
 
-  ListScope? moveToNextList(Todo todo) {
+  Future<ListScope?> moveToNextList(Todo todo) async {
     if (todo.listScope == null) {
       return null;
     }
-    final nextList = getNextList(todo.listScope!);
+    final nextList = await getNextList(todo.listScope!);
     if (nextList == null) {
       return null;
     }
-    final isMoved = moveAndUpdateTodo(todo: todo, destination: nextList.scope);
+    final isMoved = await moveAndUpdateTodo(
+      todo: todo,
+      destination: nextList.scope,
+    );
     if (isMoved) {
       return nextList.scope;
     }
     return null;
   }
 
-  ListScope? moveToPreviousList(Todo todo) {
+  Future<ListScope?> moveToPreviousList(Todo todo) async {
     if (todo.listScope == null) {
       return null;
     }
@@ -157,7 +165,7 @@ class ListManager {
     if (previousList == null) {
       return null;
     }
-    final isMoved = moveAndUpdateTodo(
+    final isMoved = await moveAndUpdateTodo(
       todo: todo,
       destination: previousList.scope,
     );
@@ -168,11 +176,11 @@ class ListManager {
   }
 
   /// Moves the given [todo] from its containing list, to another [destination] list
-  bool moveAndUpdateTodo({
+  Future<bool> moveAndUpdateTodo({
     Todo? oldTodo,
     required Todo todo,
     required ListScope destination,
-  }) {
+  }) async {
     String errorMessage =
         '[ListManager] Shift of todo ${todo.title} not possible!';
 
@@ -214,9 +222,9 @@ class ListManager {
       return false;
     }
 
-    isDeleted = originList.deleteTodo(todoToUpdate);
+    isDeleted = await originList.deleteTodo(todoToUpdate);
     if (isDeleted) {
-      isAdded = destinationList.addTodo(todo);
+      isAdded = await destinationList.addTodo(todo);
       if (!isAdded) {
         //revert if add to destination not possible
         originList.addTodo(todoToUpdate);

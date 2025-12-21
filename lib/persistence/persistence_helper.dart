@@ -34,9 +34,10 @@ class PersistenceHelper {
 
     try {
       if (listBox?.isOpen ?? false) {
-        logger.d('[PersistenceHelper] Closing Hive boxes...');
-        await listBox!.close();
+        final boxToClose = listBox;
         listBox = null;
+        logger.d('[PersistenceHelper] Closing Hive boxes...');
+        await boxToClose!.close();
         logger.d('[PersistenceHelper] all boxes closed.');
       }
     } catch (e, s) {
