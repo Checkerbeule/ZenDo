@@ -147,11 +147,7 @@ class ListManager {
     if (nextList == null) {
       return false;
     }
-    final isMoved = await moveAndUpdateTodo(
-      todo: todo,
-      destination: nextList.scope,
-    );
-    return isMoved;
+    return await moveAndUpdateTodo(todo: todo, destination: nextList.scope);
   }
 
   Future<bool> moveToPreviousList(Todo todo) async {
@@ -162,11 +158,7 @@ class ListManager {
     if (previousList == null) {
       return false;
     }
-    final isMoved = await moveAndUpdateTodo(
-      todo: todo,
-      destination: previousList.scope,
-    );
-    return isMoved;
+    return await moveAndUpdateTodo(todo: todo, destination: previousList.scope);
   }
 
   /// Moves the given [todo] from its containing list, to another [destination] list
