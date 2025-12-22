@@ -83,7 +83,13 @@ class TodoLocalizationsDe extends TodoLocalizations {
   }
 
   @override
+  String get next => 'nächste';
+
+  @override
   String get noOpenTodosLeft => 'Keine offenen Aufgaben vorhanden';
+
+  @override
+  String get previous => 'vorherige';
 
   @override
   String get shiftNotPossible => 'Verschieben der Aufgabe nicht möglich!';

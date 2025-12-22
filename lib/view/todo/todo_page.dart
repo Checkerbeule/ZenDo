@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -84,10 +86,10 @@ class TodoState extends ChangeNotifier {
     doneTodosExpanded[key] = !(doneTodosExpanded[key] ?? true);
   }
 
-  T performAcitionOnList<T>(Function() action) {
+  Future<T> performAcitionOnList<T>(FutureOr<T> Function() action) async {
     T result;
     if (listManager != null) {
-      result = action();
+      result = await action();
       appState!.updateMessageCount(
         PageType.todos,
         listManager!.expiredTodosCount,

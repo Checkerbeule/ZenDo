@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:arb_utils/state_managers/l10n_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
@@ -21,18 +19,30 @@ Logger logger = Logger(level: Level.debug);
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  unawaited(HiveInitializer.initFlutter());
+  await HiveInitializer.initFlutter();
 
   await Workmanager().initialize(callbackDispatcher);
+  await Workmanager().cancelByUniqueName('dailyTodoTransfer'); // TODO change to 'dailyTodoTransfer_v2' on next build
   await Workmanager().registerPeriodicTask(
-    "dailyTodoTransfer",
+    "dailyTodoTransfer_v2", // TODO change back to 'dailyTodoTransfer' on next build
     "transferExpiredTodos",
-    frequency: const Duration(hours: 24),
+    backoffPolicy: BackoffPolicy.linear,
+    backoffPolicyDelay: Duration(minutes: 3),
     initialDelay: durationUntilNextMidnight(),
+    frequency: const Duration(hours: 24),
+    existingWorkPolicy:
+        ExistingPeriodicWorkPolicy.keep,
+    constraints: Constraints(
+      networkType: NetworkType.notRequired,
+      requiresBatteryNotLow: false,
+      requiresCharging: false,
+      requiresDeviceIdle: false,
+      requiresStorageNotLow: false,
+    ),
   );
 
   WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
-
+  
   runApp(const ZenDoApp());
 }
 

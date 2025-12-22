@@ -63,13 +63,13 @@ class TodoList implements Comparable<TodoList> {
   /// Uses [PersistenceHelper] to store the list with the added [todo]
   /// Returns true if the new [Todo] was successfully added.
   /// Returns false if there allready exists a [Todo] with same title.
-  bool addTodo(Todo todo) {
+  Future<bool> addTodo(Todo todo) async {
     if (isTodoTitleVacant(todo.title)) {
       todos.add(todo);
       _setExpirationDate(todo);
       _setOrder(todo);
       todo.listScope = scope;
-      unawaited(PersistenceHelper.saveList(this));
+      await PersistenceHelper.saveList(this);
       return true;
     }
     return false;
@@ -79,7 +79,7 @@ class TodoList implements Comparable<TodoList> {
   /// Adds all [todosToAdd] to the list.
   /// Does NOT calculate the expirationDate.
   /// Uses [PersistenceHelper] to store the list with the added [todosToAdd].
-  List<Todo> addAll(Iterable<Todo> todosToAdd) {
+  Future<List<Todo>> addAll(Iterable<Todo> todosToAdd) async {
     List<Todo> addedTodos = [];
     for (final todo in todosToAdd) {
       if (isTodoTitleVacant(todo.title)) {
@@ -90,52 +90,52 @@ class TodoList implements Comparable<TodoList> {
       }
     }
     if (addedTodos.isNotEmpty) {
-      unawaited(PersistenceHelper.saveList(this));
+      await PersistenceHelper.saveList(this);
     }
     return addedTodos;
   }
 
-  bool deleteTodo(Todo todo) {
+  Future<bool> deleteTodo(Todo todo) async {
     final isDeleted = todos.remove(todo);
     if (isDeleted) {
-      unawaited(PersistenceHelper.saveList(this));
+      await PersistenceHelper.saveList(this);
     }
     return isDeleted;
   }
 
-  void deleteAll(Iterable<Todo> todosToDelete) {
+  Future<void> deleteAll(Iterable<Todo> todosToDelete) async {
     final int initialLength = todos.length;
     for (final todo in todosToDelete) {
       todos.remove(todo);
     }
     if (initialLength != todos.length) {
-      unawaited(PersistenceHelper.saveList(this));
+      await PersistenceHelper.saveList(this);
     }
   }
 
-  void markAsDone(Todo todo) {
+  Future<void> markAsDone(Todo todo) async {
     final bool removed = todos.remove(todo);
     if (removed) {
       doneTodos.add(todo);
       todo.completionDate = DateTime.now();
-      unawaited(PersistenceHelper.saveList(this));
+      await PersistenceHelper.saveList(this);
     }
   }
 
-  bool restoreTodo(Todo todo) {
+  Future<bool> restoreTodo(Todo todo) async {
     bool isRestorable = isTodoTitleVacant(todo.title);
     if (isRestorable) {
       todos.add(todo);
       doneTodos.remove(todo);
       todo.completionDate = null;
-      unawaited(PersistenceHelper.saveList(this));
+      await PersistenceHelper.saveList(this);
     }
     return isRestorable;
   }
 
   /// Updates a [Todo] by replacing the [oldTodo] with [newTodo].
   /// Returns true if replacement was successful, otherwise false.
-  bool replaceTodo(Todo oldTodo, Todo newTodo) {
+  Future<bool> replaceTodo(Todo oldTodo, Todo newTodo) async {
     bool isReplaced = false;
     if (todos.contains(oldTodo) && oldTodo != newTodo) {
       final indexOfOldTodo = todos.indexOf(oldTodo);
@@ -150,13 +150,13 @@ class TodoList implements Comparable<TodoList> {
         todos.insert(indexOfOldTodo, oldTodo);
       }
       if (isReplaced) {
-        unawaited(PersistenceHelper.saveList(this));
+        await PersistenceHelper.saveList(this);
       }
     }
     return isReplaced;
   }
 
-  void reorder(Todo moved, Todo? previous) {
+  Future<void> reorder(Todo moved, Todo? previous) async {
     if (!allTodos.contains(moved)) return;
     final lowerOrder = previous?.order ?? 0;
     final upperOrder = _findNextHigher(lowerOrder)?.order ?? lowerOrder + 2000;
@@ -168,7 +168,7 @@ class TodoList implements Comparable<TodoList> {
       return;
     }
     moved.order = lowerOrder + difference ~/ 2;
-    unawaited(PersistenceHelper.saveList(this));
+    await PersistenceHelper.saveList(this);
   }
 
   Todo? _findNextHigher(int lowerOrder) {

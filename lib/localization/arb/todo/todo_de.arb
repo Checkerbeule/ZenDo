@@ -32,7 +32,9 @@
       }
     }
   },
+  "next": "nächste",
   "noOpenTodosLeft": "Keine offenen Aufgaben vorhanden",
+  "previous": "vorherige",
   "shiftNotPossible": "Verschieben der Aufgabe nicht möglich!",
   "titleHintText": "Titel der Aufgabe",
   "titleLable": "Titel",

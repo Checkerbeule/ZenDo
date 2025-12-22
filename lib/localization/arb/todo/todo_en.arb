@@ -32,7 +32,9 @@
       }
     }
   },
+  "next": "next",
   "noOpenTodosLeft": "No open todos left",
+  "previous": "previous",
   "shiftNotPossible": "Todo can not be moved!",
   "titleHintText": "The todo's title",
   "titleLable": "Title",

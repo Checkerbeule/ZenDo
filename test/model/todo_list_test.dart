@@ -114,13 +114,13 @@ void main() {
     group('$className dublicate todo title tests', () {
       test(
         '$className addTodo: insertion of 2 todos with same title not possible',
-        () {
+        () async {
           final list = TodoList(ListScope.daily);
           final todo_1 = Todo(title: 'same title');
           final todo_2 = Todo(title: 'same title');
 
-          final firstInsertion = list.addTodo(todo_1);
-          final secondInsertion = list.addTodo(todo_2);
+          final firstInsertion = await list.addTodo(todo_1);
+          final secondInsertion = await list.addTodo(todo_2);
 
           expect(firstInsertion, isTrue);
           expect(secondInsertion, isFalse);
@@ -128,17 +128,20 @@ void main() {
         },
       );
 
-      test('$className addTodo: insertion of 2 equal todos not possible', () {
-        final list = TodoList(ListScope.daily);
-        final todo = Todo(title: 'same title');
+      test(
+        '$className addTodo: insertion of 2 equal todos not possible',
+        () async {
+          final list = TodoList(ListScope.daily);
+          final todo = Todo(title: 'same title');
 
-        final firstInsertion = list.addTodo(todo);
-        final secondInsertion = list.addTodo(todo);
+          final firstInsertion = await list.addTodo(todo);
+          final secondInsertion = await list.addTodo(todo);
 
-        expect(firstInsertion, isTrue);
-        expect(secondInsertion, isFalse);
-        expect(list.todos.length, 1);
-      });
+          expect(firstInsertion, isTrue);
+          expect(secondInsertion, isFalse);
+          expect(list.todos.length, 1);
+        },
+      );
 
       test(
         '$className addAll: insertion of 2 todos with same title not possible',
@@ -293,7 +296,7 @@ void main() {
     group('$className replaceTodo tests', () {
       test(
         '$className replaceTodo replacement successfull and index of replacement stays the same',
-        () {
+        () async {
           final list = TodoList(ListScope.daily);
           final todo_1 = Todo(title: 'todo 1');
           final todo_2 = Todo(title: 'todo 2');
@@ -301,7 +304,7 @@ void main() {
           final newTodo = Todo(title: 'new todo');
 
           list.addAll([todo_1, todo_2, todo_3]);
-          final isReplaced = list.replaceTodo(todo_2, newTodo);
+          final isReplaced = await list.replaceTodo(todo_2, newTodo);
 
           expect(isReplaced, isTrue);
           expect(list.todos.length, 3);
@@ -313,13 +316,13 @@ void main() {
 
       test(
         '$className replaceTodo replacement with edited description successfull',
-        () {
+        () async {
           final list = TodoList(ListScope.daily);
           final original = Todo(title: 'todo 1');
           final copy = original.copyWith(description: 'new description');
 
           list.addTodo(original);
-          final isReplaced = list.replaceTodo(original, copy);
+          final isReplaced = await list.replaceTodo(original, copy);
 
           expect(isReplaced, isTrue);
           expect(list.todos.length, 1);
@@ -329,14 +332,14 @@ void main() {
 
       test(
         '$className replaceTodo modified copy of todo successfully replaced',
-        () {
+        () async {
           final list = TodoList(ListScope.daily);
           final oldTodo = Todo(title: 'original');
           final newTodo = Todo.copy(oldTodo);
           newTodo.title = 'new title';
           list.addTodo(oldTodo);
 
-          final isReplaced = list.replaceTodo(oldTodo, newTodo);
+          final isReplaced = await list.replaceTodo(oldTodo, newTodo);
 
           expect(isReplaced, isTrue);
           expect(list.todos.length, 1);
@@ -344,43 +347,43 @@ void main() {
         },
       );
 
-      test('$className replaceTodo with copy not possible', () {
+      test('$className replaceTodo with copy not possible', () async {
         final list = TodoList(ListScope.daily);
         final oldTodo = Todo(title: 'original');
         list.addTodo(oldTodo);
         final copy = Todo.copy(oldTodo);
 
-        final isReplaced = list.replaceTodo(oldTodo, copy);
+        final isReplaced = await list.replaceTodo(oldTodo, copy);
 
         expect(isReplaced, isFalse);
         expect(list.todos.length, 1);
         expect(list.todos.first, oldTodo);
       });
 
-      test('$className replaceTodo with same not possible', () {
+      test('$className replaceTodo with same not possible', () async {
         final list = TodoList(ListScope.daily);
         final oldTodo = Todo(title: 'original');
         list.addTodo(oldTodo);
 
-        final isReplaced = list.replaceTodo(oldTodo, oldTodo);
+        final isReplaced = await list.replaceTodo(oldTodo, oldTodo);
 
         expect(isReplaced, isFalse);
         expect(list.todos.length, 1);
         expect(list.todos.first, oldTodo);
       });
 
-      test('$className replaceTodo with non existent fails', () {
+      test('$className replaceTodo with non existent fails', () async {
         final list = TodoList(ListScope.daily);
         final oldTodo = Todo(title: 'original');
         final newTodo = Todo(title: 'original');
 
-        final isReplaced = list.replaceTodo(oldTodo, newTodo);
+        final isReplaced = await list.replaceTodo(oldTodo, newTodo);
 
         expect(isReplaced, isFalse);
         expect(list.todos.length, 0);
       });
 
-      test('$className replaceTodo with same titile fails', () {
+      test('$className replaceTodo with same titile fails', () async {
         final list = TodoList(ListScope.daily);
         final title = 'title';
         final oldTodo = Todo(title: 'todo to replace');
@@ -389,7 +392,7 @@ void main() {
         final todoWithConflictingTitle = Todo(title: title);
         list.addAll([todo_1, oldTodo, todoWithConflictingTitle]);
 
-        final isReplaced = list.replaceTodo(oldTodo, newTodo);
+        final isReplaced = await list.replaceTodo(oldTodo, newTodo);
 
         expect(isReplaced, isFalse);
         expect(list.todos.length, 3);
@@ -587,14 +590,17 @@ void main() {
         expect(todo_2.order, 2000);
       });
 
-      test('$className reorder on moved todo thats not in list not possible', () {
-        final list = TodoList(ListScope.daily);
-        final todoNotInList = Todo(title: '0');
+      test(
+        '$className reorder on moved todo thats not in list not possible',
+        () {
+          final list = TodoList(ListScope.daily);
+          final todoNotInList = Todo(title: '0');
 
-        list.reorder(todoNotInList, null);
+          list.reorder(todoNotInList, null);
 
-        expect(todoNotInList.order, isNull);
-      });
+          expect(todoNotInList.order, isNull);
+        },
+      );
 
       test('$className reorder successfull', () {
         final list = TodoList(ListScope.daily);
@@ -618,7 +624,6 @@ void main() {
         list.addAll([todo_1, todo_2, todo_3]);
         list.reorder(todo_3, null);
 
-
         expect(todo_1.order, 1000);
         expect(todo_2.order, 2000);
         expect(todo_3.order, 500);
@@ -631,7 +636,6 @@ void main() {
         final todo_3 = Todo(title: '3');
         list.addAll([todo_1, todo_2, todo_3]);
         list.reorder(todo_2, todo_3);
-
 
         expect(todo_1.order, 1000);
         expect(todo_2.order, 4000);

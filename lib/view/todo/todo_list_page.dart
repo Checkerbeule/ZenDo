@@ -265,37 +265,55 @@ class _TodoListPageState extends State<TodoListPage> {
                           }
                           return true;
                         },
-                        onDismissed: (direction) {
+                        onDismissed: (direction) async {
                           final todoToMove = sortedAndFilteredTodos[index];
                           final retainedExpirationDate =
                               todoToMove.expirationDate;
                           final retainedOrder = todoToMove.order;
-                          final destination = todoState
-                              .performAcitionOnList<ListScope?>(() {
-                                if (direction == DismissDirection.startToEnd) {
-                                  return listManager.moveToPreviousList(
+
+                          final messenger = ScaffoldMessenger.of(context);
+                          final appLocalizations = AppLocalizations.of(context);
+
+                          String destination = '';
+                          bool isMoved = false;
+                          if (direction == DismissDirection.startToEnd) {
+                            destination =
+                                listManager
+                                    .getPreviousList(list.scope)
+                                    ?.scope
+                                    .labelAdj(context) ??
+                                loc.next;
+                            isMoved = await todoState
+                                .performAcitionOnList<bool>(
+                                  () => listManager.moveToPreviousList(
                                     todoToMove,
-                                  );
-                                } else if (direction ==
-                                    DismissDirection.endToStart) {
-                                  return listManager.moveToNextList(todoToMove);
-                                }
-                              });
-                          if (destination != null) {
-                            final messenger = ScaffoldMessenger.of(context);
+                                  ),
+                                );
+                          } else if (direction == DismissDirection.endToStart) {
+                            destination =
+                                listManager
+                                    .getNextList(list.scope)
+                                    ?.scope
+                                    .labelAdj(context) ??
+                                loc.previous;
+                            isMoved = await todoState
+                                .performAcitionOnList<bool>(
+                                  () => listManager.moveToNextList(todoToMove),
+                                );
+                          }
+
+                          if (isMoved) {
+                            if (!mounted) return;
+
                             messenger.clearSnackBars();
                             messenger.showSnackBar(
                               SnackBar(
                                 persist: false,
-                                content: Text(
-                                  loc.todoMovedToX(
-                                    destination.labelAdj(context),
-                                  ),
-                                ),
+                                content: Text(loc.todoMovedToX(destination)),
                                 action: SnackBarAction(
-                                  label: AppLocalizations.of(context).undo,
-                                  onPressed: () {
-                                    final isUndone = todoState
+                                  label: appLocalizations.undo,
+                                  onPressed: () async {
+                                    final isUndone = await todoState
                                         .performAcitionOnList<bool>(
                                           () => listManager.moveAndUpdateTodo(
                                             todo: todoToMove,
@@ -359,7 +377,7 @@ class _TodoListPageState extends State<TodoListPage> {
                               },
                               leading: IconButton(
                                 onPressed: () => {
-                                  todoState.performAcitionOnList<Null>(
+                                  todoState.performAcitionOnList<void>(
                                     () => list.markAsDone(todo),
                                   ),
                                 },
