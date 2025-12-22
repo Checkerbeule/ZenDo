@@ -248,7 +248,7 @@ class _TodoListPageState extends State<TodoListPage> {
                               listScope,
                             );
                           } else if (direction == DismissDirection.endToStart) {
-                            destinationList = await listManager.getNextList(
+                            destinationList = listManager.getNextList(
                               listScope,
                             );
                           }

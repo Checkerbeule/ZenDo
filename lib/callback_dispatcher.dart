@@ -11,7 +11,8 @@ Logger logger = Logger(level: Level.debug);
 @pragma("vm:entry-point")
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    logger.i("### CALLBACK DISPATCHER HIT ###"); //TODO delete this line
+    logger.d("### CALLBACK DISPATCHER HIT ###");
+    
     final dir = await getApplicationDocumentsDirectory();
     await HiveInitializer.initDart(dir.path);
 

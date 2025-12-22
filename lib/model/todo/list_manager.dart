@@ -143,7 +143,7 @@ class ListManager {
     if (todo.listScope == null) {
       return false;
     }
-    final nextList = await getNextList(todo.listScope!);
+    final nextList = getNextList(todo.listScope!);
     if (nextList == null) {
       return false;
     }

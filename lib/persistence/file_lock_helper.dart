@@ -69,10 +69,10 @@ class FileLockHelper implements ILockHelper {
       final DateTime lockTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
       final Duration age = DateTime.now().difference(lockTime);
 
-      // create new lock if older than 10 min.
-      if (age > const Duration(minutes: 10)) {
+      // create new lock if older than 15 min.
+      if (age > const Duration(minutes: 15)) {
         logger.w(
-          '[FileLockHelper] Found stale lock from PID $holdingPid (Age: ${age.inMinutes}min). Cleaning up...',
+          '[FileLockHelper] Found outdated lock from PID $holdingPid (Age: ${age.inMinutes}min). Cleaning up...',
         );
         await file.delete();
 
