@@ -239,11 +239,23 @@ abstract class TodoLocalizations {
   /// **'Move to\n{ListScopeLabel} list'**
   String moveToXList(String ListScopeLabel);
 
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'next'**
+  String get next;
+
   /// No description provided for @noOpenTodosLeft.
   ///
   /// In en, this message translates to:
   /// **'No open todos left'**
   String get noOpenTodosLeft;
+
+  /// No description provided for @previous.
+  ///
+  /// In en, this message translates to:
+  /// **'previous'**
+  String get previous;
 
   /// No description provided for @shiftNotPossible.
   ///

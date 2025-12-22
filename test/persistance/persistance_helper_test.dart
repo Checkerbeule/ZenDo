@@ -24,7 +24,7 @@ void main() {
       if (!dir.existsSync()) {
         dir.createSync(recursive: true);
       }
-      await HiveInitializer.initDart();
+      await HiveInitializer.initDart(dir.path);
 
       mockLockHelper = MockILockHelper();
       FileLockHelper.instance = mockLockHelper as ILockHelper;

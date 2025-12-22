@@ -274,30 +274,42 @@ class _TodoListPageState extends State<TodoListPage> {
                           final messenger = ScaffoldMessenger.of(context);
                           final appLocalizations = AppLocalizations.of(context);
 
-                          final destination = await todoState
-                              .performAcitionOnList<ListScope?>(() {
-                                if (direction == DismissDirection.startToEnd) {
-                                  return listManager.moveToPreviousList(
+                          String destination = '';
+                          bool isMoved = false;
+                          if (direction == DismissDirection.startToEnd) {
+                            destination =
+                                listManager
+                                    .getPreviousList(list.scope)
+                                    ?.scope
+                                    .labelAdj(context) ??
+                                loc.next;
+                            isMoved = await todoState
+                                .performAcitionOnList<bool>(
+                                  () => listManager.moveToPreviousList(
                                     todoToMove,
-                                  );
-                                } else if (direction ==
-                                    DismissDirection.endToStart) {
-                                  return listManager.moveToNextList(todoToMove);
-                                }
-                                return null;
-                              });
-                          if (destination != null) {
+                                  ),
+                                );
+                          } else if (direction == DismissDirection.endToStart) {
+                            destination =
+                                listManager
+                                    .getNextList(list.scope)
+                                    ?.scope
+                                    .labelAdj(context) ??
+                                loc.previous;
+                            isMoved = await todoState
+                                .performAcitionOnList<bool>(
+                                  () => listManager.moveToNextList(todoToMove),
+                                );
+                          }
+
+                          if (isMoved) {
                             if (!mounted) return;
 
                             messenger.clearSnackBars();
                             messenger.showSnackBar(
                               SnackBar(
                                 persist: false,
-                                content: Text("Todo has moved to UNKOWN list" //TODO fix localized text
-                                  /* loc.todoMovedToX(
-                                    destination.labelAdj(context),
-                                  ), */
-                                ),
+                                content: Text(loc.todoMovedToX(destination)),
                                 action: SnackBarAction(
                                   label: appLocalizations.undo,
                                   onPressed: () async {

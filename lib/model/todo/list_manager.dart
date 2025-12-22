@@ -60,7 +60,7 @@ class ListManager {
           nextList.scope,
         );
         final addedTodos = await nextList.addAll(expiredTodos);
-        currentList.deleteAll(addedTodos);
+        await currentList.deleteAll(addedTodos);
 
         final difference = expiredTodos.length - addedTodos.length;
         if (difference > 0) {
@@ -139,40 +139,34 @@ class ListManager {
     return allLists.elementAt(indexOfCurrentList - 1);
   }
 
-  Future<ListScope?> moveToNextList(Todo todo) async {
+  Future<bool> moveToNextList(Todo todo) async {
     if (todo.listScope == null) {
-      return null;
+      return false;
     }
     final nextList = await getNextList(todo.listScope!);
     if (nextList == null) {
-      return null;
+      return false;
     }
     final isMoved = await moveAndUpdateTodo(
       todo: todo,
       destination: nextList.scope,
     );
-    if (isMoved) {
-      return nextList.scope;
-    }
-    return null;
+    return isMoved;
   }
 
-  Future<ListScope?> moveToPreviousList(Todo todo) async {
+  Future<bool> moveToPreviousList(Todo todo) async {
     if (todo.listScope == null) {
-      return null;
+      return false;
     }
     final previousList = getPreviousList(todo.listScope!);
     if (previousList == null) {
-      return null;
+      return false;
     }
     final isMoved = await moveAndUpdateTodo(
       todo: todo,
       destination: previousList.scope,
     );
-    if (isMoved) {
-      return previousList.scope;
-    }
-    return null;
+    return isMoved;
   }
 
   /// Moves the given [todo] from its containing list, to another [destination] list

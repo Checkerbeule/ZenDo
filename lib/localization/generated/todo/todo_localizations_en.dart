@@ -83,7 +83,13 @@ class TodoLocalizationsEn extends TodoLocalizations {
   }
 
   @override
+  String get next => 'next';
+
+  @override
   String get noOpenTodosLeft => 'No open todos left';
+
+  @override
+  String get previous => 'previous';
 
   @override
   String get shiftNotPossible => 'Todo can not be moved!';
