@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
@@ -104,6 +105,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
               TextFormField(
                 controller: titleController,
                 autocorrect: true,
+                textCapitalization: TextCapitalization.sentences,
+                maxLength: 40,
+                maxLengthEnforcement: MaxLengthEnforcement.truncateAfterCompositionEnds,
                 decoration: InputDecoration(
                   labelText: loc.titleLable,
                   hintText: loc.titleHintText,
@@ -123,6 +127,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                 controller: descriptionController,
                 autocorrect: true,
                 keyboardType: TextInputType.multiline,
+                textCapitalization: TextCapitalization.sentences,
                 minLines: 1,
                 maxLines: 3,
                 decoration: InputDecoration(
