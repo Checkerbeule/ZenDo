@@ -22,7 +22,9 @@ void main() async {
   await HiveInitializer.initFlutter();
 
   await Workmanager().initialize(callbackDispatcher);
-  await Workmanager().cancelByUniqueName('dailyTodoTransfer'); // TODO change to 'dailyTodoTransfer_v2' on next build
+  await Workmanager().cancelByUniqueName(
+    'dailyTodoTransfer',
+  ); // TODO change to 'dailyTodoTransfer_v2' on next build
   await Workmanager().registerPeriodicTask(
     "dailyTodoTransfer_v2", // TODO change back to 'dailyTodoTransfer' on next build
     "transferExpiredTodos",
@@ -30,8 +32,7 @@ void main() async {
     backoffPolicyDelay: Duration(minutes: 3),
     initialDelay: durationUntilNextMidnight(),
     frequency: const Duration(hours: 24),
-    existingWorkPolicy:
-        ExistingPeriodicWorkPolicy.keep,
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
     constraints: Constraints(
       networkType: NetworkType.notRequired,
       requiresBatteryNotLow: false,
@@ -42,7 +43,7 @@ void main() async {
   );
 
   WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
-  
+
   runApp(const ZenDoApp());
 }
 
