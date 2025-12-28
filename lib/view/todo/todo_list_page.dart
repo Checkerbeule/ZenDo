@@ -10,7 +10,6 @@ import 'package:zen_do/model/todo/todo.dart';
 import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/dialog_helper.dart';
-import 'package:zen_do/view/todo/add_todo_page.dart';
 import 'package:zen_do/view/todo/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/view/todo/todo_edit_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
@@ -348,12 +347,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                 final updatedTodo = await showModalBottomSheet(
                                   context: context,
                                   isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(10),
-                                    ),
-                                  ),
-                                  builder: (context) => TodoEditPage(
+                                  builder: (context) => TodoEditPage.editTodo(
                                     todo: todo,
                                     todoState: todoState,
                                   ),
@@ -526,12 +520,10 @@ class _TodoListPageState extends State<TodoListPage> {
               Todo? newTodo = await showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
-                builder: (BuildContext context) {
-                  return AddTodoPage(
-                    listManager: todoState.listManager!,
-                    listScope: listScope,
-                  );
-                },
+                builder: (context) => TodoEditPage.newTodo(
+                  todoState: todoState,
+                  listScope: listScope,
+                ),
               );
               if (newTodo != null) {
                 todoState.performAcitionOnList<bool>(

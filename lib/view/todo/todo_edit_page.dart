@@ -13,23 +13,28 @@ import 'package:zen_do/view/todo/todo_page.dart';
 Logger logger = Logger(level: Level.debug);
 
 class TodoEditPage extends StatefulWidget {
-  const TodoEditPage({
+  const TodoEditPage.editTodo({
     super.key,
-    required this.todo,
     required this.todoState,
-    //required this.isEditing,
-  });
+    required this.todo,
+  }) : listScope = null;
 
-  final Todo todo;
+  const TodoEditPage.newTodo({
+    super.key,
+    required this.todoState,
+    required this.listScope,
+  }) : todo = null;
+
+  final Todo? todo;
   final TodoState todoState;
-  //final bool isEditing;
+  final ListScope? listScope;
 
   @override
   State<TodoEditPage> createState() => _TodoEditPageState();
 }
 
 class _TodoEditPageState extends State<TodoEditPage> {
-  late final Todo todo;
+  late final Todo? todo;
   late final ListManager manager;
   late ListScope selectedScope;
 
@@ -43,10 +48,12 @@ class _TodoEditPageState extends State<TodoEditPage> {
   double lowerSnap = 0.41;
   double upperSnap = 0.95;
 
-  bool get isChanged => //TODO  rename
-      todo.title != titleController.text.trim() ||
-      todo.description != descriptionController.text.trim() ||
-      todo.listScope != selectedScope;
+  bool get isTodoEdited {
+    if (todo == null) return true;
+    return todo!.title != titleController.text.trim() ||
+        todo!.description != descriptionController.text.trim() ||
+        todo!.listScope != selectedScope;
+  }
 
   @override
   void initState() {
@@ -55,9 +62,11 @@ class _TodoEditPageState extends State<TodoEditPage> {
     todo = widget.todo;
     manager = widget.todoState.listManager!;
 
-    selectedScope = todo.listScope!;
-    titleController = TextEditingController(text: todo.title);
-    descriptionController = TextEditingController(text: todo.description);
+    selectedScope = todo?.listScope ?? widget.listScope!;
+    titleController = TextEditingController(text: todo?.title ?? '');
+    descriptionController = TextEditingController(
+      text: todo?.description ?? '',
+    );
 
     sheetController.addListener(_snapListener);
   }
@@ -116,237 +125,253 @@ class _TodoEditPageState extends State<TodoEditPage> {
 
     return SafeArea(
       minimum: EdgeInsets.only(bottom: keyboardHeight),
-      child: DraggableScrollableSheet(
-        controller: sheetController,
-        initialChildSize: isExpanded ? snaps.last : snaps.first,
-        maxChildSize: upperSnap,
-        minChildSize: 0.2,
-        snap: true,
-        snapSizes: snaps,
-        expand: false,
-        builder: (context, scrollController) {
-          return Stack(
-            children: [
-              Align(
-                alignment: Alignment.topCenter,
-                child: Container(
-                  margin: const EdgeInsets.only(top: 12),
-                  width: 40,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(2),
+      child: Container(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+        ),
+        child: DraggableScrollableSheet(
+          controller: sheetController,
+          initialChildSize: isExpanded ? snaps.last : snaps.first,
+          maxChildSize: upperSnap,
+          minChildSize: 0.2,
+          snap: true,
+          snapSizes: snaps,
+          expand: false,
+          builder: (context, scrollController) {
+            return Stack(
+              children: [
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
 
-              Positioned.fill(
-                top: 16,
-                bottom: 48, // space for save/cancel buttons
-                child: CustomScrollView(
-                  controller: scrollController,
-                  slivers: [
-                    SliverAppBar(
-                      automaticallyImplyLeading: false,
-                      pinned: true,
-                      backgroundColor: backgroundColor,
-                      surfaceTintColor: backgroundColor,
-                      actionsPadding: EdgeInsets.only(left: 5, right: 16),
-                      title: Text(loc.editTodo),
-                      actions: [
-                        IconButton(
-                          icon: const Icon(Icons.delete_forever),
-                          color: Theme.of(context).colorScheme.error,
-                          onPressed: () async {
-                            final navigator = Navigator.of(context);
-                            final delete =
-                                await showDialogWithScaleTransition<bool>(
-                                  context: context,
-                                  child: DeleteDialog(
-                                    title: '${loc.deleteTodo}?',
-                                    text: loc.deleteTodoQuestion,
+                Positioned.fill(
+                  top: 16,
+                  bottom: 48, // space for save/cancel buttons
+                  child: CustomScrollView(
+                    controller: scrollController,
+                    slivers: [
+                      SliverAppBar(
+                        automaticallyImplyLeading: false,
+                        pinned: true,
+                        backgroundColor: backgroundColor,
+                        surfaceTintColor: backgroundColor,
+                        actionsPadding: EdgeInsets.only(left: 5, right: 16),
+                        title: Text(loc.editTodo),
+                        actions: [
+                          if (todo != null)
+                            IconButton(
+                              icon: const Icon(Icons.delete_forever),
+                              color: Theme.of(context).colorScheme.error,
+                              onPressed: () async {
+                                final navigator = Navigator.of(context);
+                                final delete =
+                                    await showDialogWithScaleTransition<bool>(
+                                      context: context,
+                                      child: DeleteDialog(
+                                        title: '${loc.deleteTodo}?',
+                                        text: loc.deleteTodoQuestion,
+                                      ),
+                                    );
+                                if (delete != null && delete) {
+                                  try {
+                                    final TodoList list = manager
+                                        .getListByScope(todo!.listScope!)!;
+                                    widget.todoState.performAcitionOnList<bool>(
+                                      () => list.deleteTodo(todo!),
+                                    );
+                                    navigator.pop();
+                                  } catch (e) {
+                                    logger.e(
+                                      'Error deleting todo: $todo\n${e.toString()}',
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                        ],
+                      ),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
+                          child: Form(
+                            key: formKey,
+                            child: Column(
+                              children: [
+                                TextFormField(
+                                  controller: titleController,
+                                  autocorrect: true,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  maxLength: 40,
+                                  maxLengthEnforcement: MaxLengthEnforcement
+                                      .truncateAfterCompositionEnds,
+                                  decoration: InputDecoration(
+                                    labelText: loc.titleLable,
+                                    hintText: loc.titleHintText,
                                   ),
-                                );
-                            if (delete != null && delete) {
-                              try {
-                                final TodoList list = manager.getListByScope(
-                                  todo.listScope!,
-                                )!;
-                                widget.todoState.performAcitionOnList<bool>(
-                                  () => list.deleteTodo(todo),
-                                );
-                                navigator.pop();
-                              } catch (e) {
-                                logger.e(
-                                  'Error deleting todo: $todo\n${e.toString()}',
-                                );
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return loc.errorTitleEmpty;
+                                    }
+                                    if (!manager.isTodoTitleVacant(
+                                      value,
+                                      selectedScope,
+                                    )) {
+                                      return loc.errorTitleUnavailable;
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                TextFormField(
+                                  controller: descriptionController,
+                                  autocorrect: true,
+                                  keyboardType: TextInputType.multiline,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  minLines: 1,
+                                  maxLines: 3,
+                                  decoration: InputDecoration(
+                                    labelText: loc.descriptionLabel,
+                                    hintText: loc.descriptionHintText,
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: DropdownButtonFormField(
+                                        decoration: InputDecoration(
+                                          labelText: '${loc.list}: ',
+                                        ),
+                                        items: listScopeDropDownItems,
+                                        initialValue: selectedScope,
+                                        onChanged: (value) {
+                                          selectedScope = value;
+                                        },
+                                        validator: (value) {
+                                          if (!manager.isTodoTitleVacant(
+                                            titleController.text,
+                                            value as ListScope,
+                                          )) {
+                                            return loc
+                                                .errorTodoAllreadyExistsInDestinationList;
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                    //TODO add dropdown for labels with multi select
+                                  ],
+                                ),
+                                if (todo != null) ...[
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('${loc.dueOn}: '),
+                                      Text(
+                                        formatDate(todo!.expirationDate),
+                                        style:
+                                            (todo!.expirationDate != null &&
+                                                DateTime.now().isAfter(
+                                                  todo!.expirationDate!,
+                                                ))
+                                            ? TextStyle(
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.error,
+                                              )
+                                            : null,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    '${loc.createdOn}: ${formatDate(todo!.creationDate)}',
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    color: backgroundColor,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
+                          ),
+                          child: Text(
+                            MaterialLocalizations.of(context).cancelButtonLabel,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
+                          ),
+                          child: Text(
+                            MaterialLocalizations.of(context).saveButtonLabel,
+                          ),
+                          onPressed: () {
+                            if (isTodoEdited) {
+                              if (formKey.currentState!.validate()) {
+                                late final Todo todoToReturn;
+                                if (todo == null) {
+                                  todoToReturn = Todo(
+                                    title: titleController.text,
+                                    description: descriptionController.text,
+                                  );
+                                } else {
+                                  todoToReturn = todo!.copyWith(
+                                    title: titleController.text,
+                                    description: descriptionController.text,
+                                    listScope: selectedScope,
+                                  );
+                                }
+                                Navigator.of(context).pop(todoToReturn);
                               }
+                            } else {
+                              Navigator.of(context).pop();
                             }
                           },
                         ),
                       ],
                     ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
-                        child: Form(
-                          key: formKey,
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                controller: titleController,
-                                autocorrect: true,
-                                textCapitalization:
-                                    TextCapitalization.sentences,
-                                maxLength: 40,
-                                maxLengthEnforcement: MaxLengthEnforcement
-                                    .truncateAfterCompositionEnds,
-                                decoration: InputDecoration(
-                                  labelText: loc.titleLable,
-                                  hintText: loc.titleHintText,
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return loc.errorTitleEmpty;
-                                  }
-                                  if (titleController.text != todo.title &&
-                                      !manager.isTodoTitleVacant(
-                                        value,
-                                        todo.listScope!,
-                                      )) {
-                                    return loc.errorTitleUnavailable;
-                                  }
-                                  return null;
-                                },
-                              ),
-                              TextFormField(
-                                controller: descriptionController,
-                                autocorrect: true,
-                                keyboardType: TextInputType.multiline,
-                                textCapitalization:
-                                    TextCapitalization.sentences,
-                                minLines: 1,
-                                maxLines: 3,
-                                decoration: InputDecoration(
-                                  labelText: loc.descriptionLabel,
-                                  hintText: loc.descriptionHintText,
-                                ),
-                              ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Flexible(
-                                    child: DropdownButtonFormField(
-                                      decoration: InputDecoration(
-                                        labelText: '${loc.list}: ',
-                                      ),
-                                      items: listScopeDropDownItems,
-                                      initialValue: selectedScope,
-                                      onChanged: (value) {
-                                        selectedScope = value;
-                                      },
-                                      validator: (value) {
-                                        if (selectedScope != todo.listScope &&
-                                            !manager.isTodoTitleVacant(
-                                              titleController.text,
-                                              value as ListScope,
-                                            )) {
-                                          return loc
-                                              .errorTodoAllreadyExistsInDestinationList;
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                  //TODO add dropdown for labels with multi select
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text('${loc.dueOn}: '),
-                                  Text(
-                                    formatDate(todo.expirationDate),
-                                    style:
-                                        (todo.expirationDate != null &&
-                                            DateTime.now().isAfter(
-                                              todo.expirationDate!,
-                                            ))
-                                        ? TextStyle(
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.error,
-                                          )
-                                        : null,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                '${loc.createdOn}: ${formatDate(todo.creationDate)}',
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  color: backgroundColor,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                        child: Text(
-                          MaterialLocalizations.of(context).cancelButtonLabel,
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(
-                            context,
-                          ).colorScheme.primary,
-                        ),
-                        child: Text(
-                          MaterialLocalizations.of(context).saveButtonLabel,
-                        ),
-                        onPressed: () {
-                          if (isChanged) {
-                            if (formKey.currentState!.validate()) {
-                              final updatedTodo = todo.copyWith(
-                                title: titleController.text,
-                                description: descriptionController.text,
-                                listScope: selectedScope,
-                              );
-                              Navigator.of(context).pop(updatedTodo);
-                            }
-                          } else {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                      ),
-                    ],
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
