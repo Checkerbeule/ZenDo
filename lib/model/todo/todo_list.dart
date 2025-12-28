@@ -41,15 +41,15 @@ class TodoList implements Comparable<TodoList> {
   }
 
   void _setExpirationDate(Todo todo) {
-    if (scope != ListScope.backlog) {
-      final now = DateTime.now();
-      todo.expirationDate = DateTime(
-        now.year,
-        now.month,
-        now.day,
-      ).add(scope.duration);
+    todo.expirationDate = calcExpirationDate();
+  }
+
+  DateTime? calcExpirationDate() {
+    if (scope == ListScope.backlog) {
+      return null;
     } else {
-      todo.expirationDate = null;
+      final now = DateTime.now();
+      return DateTime(now.year, now.month, now.day).add(scope.duration);
     }
   }
 

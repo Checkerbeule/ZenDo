@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 final String dateFormat = 'dd.MM.yyyy';
@@ -25,4 +26,11 @@ String formatDate(DateTime? date, {String? optionalErrorText}) {
     return errorText;
   }
   return DateFormat(dateFormat).format(date);
+}
+
+extension DateTimeFormatX on DateTime {
+  String format(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat(locale).format(this);
+  }
 }

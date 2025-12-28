@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
@@ -36,11 +37,13 @@ class TodoEditPage extends StatefulWidget {
 class _TodoEditPageState extends State<TodoEditPage> {
   late final Todo? todo;
   late final ListManager manager;
-  late ListScope selectedScope;
+  late final bool isNewTodo;
 
   final formKey = GlobalKey<FormState>();
+  late ListScope selectedScope;
   late final TextEditingController titleController;
   late final TextEditingController descriptionController;
+  late final TextEditingController expirationDateController;
 
   final DraggableScrollableController sheetController =
       DraggableScrollableController();
@@ -49,10 +52,12 @@ class _TodoEditPageState extends State<TodoEditPage> {
   double upperSnap = 0.95;
 
   bool get isTodoEdited {
-    if (todo == null) return true;
+    if (isNewTodo) return true;
     return todo!.title != titleController.text.trim() ||
         todo!.description != descriptionController.text.trim() ||
-        todo!.listScope != selectedScope;
+        todo!.listScope != selectedScope ||
+        todo!.expirationDate !=
+            DateFormat(dateFormat).parse(expirationDateController.text);
   }
 
   @override
@@ -61,11 +66,17 @@ class _TodoEditPageState extends State<TodoEditPage> {
 
     todo = widget.todo;
     manager = widget.todoState.listManager!;
+    isNewTodo = todo == null;
 
     selectedScope = todo?.listScope ?? widget.listScope!;
     titleController = TextEditingController(text: todo?.title ?? '');
     descriptionController = TextEditingController(
       text: todo?.description ?? '',
+    );
+    expirationDateController = TextEditingController(
+      text: formatDate(
+        todo?.expirationDate ?? manager.calcExpirationDate(selectedScope),
+      ),
     );
 
     sheetController.addListener(_snapListener);
@@ -113,14 +124,26 @@ class _TodoEditPageState extends State<TodoEditPage> {
     upperSnap = isKeyboardOpen ? 0.95 : 0.5;
     final List<double> snaps = [lowerSnap, upperSnap];
 
-    if (isKeyboardOpen && isExpanded) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        sheetController.animateTo(
-          upperSnap,
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOut,
-        );
-      });
+    if (isKeyboardOpen) {
+      if (isExpanded) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          sheetController.animateTo(
+            upperSnap,
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeOut,
+          );
+        });
+      }
+    } else {
+      if (!isExpanded) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          sheetController.animateTo(
+            lowerSnap,
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeOut,
+          );
+        });
+      }
     }
 
     return SafeArea(
@@ -223,10 +246,17 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                     if (value == null || value.trim().isEmpty) {
                                       return loc.errorTitleEmpty;
                                     }
-                                    if (!manager.isTodoTitleVacant(
-                                      value,
-                                      selectedScope,
-                                    )) {
+                                    if (isNewTodo &&
+                                            !manager.isTodoTitleVacant(
+                                              value,
+                                              selectedScope,
+                                            ) ||
+                                        (!isNewTodo &&
+                                            todo!.title != value &&
+                                            !manager.isTodoTitleVacant(
+                                              value,
+                                              selectedScope,
+                                            ))) {
                                       return loc.errorTitleUnavailable;
                                     }
                                     return null;
@@ -245,56 +275,113 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                     hintText: loc.descriptionHintText,
                                   ),
                                 ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: DropdownButtonFormField(
-                                        decoration: InputDecoration(
-                                          labelText: '${loc.list}: ',
-                                        ),
-                                        items: listScopeDropDownItems,
-                                        initialValue: selectedScope,
-                                        onChanged: (value) {
-                                          selectedScope = value;
-                                        },
-                                        validator: (value) {
-                                          if (!manager.isTodoTitleVacant(
-                                            titleController.text,
-                                            value as ListScope,
-                                          )) {
-                                            return loc
-                                                .errorTodoAllreadyExistsInDestinationList;
-                                          }
-                                          return null;
-                                        },
-                                      ),
+                                DropdownButtonFormField(
+                                  decoration: InputDecoration(
+                                    labelText: '${loc.list}: ',
+                                    icon: const Icon(Icons.view_column),
+                                  ),
+                                  items: listScopeDropDownItems,
+                                  initialValue: selectedScope,
+                                  onChanged: (value) {
+                                    selectedScope = value;
+                                  },
+                                  validator: (value) {
+                                    if (isNewTodo &&
+                                            !manager.isTodoTitleVacant(
+                                              titleController.text,
+                                              value as ListScope,
+                                            ) ||
+                                        (!isNewTodo &&
+                                            todo!.title !=
+                                                titleController.text &&
+                                            !manager.isTodoTitleVacant(
+                                              titleController.text,
+                                              value as ListScope,
+                                            ))) {
+                                      return loc
+                                          .errorTodoAllreadyExistsInDestinationList;
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                TextFormField(
+                                  controller: expirationDateController,
+                                  keyboardType: TextInputType.none,
+                                  showCursor: false,
+                                  decoration: InputDecoration(
+                                    labelText: loc.dueOn,
+                                    icon: Icon(
+                                      Icons.edit_calendar,
+                                      color:
+                                          todo?.expirationDate?.isBefore(
+                                                DateTime.now(),
+                                              ) ??
+                                              false
+                                          ? Theme.of(context).colorScheme.error
+                                          : null,
                                     ),
-                                    //TODO add dropdown for labels with multi select
-                                  ],
+                                  ),
+                                  onTap: () async {
+                                    final DateTime?
+                                    pickedDate = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateFormat(
+                                        dateFormat,
+                                      ).parse(expirationDateController.text),
+                                      firstDate: DateTime(2000),
+                                      lastDate: DateTime(2100),
+                                      currentDate: DateFormat(
+                                        dateFormat,
+                                      ).parse(expirationDateController.text),
+                                    );
+                                    if (pickedDate != null) {
+                                      expirationDateController.value =
+                                          TextEditingValue(
+                                            text: formatDate(pickedDate),
+                                          );
+                                    }
+                                  },
+                                  validator: (value) {
+                                    if (value == null) {
+                                      return 'no date selected: $value';
+                                    }
+                                    final selectedDate = DateFormat(
+                                      dateFormat,
+                                    ).tryParse(value);
+                                    if (selectedDate == null) {
+                                      return 'invalid date format: $value';
+                                    }
+
+                                    final now = DateTime.now();
+                                    final nowNormalized = DateTime(
+                                      now.year,
+                                      now.month,
+                                      now.day,
+                                    );
+
+                                    final upperLimit = nowNormalized.add(
+                                      selectedScope.duration,
+                                    );
+                                    if (selectedDate.isAfter(upperLimit)) {
+                                      return 'date out of upper range';
+                                    }
+                                    final nextScopeDuration =
+                                        manager
+                                            .getNextList(selectedScope)
+                                            ?.scope
+                                            .duration ??
+                                        Duration.zero;
+                                    final lowerLimit = nowNormalized.add(
+                                      nextScopeDuration,
+                                    );
+                                    if (selectedDate.isBefore(lowerLimit)) {
+                                      return 'date out of lower range';
+                                    }
+
+                                    return null;
+                                  },
                                 ),
                                 if (todo != null) ...[
-                                  const SizedBox(height: 16),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text('${loc.dueOn}: '),
-                                      Text(
-                                        formatDate(todo!.expirationDate),
-                                        style:
-                                            (todo!.expirationDate != null &&
-                                                DateTime.now().isAfter(
-                                                  todo!.expirationDate!,
-                                                ))
-                                            ? TextStyle(
-                                                color: Theme.of(
-                                                  context,
-                                                ).colorScheme.error,
-                                              )
-                                            : null,
-                                      ),
-                                    ],
-                                  ),
                                   const SizedBox(height: 16),
                                   Text(
                                     '${loc.createdOn}: ${formatDate(todo!.creationDate)}',
@@ -345,16 +432,22 @@ class _TodoEditPageState extends State<TodoEditPage> {
                             if (isTodoEdited) {
                               if (formKey.currentState!.validate()) {
                                 late final Todo todoToReturn;
-                                if (todo == null) {
+                                if (isNewTodo) {
                                   todoToReturn = Todo(
                                     title: titleController.text,
                                     description: descriptionController.text,
                                   );
+                                  todoToReturn.expirationDate = DateFormat(
+                                    dateFormat,
+                                  ).parse(expirationDateController.text);
                                 } else {
                                   todoToReturn = todo!.copyWith(
                                     title: titleController.text,
                                     description: descriptionController.text,
                                     listScope: selectedScope,
+                                    expirationDate: DateFormat(
+                                      dateFormat,
+                                    ).parse(expirationDateController.text),
                                   );
                                 }
                                 Navigator.of(context).pop(todoToReturn);

@@ -235,6 +235,10 @@ class ListManager {
     return listOfScope.isTodoTitleVacant(title);
   }
 
+  DateTime? calcExpirationDate(ListScope scope) {
+    return getListByScope(scope)?.calcExpirationDate();
+  }
+
   /// Returns the number of expired [Todo]s in all active lists.
   int get expiredTodosCount {
     int count = 0;
