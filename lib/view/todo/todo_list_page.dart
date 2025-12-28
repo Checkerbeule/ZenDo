@@ -345,16 +345,20 @@ class _TodoListPageState extends State<TodoListPage> {
                                 horizontal: 10,
                               ),
                               onTap: () async {
-                                final updatedTodo =
-                                    await showDialogWithScaleTransition<Todo>(
-                                      context: context,
-                                      //tapPosition: tapPosition, not used at the moment
-                                      child: TodoEditPage(
-                                        todo: todo,
-                                        todoState: todoState,
-                                      ),
-                                      barrierDismissable: false,
-                                    );
+                                final updatedTodo = await showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(10),
+                                    ),
+                                  ),
+                                  builder: (context) => TodoEditPage(
+                                    todo: todo,
+                                    todoState: todoState,
+                                  ),
+                                );
+
                                 if (updatedTodo != null) {
                                   if (updatedTodo.listScope != todo.listScope) {
                                     todoState.performAcitionOnList(
@@ -487,7 +491,6 @@ class _TodoListPageState extends State<TodoListPage> {
                           todoState.doneTodosExpanded[listScope] ?? false,
                       onExpansionChanged: (bool expanding) =>
                           todoState.toggleExpansion(listScope),
-                      //expanded = expanding,
                       children: [
                         for (var todo in list.doneTodos)
                           ListTile(
