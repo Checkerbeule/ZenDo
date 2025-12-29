@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-final String dateFormat = 'dd.MM.yyyy';
-
 /// Returns the duration until the next midnight from now on.
 /// An optional offset [timeAfterMidnight] can be provided to specify a time after midnight.
 /// Default offset is 5 minutes (00:05 AM).
@@ -20,17 +18,45 @@ Duration durationUntilNextMidnight({
   return nextMidnight.difference(now);
 }
 
-String formatDate(DateTime? date, {String? optionalErrorText}) {
-  final errorText = optionalErrorText ?? ' - ';
-  if (date == null) {
-    return errorText;
+/// Parses a date string [dateString] according to the provided [locale].
+/// Supports multiple date formats for robustness.
+/// Throws a [FormatException] if parsing fails for all supported formats.
+DateTime parseLocalized(String dateString, Locale locale) {
+  final formatUs = DateFormat('MM/dd/yyyy');
+  final formatUk = DateFormat('dd/MM/yyyy');
+  final formatDe = DateFormat('dd.MM.yyyy');
+
+  DateTime result;
+  try {
+    result = DateFormat.yMd(locale.toLanguageTag()).parse(dateString);
+  } catch (_) {
+    try {
+      result = formatUs.parse(dateString);
+    } catch (_) {
+      try {
+        result = formatUk.parse(dateString);
+      } catch (_) {
+        try {
+          result = formatDe.parse(dateString);
+        } catch (_) {
+          rethrow;
+        }
+      }
+    }
   }
-  return DateFormat(dateFormat).format(date);
+  return result;
 }
 
-extension DateTimeFormatX on DateTime {
-  String format(BuildContext context) {
-    final locale = Localizations.localeOf(context).toString();
-    return DateFormat(locale).format(this);
+DateTime? tryParseLocalized(String dateString, Locale locale) {
+  try {
+    return parseLocalized(dateString, locale);
+  } catch (_) {
+    return null;
+  }
+}
+
+extension DateTimeX on DateTime {
+  String formatYmD(Locale locale) {
+    return DateFormat.yMd(locale.toLanguageTag()).format(this);
   }
 }

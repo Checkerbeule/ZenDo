@@ -247,7 +247,9 @@ class ListManager {
       if (scope == ListScope.backlog) {
         continue;
       }
-      if (expirationDate.isBefore(calcExpirationDate(scope)!)) {
+      if (expirationDate.isBefore(
+        calcExpirationDate(scope)!.add(Duration(days: 1)),
+      )) {
         return scope;
       }
     }

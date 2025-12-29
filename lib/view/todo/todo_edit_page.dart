@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
@@ -54,11 +53,12 @@ class _TodoEditPageState extends State<TodoEditPage> {
 
   bool get isTodoEdited {
     if (isNewTodo) return true;
+    final locale = Localizations.localeOf(context);
     return todo!.title != titleController.text.trim() ||
         todo!.description != descriptionController.text.trim() ||
         todo!.listScope != selectedScope ||
         todo!.expirationDate !=
-            DateFormat(dateFormat).parse(expirationDateController.text);
+            parseLocalized(expirationDateController.text, locale);
   }
 
   @override
@@ -74,11 +74,16 @@ class _TodoEditPageState extends State<TodoEditPage> {
     descriptionController = TextEditingController(
       text: todo?.description ?? '',
     );
-    expirationDateController = TextEditingController(
-      text: formatDate(
-        todo?.expirationDate ?? manager.calcExpirationDate(selectedScope),
-      ),
-    );
+    expirationDateController = TextEditingController(text: ' - ');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        final locale = Localizations.localeOf(context);
+        expirationDateController.text =
+            todo?.expirationDate?.formatYmD(locale) ??
+            manager.calcExpirationDate(selectedScope)?.formatYmD(locale) ??
+            ' - ';
+      });
+    });
 
     sheetController.addListener(_snapListener);
   }
@@ -328,9 +333,13 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   ),
                                   onTap: () async {
                                     final now = DateTime.now();
-                                    final selectedDate = DateFormat(
-                                      dateFormat,
-                                    ).tryParse(expirationDateController.text);
+                                    final locale = Localizations.localeOf(
+                                      context,
+                                    );
+                                    final selectedDate = tryParseLocalized(
+                                      expirationDateController.text,
+                                      locale,
+                                    );
 
                                     final activeScopes = manager.scopes;
                                     if (activeScopes.last ==
@@ -362,7 +371,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                     if (pickedDate != null) {
                                       expirationDateController.value =
                                           TextEditingValue(
-                                            text: formatDate(pickedDate),
+                                            text: pickedDate.formatYmD(locale),
                                           );
                                     }
                                   },
@@ -373,9 +382,10 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                     if (value == null) {
                                       return loc.noDateelectedError;
                                     }
-                                    final selectedDate = DateFormat(
-                                      dateFormat,
-                                    ).tryParse(value);
+                                    final selectedDate = tryParseLocalized(
+                                      value,
+                                      Localizations.localeOf(context),
+                                    );
                                     if (selectedDate == null) {
                                       return '${loc.invalidDateFormatError}: $value';
                                     }
@@ -394,7 +404,8 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                 if (todo != null) ...[
                                   const SizedBox(height: 16),
                                   Text(
-                                    '${loc.createdOn}: ${formatDate(todo!.creationDate)}',
+                                    '${loc.createdOn}: '
+                                    '${todo!.creationDate.formatYmD(Localizations.localeOf(context))}',
                                   ),
                                 ],
                               ],
@@ -440,14 +451,16 @@ class _TodoEditPageState extends State<TodoEditPage> {
                           ),
                           onPressed: () async {
                             if (isTodoEdited) {
+                              final locale = Localizations.localeOf(context);
                               if (formKey.currentState!.validate()) {
                                 late final Todo todoToReturn;
                                 final selectedExpirationDate =
                                     selectedScope == ListScope.backlog
                                     ? null
-                                    : DateFormat(
-                                        dateFormat,
-                                      ).parse(expirationDateController.text);
+                                    : parseLocalized(
+                                        expirationDateController.text,
+                                        locale,
+                                      );
                                 if (isNewTodo) {
                                   todoToReturn = Todo(
                                     title: titleController.text,
@@ -465,9 +478,11 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                 }
                                 Navigator.of(context).pop(todoToReturn);
                               } else {
-                                final selectedExpirationDate = DateFormat(
-                                  dateFormat,
-                                ).tryParse(expirationDateController.text);
+                                final selectedExpirationDate =
+                                    tryParseLocalized(
+                                      expirationDateController.text,
+                                      locale,
+                                    );
                                 if (selectedExpirationDate != null) {
                                   final fittingScope = manager
                                       .getScopeForExpirationDate(

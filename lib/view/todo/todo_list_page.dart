@@ -429,7 +429,8 @@ class _TodoListPageState extends State<TodoListPage> {
                                     const SizedBox(width: 5),
                                     Tooltip(
                                       message:
-                                          '${loc.dueOn} ${formatDate(todo.expirationDate!)} !',
+                                          '${loc.dueOn} '
+                                          '${todo.expirationDate!.formatYmD(Localizations.localeOf(context))}',
                                       child: Icon(
                                         Icons.access_time_rounded,
                                         color: Theme.of(
