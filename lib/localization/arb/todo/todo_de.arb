@@ -10,6 +10,7 @@
   "creationDate": "Erstalldatum",
   "daily_adj": "tägliche",
   "daily_adv": "Täglich",
+  "dateDoesNotFitAnyListError": "Datum passt zu keiner Liste",
   "dateDoesNotFitListError": "Datum passt nicht zur gewählten Liste",
   "deleteTodo": "Aufgabe löschen",
   "deleteTodoQuestion": "Diese Aufgabe wirklich unwiederbringlich löschen?",

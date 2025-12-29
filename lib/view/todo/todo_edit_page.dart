@@ -394,6 +394,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                         .getScopeForExpirationDate(
                                           selectedDate,
                                         );
+                                    if (fittingScope == null) {
+                                      return loc.dateDoesNotFitAnyListError;
+                                    }
                                     if (fittingScope != selectedScope) {
                                       return '${loc.dateDoesNotFitListError}: ${selectedScope.label(context)}';
                                     }
@@ -488,7 +491,8 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                       .getScopeForExpirationDate(
                                         selectedExpirationDate,
                                       );
-                                  if (selectedScope != fittingScope) {
+                                  if (fittingScope != null &&
+                                      selectedScope != fittingScope) {
                                     final isOk =
                                         await showDialogWithScaleTransition<
                                           bool

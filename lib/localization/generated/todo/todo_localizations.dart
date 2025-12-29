@@ -155,6 +155,12 @@ abstract class TodoLocalizations {
   /// **'Daily'**
   String get daily_adv;
 
+  /// No description provided for @dateDoesNotFitAnyListError.
+  ///
+  /// In en, this message translates to:
+  /// **'Date does not fit any list'**
+  String get dateDoesNotFitAnyListError;
+
   /// No description provided for @dateDoesNotFitListError.
   ///
   /// In en, this message translates to:

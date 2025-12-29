@@ -10,6 +10,7 @@
   "creationDate": "Creation date",
   "daily_adj": "daily",
   "daily_adv": "Daily",
+  "dateDoesNotFitAnyListError": "Date does not fit any list",
   "dateDoesNotFitListError": "Date does not fit selected list",
   "deleteTodo": "Delete todo",
   "deleteTodoQuestion": "Do you really want to permanently delete this task?",

@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:zen_do/model/todo/todo.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/persistence/persistence_helper.dart';
+import 'package:zen_do/utils/time_util.dart';
 
 part 'todo_list.g.dart';
 
@@ -40,18 +41,13 @@ class TodoList implements Comparable<TodoList> {
     _currentMaxOrder = maxOrder;
   }
 
-  void _setExpirationDate(Todo todo) {
-    todo.expirationDate = calcExpirationDate();
-  }
-
   /// Calculates the expiration date based on the ListScope of the TodoList.
   /// Returns null if the ListScope is Backlog.
   DateTime? calcExpirationDate() {
     if (scope == ListScope.backlog) {
       return null;
     } else {
-      final now = DateTime.now();
-      return DateTime(now.year, now.month, now.day).add(scope.duration);
+      return DateTime.now().add(scope.duration).normalized;
     }
   }
 
@@ -61,16 +57,20 @@ class TodoList implements Comparable<TodoList> {
   }
 
   /// Adds the [todo] to the list.
-  /// Calculates the expirationDate based on the ListScope.
+  /// If the [todo] does not have an expirationDate, calculates the expirationDate based on the ListScope.
   /// Uses [PersistenceHelper] to store the list with the added [todo]
   /// Returns true if the new [Todo] was successfully added.
   /// Returns false if there allready exists a [Todo] with same title.
   Future<bool> addTodo(Todo todo) async {
     if (isTodoTitleVacant(todo.title)) {
-      todos.add(todo);
-      _setExpirationDate(todo);
       _setOrder(todo);
       todo.listScope = scope;
+      todo.expirationDate ??= calcExpirationDate();
+      if (scope != ListScope.backlog &&
+          todo.expirationDate!.isAfter(calcExpirationDate()!)) {
+        return false;
+      }
+      todos.add(todo);
       await PersistenceHelper.saveList(this);
       return true;
     }

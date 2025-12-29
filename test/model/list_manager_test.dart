@@ -6,6 +6,7 @@ import 'package:zen_do/model/todo/todo.dart';
 import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/persistence/file_lock_helper.dart';
 import 'package:zen_do/persistence/persistence_helper.dart';
+import 'package:zen_do/utils/time_util.dart';
 
 import '../mocks/mocks.mocks.dart';
 
@@ -216,6 +217,132 @@ void main() {
     );
   });
 
+  group('$className getScopeForExpirationDate tests', () {
+    test('$className getScopeForExpirationDate today fits daily list', () {
+      final manager = ListManager([]);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now().normalized,
+      );
+
+      expect(scope, ListScope.daily);
+    });
+
+    test('$className getScopeForExpirationDate tomorrow fits daily list', () {
+      final manager = ListManager([]);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now().add(Duration(days: 1)).normalized,
+      );
+
+      expect(scope, ListScope.daily);
+    });
+
+    test('$className getScopeForExpirationDate date fits weekly list', () {
+      final manager = ListManager([]);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now().add(ListScope.weekly.duration).normalized,
+      );
+
+      expect(scope, ListScope.weekly);
+    });
+
+    test('$className getScopeForExpirationDate date fits monthly list', () {
+      final manager = ListManager([]);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now()
+            .add(ListScope.weekly.duration)
+            .add(Duration(days: 1))
+            .normalized,
+      );
+
+      expect(scope, ListScope.monthly);
+    });
+
+    test('$className getScopeForExpirationDate date fits monthly list', () {
+      final manager = ListManager([]);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now().add(ListScope.monthly.duration).normalized,
+      );
+
+      expect(scope, ListScope.monthly);
+    });
+
+    test('$className getScopeForExpirationDate date fits yearly list', () {
+      final manager = ListManager([]);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now()
+            .add(ListScope.monthly.duration)
+            .add(Duration(days: 1))
+            .normalized,
+      );
+
+      expect(scope, ListScope.yearly);
+    });
+
+    test('$className getScopeForExpirationDate date fits yearly list', () {
+      final manager = ListManager([]);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now().add(ListScope.yearly.duration).normalized,
+      );
+
+      expect(scope, ListScope.yearly);
+    });
+
+    test('$className getScopeForExpirationDate date fits backlog', () {
+      final manager = ListManager([]);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now()
+            .add(Duration(days: 366))
+            .normalized,
+      );
+
+      expect(scope, ListScope.backlog);
+    });
+
+    test('$className getScopeForExpirationDate skips none active scope', () {
+      final activeScopes = {
+        ListScope.daily,
+        ListScope.monthly,
+        ListScope.yearly,
+        ListScope.backlog,
+      }; 
+      final manager = ListManager([], activeScopes: activeScopes);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now()
+            .add(Duration(days: 3))
+            .normalized,
+      );
+
+      expect(scope, ListScope.monthly);
+    });
+
+    test('$className getScopeForExpirationDate returns null if no fitting scope exists', () {
+      final activeScopes = {
+        ListScope.daily,
+        ListScope.weekly,
+        ListScope.monthly,
+        ListScope.yearly,
+      }; 
+      final manager = ListManager([], activeScopes: activeScopes);
+
+      final scope = manager.getScopeForExpirationDate(
+        DateTime.now()
+            .add(Duration(days: 400))
+            .normalized,
+      );
+
+      expect(scope, null);
+    });
+  });
+
   group('test using mocks', () {
     late MockHiveInterface hiveMock;
     late MockBox<TodoList> mockBox;
@@ -266,23 +393,10 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         dailyList.addTodo(todoToTransfer);
         dailyList.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ); // today
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.daily.duration); // tomorrow
+        todoToTransfer.expirationDate = DateTime.now().normalized; // today
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.daily.duration,
+        ); // tomorrow
         final manager = ListManager([dailyList]);
 
         expect(dailyList.todos.length, 2);
@@ -298,23 +412,10 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         weeklyList.addTodo(todoToTransfer);
         weeklyList.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ); // today
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.daily.duration); // tomorrow
+        todoToTransfer.expirationDate = DateTime.now().normalized; // today
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.daily.duration,
+        ); // tomorrow
         final manager = ListManager([weeklyList]);
 
         expect(weeklyList.todos.length, 2);
@@ -330,23 +431,12 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         monthlyList.addTodo(todoToTransfer);
         monthlyList.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(Duration(days: 6)); // add weekly duration minus 1 day
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.weekly.duration); // add weekly duration
+        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+          Duration(days: 6),
+        ); // add weekly duration minus 1 day
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.weekly.duration,
+        ); // add weekly duration
         final manager = ListManager([monthlyList]);
 
         expect(monthlyList.todos.length, 2);
@@ -364,23 +454,12 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         yearlyList.addTodo(todoToTransfer);
         yearlyList.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(Duration(days: 29)); // add monthly duration minus 1 day
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.monthly.duration); // add monthly duration
+        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+          Duration(days: 29),
+        ); // add monthly duration minus 1 day
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.monthly.duration,
+        ); // add monthly duration
         final manager = ListManager([yearlyList]);
 
         expect(yearlyList.todos.length, 2);
@@ -401,23 +480,10 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ); // today
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.daily.duration); // tomorrow
+        todoToTransfer.expirationDate = DateTime.now().normalized; // today
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.daily.duration,
+        ); // tomorrow
 
         var manager = ListManager([transferTo, transferFrom]);
         await manager.transferTodos();
@@ -435,23 +501,12 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(Duration(days: 6)); // add weekly duration minus 1 day
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.weekly.duration); // add weekly duration
+        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+          Duration(days: 6),
+        ); // add weekly duration minus 1 day
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.weekly.duration,
+        ); // add weekly duration
 
         var manager = ListManager([transferTo, transferFrom]);
         await manager.transferTodos();
@@ -469,23 +524,12 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(Duration(days: 29)); // add monthly duration minus 1 day
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.monthly.duration); // add monthly duration
+        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+          Duration(days: 29),
+        ); // add monthly duration minus 1 day
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.monthly.duration,
+        ); // add monthly duration
 
         var manager = ListManager([transferTo, transferFrom]);
         await manager.transferTodos();
@@ -532,15 +576,9 @@ void main() {
           final dailyList = TodoList(ListScope.daily);
           var expiredTodo = Todo(title: 'expired todo');
           dailyList.addTodo(expiredTodo);
-          final now = DateTime.now();
-          final expirationDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            0,
-            0,
-            0,
-          ).subtract(Duration(days: 1));
+          final expirationDate = DateTime.now().normalized.subtract(
+            Duration(days: 1),
+          );
           expiredTodo.expirationDate = expirationDate;
 
           var manager = ListManager([dailyList, weeklkyList]);
@@ -561,15 +599,9 @@ void main() {
           final yearlyList = TodoList(ListScope.yearly);
           var expiredTodo = Todo(title: 'expired todo');
           yearlyList.addTodo(expiredTodo);
-          final now = DateTime.now();
-          expiredTodo.expirationDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            0,
-            0,
-            0,
-          ).subtract(Duration(days: 1));
+          expiredTodo.expirationDate = DateTime.now().normalized.subtract(
+            Duration(days: 1),
+          );
 
           var manager = ListManager([
             dailyList,
@@ -595,15 +627,9 @@ void main() {
           final yearlyList = TodoList(ListScope.yearly);
           var todoToTransfer = Todo(title: 'expires in 6 days');
           yearlyList.addTodo(todoToTransfer);
-          final now = DateTime.now();
-          todoToTransfer.expirationDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            0,
-            0,
-            0,
-          ).add(Duration(days: 6));
+          todoToTransfer.expirationDate = DateTime.now().normalized.add(
+            Duration(days: 6),
+          );
 
           var manager = ListManager([
             dailyList,
@@ -626,15 +652,7 @@ void main() {
         final monthlyList = TodoList(ListScope.monthly);
         var todoToTransfer = Todo(title: 'expired today');
         monthlyList.addTodo(todoToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        );
+        todoToTransfer.expirationDate = DateTime.now().normalized;
 
         var manager = ListManager([dailyList, monthlyList, weeklyList]);
         await manager.transferTodos();
@@ -658,23 +676,12 @@ void main() {
           final todo_2 = Todo(title: 'todo 2');
           dailyList.addTodo(todo_1);
           dailyList.addTodo(todo_2);
-          final now = DateTime.now();
-          todo_1.expirationDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            0,
-            0,
-            0,
-          ).add(Duration(days: 1)); // tomorrow
-          todo_2.expirationDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            0,
-            0,
-            0,
-          ).add(Duration(days: 2)); // day after tomorrow
+          todo_1.expirationDate = DateTime.now().normalized.add(
+            Duration(days: 1),
+          ); // tomorrow
+          todo_2.expirationDate = DateTime.now().normalized.add(
+            Duration(days: 2),
+          ); // day after tomorrow
           final manager = ListManager([
             dailyList,
             weeklyList,
@@ -697,23 +704,12 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         weeklyList.addTodo(todoToTransfer);
         weeklyList.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.daily.duration); // tomorrow
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(Duration(days: 2)); // day after tomorrow
+        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.daily.duration,
+        ); // tomorrow
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          Duration(days: 2),
+        ); // day after tomorrow
         final manager = ListManager([
           dailyList,
           weeklyList,
@@ -736,23 +732,12 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         monthlyList.addTodo(todoToTransfer);
         monthlyList.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.weekly.duration); // in 7 days
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(Duration(days: 8)); // in 8 days
+        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.weekly.duration,
+        ); // in 7 days
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          Duration(days: 8),
+        ); // in 8 days
         final manager = ListManager([
           dailyList,
           weeklyList,
@@ -775,23 +760,12 @@ void main() {
         final todoNotToTransfer = Todo(title: 'do not transfer');
         yearlyList.addTodo(todoToTransfer);
         yearlyList.addTodo(todoNotToTransfer);
-        final now = DateTime.now();
-        todoToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(ListScope.monthly.duration); // in 30 days
-        todoNotToTransfer.expirationDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          0,
-          0,
-          0,
-        ).add(Duration(days: 31)); // in 31 days
+        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+          ListScope.monthly.duration,
+        ); // in 30 days
+        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+          Duration(days: 31),
+        ); // in 31 days
         final manager = ListManager([
           dailyList,
           weeklyList,
@@ -816,23 +790,12 @@ void main() {
           final todo_2 = Todo(title: 'do not transfer');
           backlog.addTodo(todo_1);
           backlog.addTodo(todo_2);
-          final now = DateTime.now();
-          todo_1.expirationDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            0,
-            0,
-            0,
-          ).add(ListScope.yearly.duration); // in 365 days
-          todo_2.expirationDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-            0,
-            0,
-            0,
-          ).add(Duration(days: 366)); // in 366 days
+          todo_1.expirationDate = DateTime.now().normalized.add(
+            ListScope.yearly.duration,
+          ); // in 365 days
+          todo_2.expirationDate = DateTime.now().normalized.add(
+            Duration(days: 366),
+          ); // in 366 days
           final manager = ListManager([
             dailyList,
             weeklyList,
@@ -921,12 +884,7 @@ void main() {
         final manager = ListManager([]);
         final todo = Todo(title: 'todo to move to next list');
         manager.getListByScope(ListScope.daily)!.addTodo(todo);
-        final now = DateTime.now();
-        final expectedDate = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).add(Duration(days: 365));
+        final expectedDate = DateTime.now().normalized.add(Duration(days: 365));
 
         final moved = await manager.moveAndUpdateTodo(
           todo: todo,

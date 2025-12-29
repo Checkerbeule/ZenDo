@@ -18,7 +18,7 @@ class TodoLocalizationsDe extends TodoLocalizations {
   String get backlog => 'Backlog';
 
   @override
-  String get changeToFittingList => 'Soll die folgende passende Liste auswählen werden?';
+  String get changeToFittingList => 'Soll die folgende passende Liste ausgewählt werden?';
 
   @override
   String get completed => 'erledigt';
@@ -37,6 +37,9 @@ class TodoLocalizationsDe extends TodoLocalizations {
 
   @override
   String get daily_adv => 'Täglich';
+
+  @override
+  String get dateDoesNotFitAnyListError => 'Datum passt zu keiner Liste';
 
   @override
   String get dateDoesNotFitListError => 'Datum passt nicht zur gewählten Liste';

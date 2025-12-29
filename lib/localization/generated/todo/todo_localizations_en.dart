@@ -39,6 +39,9 @@ class TodoLocalizationsEn extends TodoLocalizations {
   String get daily_adv => 'Daily';
 
   @override
+  String get dateDoesNotFitAnyListError => 'Date does not fit any list';
+
+  @override
   String get dateDoesNotFitListError => 'Date does not fit selected list';
 
   @override

@@ -5,6 +5,7 @@ import 'package:zen_do/model/todo/todo.dart';
 import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/persistence/file_lock_helper.dart';
 import 'package:zen_do/persistence/persistence_helper.dart';
+import 'package:zen_do/utils/time_util.dart';
 
 import '../mocks/mocks.mocks.dart';
 
@@ -109,8 +110,6 @@ void main() {
       ).thenAnswer((_) async => {});
     });
 
-    setUp(() {});
-
     group('$className dublicate todo title tests', () {
       test(
         '$className addTodo: insertion of 2 todos with same title not possible',
@@ -164,12 +163,7 @@ void main() {
           final dailyList = TodoList(ListScope.daily);
           final todo = Todo(title: 'todo expires tomorrow');
           dailyList.addTodo(todo);
-          final now = DateTime.now();
-          final expectedDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-          ).add(Duration(days: 1));
+          final expectedDate = DateTime.now().add(Duration(days: 1)).normalized;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -193,12 +187,7 @@ void main() {
           final weeklyList = TodoList(ListScope.weekly);
           final todo = Todo(title: 'todo expires in 7 days');
           weeklyList.addTodo(todo);
-          final now = DateTime.now();
-          final expectedDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-          ).add(Duration(days: 7));
+          final expectedDate = DateTime.now().add(Duration(days: 7)).normalized;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -211,12 +200,9 @@ void main() {
           final monthlyList = TodoList(ListScope.monthly);
           final todo = Todo(title: 'todo expires in 30 days');
           monthlyList.addTodo(todo);
-          final now = DateTime.now();
-          final expectedDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-          ).add(Duration(days: 30));
+          final expectedDate = DateTime.now()
+              .add(Duration(days: 30))
+              .normalized;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -229,12 +215,9 @@ void main() {
           final yearlyList = TodoList(ListScope.yearly);
           final todo = Todo(title: 'todo expires in 365 days');
           yearlyList.addTodo(todo);
-          final now = DateTime.now();
-          final expectedDate = DateTime(
-            now.year,
-            now.month,
-            now.day,
-          ).add(Duration(days: 365));
+          final expectedDate = DateTime.now()
+              .add(Duration(days: 365))
+              .normalized;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -248,6 +231,51 @@ void main() {
 
         expect(todo.expirationDate == null, true);
       });
+
+      test(
+        '$className inserted todo with expirationDate keps expirationDate',
+        () async {
+          final list = TodoList(ListScope.daily);
+          final todo = Todo(title: 'todo with custom expirationDate');
+          final now = DateTime.now().normalized;
+          todo.expirationDate = now;
+
+          final added = await list.addTodo(todo);
+
+          expect(added, isTrue);
+          expect(todo.expirationDate, now);
+        },
+      );
+
+      test(
+        '$className inserted todo with expirationDate keps expirationDate',
+        () async {
+          final list = TodoList(ListScope.daily);
+          final todo = Todo(title: 'todo with custom expirationDate');
+          final now = DateTime.now().add(Duration(days: 1)).normalized;
+          todo.expirationDate = now;
+
+          final added = await list.addTodo(todo);
+
+          expect(added, isTrue);
+          expect(todo.expirationDate, now);
+        },
+      );
+
+      test(
+        '$className todo with expirationDate that does not fit the scope of the list fails to be added',
+        () async {
+          final list = TodoList(ListScope.daily);
+          final todo = Todo(title: 'todo with custom expirationDate');
+          final now = DateTime.now().add(Duration(days: 2)).normalized;
+          todo.expirationDate = now;
+
+          final added = await list.addTodo(todo);
+
+          expect(added, isFalse);
+          expect(list.todos, isEmpty);
+        },
+      );
 
       test('$className restored todo keeps expirationDate', () {
         final yearlyList = TodoList(ListScope.yearly);

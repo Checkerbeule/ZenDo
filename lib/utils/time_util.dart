@@ -47,6 +47,8 @@ DateTime parseLocalized(String dateString, Locale locale) {
   return result;
 }
 
+/// Tries to parse a date string [dateString] according to the provided [locale].
+/// Returns null if parsing fails.
 DateTime? tryParseLocalized(String dateString, Locale locale) {
   try {
     return parseLocalized(dateString, locale);
@@ -59,4 +61,8 @@ extension DateTimeX on DateTime {
   String formatYmD(Locale locale) {
     return DateFormat.yMd(locale.toLanguageTag()).format(this);
   }
+
+  /// Normalizes the DateTime to remove time components (hours, minutes, seconds, milliseconds).
+  /// Exampele: 2024-06-15 14:30:45.123 -> 2024-06-15 00:00:00.000
+  DateTime get normalized => DateTime(year, month, day);
 }

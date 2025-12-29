@@ -210,6 +210,7 @@ class ListManager {
 
     isDeleted = await originList.deleteTodo(todoToUpdate);
     if (isDeleted) {
+      todo.expirationDate = null;
       isAdded = await destinationList.addTodo(todo);
       if (!isAdded) {
         //revert if add to destination not possible
@@ -242,7 +243,7 @@ class ListManager {
   }
 
   /// Returns the most fitting ListScope for the given expirationDate.
-  ListScope getScopeForExpirationDate(DateTime expirationDate) {
+  ListScope? getScopeForExpirationDate(DateTime expirationDate) {
     for (final scope in scopes) {
       if (scope == ListScope.backlog) {
         continue;
@@ -253,7 +254,10 @@ class ListManager {
         return scope;
       }
     }
-    return ListScope.backlog;
+    if(scopes.contains(ListScope.backlog)) {
+      return ListScope.backlog;
+    }
+    return null;
   }
 
   /// Returns the number of expired [Todo]s in all active lists.
