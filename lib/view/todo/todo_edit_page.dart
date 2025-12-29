@@ -57,8 +57,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
     return todo!.title != titleController.text.trim() ||
         todo!.description != descriptionController.text.trim() ||
         todo!.listScope != selectedScope ||
-        todo!.expirationDate !=
-            parseLocalized(expirationDateController.text, locale);
+        (selectedScope != ListScope.backlog &&
+            todo!.expirationDate !=
+                parseLocalized(expirationDateController.text, locale));
   }
 
   @override
@@ -107,6 +108,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
   @override
   Widget build(BuildContext context) {
     final loc = TodoLocalizations.of(context);
+    final locale = Localizations.localeOf(context);
     final backgroundColor = Theme.of(context).colorScheme.surfaceContainerLow;
 
     final List<DropdownMenuItem> listScopeDropDownItems = manager.scopes
@@ -291,6 +293,11 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   onChanged: (value) {
                                     setState(() {
                                       selectedScope = value;
+                                      expirationDateController.text =
+                                          manager
+                                              .calcExpirationDate(selectedScope)
+                                              ?.formatYmD(locale) ??
+                                          ' - ';
                                     });
                                   },
                                   validator: (value) {
@@ -333,9 +340,6 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   ),
                                   onTap: () async {
                                     final now = DateTime.now();
-                                    final locale = Localizations.localeOf(
-                                      context,
-                                    );
                                     final selectedDate = tryParseLocalized(
                                       expirationDateController.text,
                                       locale,
@@ -366,7 +370,6 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                           lastDate: now.add(
                                             lastScopeWithDuration,
                                           ),
-                                          currentDate: selectedDate,
                                         );
                                     if (pickedDate != null) {
                                       expirationDateController.value =
@@ -384,7 +387,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                     }
                                     final selectedDate = tryParseLocalized(
                                       value,
-                                      Localizations.localeOf(context),
+                                      locale,
                                     );
                                     if (selectedDate == null) {
                                       return '${loc.invalidDateFormatError}: $value';
@@ -408,7 +411,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   const SizedBox(height: 16),
                                   Text(
                                     '${loc.createdOn}: '
-                                    '${todo!.creationDate.formatYmD(Localizations.localeOf(context))}',
+                                    '${todo!.creationDate.formatYmD(locale)}',
                                   ),
                                 ],
                               ],
@@ -454,7 +457,6 @@ class _TodoEditPageState extends State<TodoEditPage> {
                           ),
                           onPressed: () async {
                             if (isTodoEdited) {
-                              final locale = Localizations.localeOf(context);
                               if (formKey.currentState!.validate()) {
                                 late final Todo todoToReturn;
                                 final selectedExpirationDate =
