@@ -30,46 +30,74 @@ Future<T?> showDialogWithScaleTransition<T>({
   );
 }
 
-class DeleteDialog extends StatefulWidget {
-  const DeleteDialog({required this.title, required this.text, super.key});
+class BaseDialog extends StatelessWidget {
+  const BaseDialog({required this.title, required this.text, super.key});
 
   final String title;
   final String text;
 
-  @override
-  State<DeleteDialog> createState() => _DeleteDialogState();
-}
+  List<Widget> getActions(BuildContext context) => [];
 
-class _DeleteDialogState extends State<DeleteDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.title),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [Text(widget.text)],
-      ),
-      actions: <Widget>[
-        TextButton(
-          style: TextButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.primary,
-          ),
-          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-          onPressed: () {
-            Navigator.of(context).pop(false);
-          },
-        ),
-        OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.error,
-            backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          ),
-          child: Text(MaterialLocalizations.of(context).deleteButtonTooltip),
-          onPressed: () {
-            Navigator.of(context).pop(true);
-          },
-        ),
-      ],
+      title: Text(title),
+      content: Text(text),
+      actions: getActions(context),
     );
   }
+}
+
+class DeleteDialog extends BaseDialog {
+  const DeleteDialog({required super.title, required super.text, super.key});
+
+  @override
+  List<Widget> getActions(BuildContext context) => [
+    TextButton(
+      style: TextButton.styleFrom(
+        foregroundColor: Theme.of(context).colorScheme.primary,
+      ),
+      child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+      onPressed: () {
+        Navigator.of(context).pop(false);
+      },
+    ),
+    OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Theme.of(context).colorScheme.error,
+        backgroundColor: Theme.of(context).colorScheme.errorContainer,
+      ),
+      child: Text(MaterialLocalizations.of(context).deleteButtonTooltip),
+      onPressed: () {
+        Navigator.of(context).pop(true);
+      },
+    ),
+  ];
+}
+
+class OkCancelDialog extends BaseDialog {
+  const OkCancelDialog({required super.title, required super.text, super.key});
+
+  @override
+  List<Widget> getActions(BuildContext context) => [
+    TextButton(
+      style: TextButton.styleFrom(
+        foregroundColor: Theme.of(context).colorScheme.error,
+      ),
+      child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+      onPressed: () {
+        Navigator.of(context).pop(false);
+      },
+    ),
+    OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+      ),
+      child: Text(MaterialLocalizations.of(context).okButtonLabel),
+      onPressed: () {
+        Navigator.of(context).pop(true);
+      },
+    ),
+  ];
 }

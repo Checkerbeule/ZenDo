@@ -44,6 +44,8 @@ class TodoList implements Comparable<TodoList> {
     todo.expirationDate = calcExpirationDate();
   }
 
+  /// Calculates the expiration date based on the ListScope of the TodoList.
+  /// Returns null if the ListScope is Backlog.
   DateTime? calcExpirationDate() {
     if (scope == ListScope.backlog) {
       return null;

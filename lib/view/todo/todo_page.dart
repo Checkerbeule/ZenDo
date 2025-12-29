@@ -69,7 +69,7 @@ class TodoState extends ChangeNotifier {
         listManager!.expiredTodosCount,
       );
 
-      for (var l in listManager!.allLists) {
+      for (var l in listManager!.lists) {
         doneTodosExpanded[l.scope] = false;
       }
     } catch (e, s) {
@@ -143,7 +143,7 @@ class TodoPage extends StatelessWidget {
                       tabAlignment: TabAlignment.center,
                       dividerColor: Theme.of(context).primaryColor,
                       tabs: [
-                        for (var list in listManager.allLists)
+                        for (var list in listManager.lists)
                           Tab(
                             icon:
                                 listManager.toBeTransferredOrExpiredCount(
@@ -167,7 +167,7 @@ class TodoPage extends StatelessWidget {
                   ),
                   body: TabBarView(
                     children: <Widget>[
-                      for (var list in listManager.allLists)
+                      for (var list in listManager.lists)
                         TodoListPage(list: list),
                     ],
                   ),

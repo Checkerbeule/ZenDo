@@ -113,6 +113,12 @@ abstract class TodoLocalizations {
   /// **'Backlog'**
   String get backlog;
 
+  /// No description provided for @changeToFittingList.
+  ///
+  /// In en, this message translates to:
+  /// **'Should the following fitting list be selected?'**
+  String get changeToFittingList;
+
   /// No description provided for @completed.
   ///
   /// In en, this message translates to:
@@ -148,6 +154,12 @@ abstract class TodoLocalizations {
   /// In en, this message translates to:
   /// **'Daily'**
   String get daily_adv;
+
+  /// No description provided for @dateDoesNotFitListError.
+  ///
+  /// In en, this message translates to:
+  /// **'Date does not fit selected list'**
+  String get dateDoesNotFitListError;
 
   /// No description provided for @deleteTodo.
   ///
@@ -209,6 +221,12 @@ abstract class TodoLocalizations {
   /// **'Due date'**
   String get expirationDate;
 
+  /// No description provided for @invalidDateFormatError.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid date format'**
+  String get invalidDateFormatError;
+
   /// No description provided for @list.
   ///
   /// In en, this message translates to:
@@ -244,6 +262,12 @@ abstract class TodoLocalizations {
   /// In en, this message translates to:
   /// **'next'**
   String get next;
+
+  /// No description provided for @noDateelectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Not date selected'**
+  String get noDateelectedError;
 
   /// No description provided for @noOpenTodosLeft.
   ///

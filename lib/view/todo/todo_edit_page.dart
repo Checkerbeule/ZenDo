@@ -40,6 +40,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
   late final bool isNewTodo;
 
   final formKey = GlobalKey<FormState>();
+  final expirationDateKey = GlobalKey<FormFieldState>();
   late ListScope selectedScope;
   late final TextEditingController titleController;
   late final TextEditingController descriptionController;
@@ -103,7 +104,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
     final loc = TodoLocalizations.of(context);
     final backgroundColor = Theme.of(context).colorScheme.surfaceContainerLow;
 
-    final List<DropdownMenuItem> listScopeDropDownItems = manager.allScopes
+    final List<DropdownMenuItem> listScopeDropDownItems = manager.scopes
         .map(
           (scope) => DropdownMenuItem(
             value: scope,
@@ -283,7 +284,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   items: listScopeDropDownItems,
                                   initialValue: selectedScope,
                                   onChanged: (value) {
-                                    selectedScope = value;
+                                    setState(() {
+                                      selectedScope = value;
+                                    });
                                   },
                                   validator: (value) {
                                     if (isNewTodo &&
@@ -305,7 +308,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   },
                                 ),
                                 TextFormField(
+                                  key: expirationDateKey,
                                   controller: expirationDateController,
+                                  enabled: selectedScope != ListScope.backlog,
                                   keyboardType: TextInputType.none,
                                   showCursor: false,
                                   decoration: InputDecoration(
@@ -322,18 +327,38 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                     ),
                                   ),
                                   onTap: () async {
-                                    final DateTime?
-                                    pickedDate = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateFormat(
-                                        dateFormat,
-                                      ).parse(expirationDateController.text),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime(2100),
-                                      currentDate: DateFormat(
-                                        dateFormat,
-                                      ).parse(expirationDateController.text),
-                                    );
+                                    final now = DateTime.now();
+                                    final selectedDate = DateFormat(
+                                      dateFormat,
+                                    ).tryParse(expirationDateController.text);
+
+                                    final activeScopes = manager.scopes;
+                                    if (activeScopes.last ==
+                                            ListScope.backlog &&
+                                        activeScopes.length <= 1) {
+                                      return; // no date selection possible for backlog
+                                    }
+                                    final lastScopeWithDuration =
+                                        activeScopes.last == ListScope.backlog
+                                        ? activeScopes[activeScopes.length - 2]
+                                              .duration
+                                        : activeScopes.last.duration;
+                                    final firstDate =
+                                        selectedDate != null &&
+                                            selectedDate.isBefore(now)
+                                        ? selectedDate
+                                        : now;
+
+                                    final DateTime? pickedDate =
+                                        await showDatePicker(
+                                          context: context,
+                                          initialDate: selectedDate ?? now,
+                                          firstDate: firstDate,
+                                          lastDate: now.add(
+                                            lastScopeWithDuration,
+                                          ),
+                                          currentDate: selectedDate,
+                                        );
                                     if (pickedDate != null) {
                                       expirationDateController.value =
                                           TextEditingValue(
@@ -342,40 +367,25 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                     }
                                   },
                                   validator: (value) {
+                                    if (selectedScope == ListScope.backlog) {
+                                      return null;
+                                    }
                                     if (value == null) {
-                                      return 'no date selected: $value';
+                                      return loc.noDateelectedError;
                                     }
                                     final selectedDate = DateFormat(
                                       dateFormat,
                                     ).tryParse(value);
                                     if (selectedDate == null) {
-                                      return 'invalid date format: $value';
+                                      return '${loc.invalidDateFormatError}: $value';
                                     }
 
-                                    final now = DateTime.now();
-                                    final nowNormalized = DateTime(
-                                      now.year,
-                                      now.month,
-                                      now.day,
-                                    );
-
-                                    final upperLimit = nowNormalized.add(
-                                      selectedScope.duration,
-                                    );
-                                    if (selectedDate.isAfter(upperLimit)) {
-                                      return 'date out of upper range';
-                                    }
-                                    final nextScopeDuration =
-                                        manager
-                                            .getNextList(selectedScope)
-                                            ?.scope
-                                            .duration ??
-                                        Duration.zero;
-                                    final lowerLimit = nowNormalized.add(
-                                      nextScopeDuration,
-                                    );
-                                    if (selectedDate.isBefore(lowerLimit)) {
-                                      return 'date out of lower range';
+                                    final fittingScope = manager
+                                        .getScopeForExpirationDate(
+                                          selectedDate,
+                                        );
+                                    if (fittingScope != selectedScope) {
+                                      return '${loc.dateDoesNotFitListError}: ${selectedScope.label(context)}';
                                     }
 
                                     return null;
@@ -428,29 +438,62 @@ class _TodoEditPageState extends State<TodoEditPage> {
                           child: Text(
                             MaterialLocalizations.of(context).saveButtonLabel,
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             if (isTodoEdited) {
                               if (formKey.currentState!.validate()) {
                                 late final Todo todoToReturn;
+                                final selectedExpirationDate =
+                                    selectedScope == ListScope.backlog
+                                    ? null
+                                    : DateFormat(
+                                        dateFormat,
+                                      ).parse(expirationDateController.text);
                                 if (isNewTodo) {
                                   todoToReturn = Todo(
                                     title: titleController.text,
                                     description: descriptionController.text,
                                   );
-                                  todoToReturn.expirationDate = DateFormat(
-                                    dateFormat,
-                                  ).parse(expirationDateController.text);
+                                  todoToReturn.expirationDate =
+                                      selectedExpirationDate;
                                 } else {
                                   todoToReturn = todo!.copyWith(
                                     title: titleController.text,
                                     description: descriptionController.text,
                                     listScope: selectedScope,
-                                    expirationDate: DateFormat(
-                                      dateFormat,
-                                    ).parse(expirationDateController.text),
+                                    expirationDate: selectedExpirationDate,
                                   );
                                 }
                                 Navigator.of(context).pop(todoToReturn);
+                              } else {
+                                final selectedExpirationDate = DateFormat(
+                                  dateFormat,
+                                ).tryParse(expirationDateController.text);
+                                if (selectedExpirationDate != null) {
+                                  final fittingScope = manager
+                                      .getScopeForExpirationDate(
+                                        selectedExpirationDate,
+                                      );
+                                  if (selectedScope != fittingScope) {
+                                    final isOk =
+                                        await showDialogWithScaleTransition<
+                                          bool
+                                        >(
+                                          context: context,
+                                          child: OkCancelDialog(
+                                            title:
+                                                '${loc.dateDoesNotFitListError}: "${selectedScope.label(context)}"',
+                                            text:
+                                                '${loc.changeToFittingList} "${fittingScope.label(context)}"',
+                                          ),
+                                        );
+                                    if (isOk != null && isOk) {
+                                      setState(() {
+                                        selectedScope = fittingScope;
+                                        formKey.currentState!.validate();
+                                      });
+                                    }
+                                  }
+                                }
                               }
                             } else {
                               Navigator.of(context).pop();

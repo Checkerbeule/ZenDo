@@ -21,7 +21,7 @@ Duration durationUntilNextMidnight({
 }
 
 String formatDate(DateTime? date, {String? optionalErrorText}) {
-  final errorText = optionalErrorText ?? '(kein Datum vorhanden)';
+  final errorText = optionalErrorText ?? ' - ';
   if (date == null) {
     return errorText;
   }

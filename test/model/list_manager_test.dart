@@ -25,7 +25,7 @@ void main() {
       dailyList,
       monthlyList,
     ]);
-    final lists = manager.allLists;
+    final lists = manager.lists;
 
     expect(lists.first, dailyList);
     expect(lists[1], weeklyList);
@@ -36,9 +36,9 @@ void main() {
 
   test('$className initialize with no list, returns all empty lists', () {
     final manager = ListManager([]);
-    final lists = manager.allLists;
+    final lists = manager.lists;
 
-    expect(manager.allLists.length, ListScope.values.length);
+    expect(manager.lists.length, ListScope.values.length);
     expect(lists.first.scope, ListScope.daily);
     expect(lists[1].scope, ListScope.weekly);
     expect(lists[2].scope, ListScope.monthly);
@@ -61,9 +61,9 @@ void main() {
         ListScope.backlog,
       };
       final manager = ListManager([], activeScopes: activeScopes);
-      final lists = manager.allLists;
+      final lists = manager.lists;
 
-      expect(manager.allLists.length, activeScopes.length);
+      expect(manager.lists.length, activeScopes.length);
       expect(lists.first.scope, ListScope.daily);
       expect(lists[1].scope, ListScope.weekly);
       expect(lists[2].scope, ListScope.yearly);
@@ -81,7 +81,7 @@ void main() {
     );
     final monthlyListToAdd = TodoList(ListScope.monthly);
     final added = manager.addList(monthlyListToAdd);
-    final lists = manager.allLists;
+    final lists = manager.lists;
 
     expect(added, isTrue);
     expect(lists.length, 3);
@@ -100,7 +100,7 @@ void main() {
     );
     final dailyList_2 = TodoList(ListScope.daily);
     final added = manager.addList(dailyList_2);
-    final lists = manager.allLists;
+    final lists = manager.lists;
 
     expect(added, isFalse);
     expect(lists.length, 2);

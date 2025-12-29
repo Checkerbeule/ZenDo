@@ -18,6 +18,9 @@ class TodoLocalizationsDe extends TodoLocalizations {
   String get backlog => 'Backlog';
 
   @override
+  String get changeToFittingList => 'Soll die folgende passende Liste auswählen werden?';
+
+  @override
   String get completed => 'erledigt';
 
   @override
@@ -34,6 +37,9 @@ class TodoLocalizationsDe extends TodoLocalizations {
 
   @override
   String get daily_adv => 'Täglich';
+
+  @override
+  String get dateDoesNotFitListError => 'Datum passt nicht zur gewählten Liste';
 
   @override
   String get deleteTodo => 'Aufgabe löschen';
@@ -66,6 +72,9 @@ class TodoLocalizationsDe extends TodoLocalizations {
   String get expirationDate => 'Fälligkeitsdatum';
 
   @override
+  String get invalidDateFormatError => 'Falsches Datumsformat';
+
+  @override
   String get list => 'Liste';
 
   @override
@@ -84,6 +93,9 @@ class TodoLocalizationsDe extends TodoLocalizations {
 
   @override
   String get next => 'nächste';
+
+  @override
+  String get noDateelectedError => 'Kein Datum ausgewählt';
 
   @override
   String get noOpenTodosLeft => 'Keine offenen Aufgaben vorhanden';
