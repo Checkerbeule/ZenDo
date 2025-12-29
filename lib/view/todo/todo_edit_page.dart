@@ -48,8 +48,8 @@ class _TodoEditPageState extends State<TodoEditPage> {
   final DraggableScrollableController sheetController =
       DraggableScrollableController();
   bool isExpanded = false;
-  double lowerSnap = 0.41;
-  double upperSnap = 0.95;
+  double lowerSnap = 0.32;
+  double upperSnap = 0.94;
 
   bool get isTodoEdited {
     if (isNewTodo) return true;
@@ -128,31 +128,18 @@ class _TodoEditPageState extends State<TodoEditPage> {
     final double keyboardRelative = keyboardHeight / screenHeight;
     final bool isKeyboardOpen = keyboardHeight > 0;
 
-    lowerSnap = (keyboardRelative + 0.25).clamp(0.41, 0.95);
-    upperSnap = isKeyboardOpen ? 0.95 : 0.5;
+    lowerSnap = (keyboardRelative + 0.12).clamp(0.32, 0.94);
+    upperSnap = isKeyboardOpen ? 0.94 : 0.51;
     final List<double> snaps = [lowerSnap, upperSnap];
 
-    if (isKeyboardOpen) {
-      if (isExpanded) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          sheetController.animateTo(
-            upperSnap,
-            duration: const Duration(milliseconds: 120),
-            curve: Curves.easeOut,
-          );
-        });
-      }
-    } else {
-      if (!isExpanded) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          sheetController.animateTo(
-            lowerSnap,
-            duration: const Duration(milliseconds: 120),
-            curve: Curves.easeOut,
-          );
-        });
-      }
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final targetPosition = isExpanded ? upperSnap : lowerSnap;
+      sheetController.animateTo(
+        targetPosition,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+      );
+    });
 
     return SafeArea(
       minimum: EdgeInsets.only(bottom: keyboardHeight),
