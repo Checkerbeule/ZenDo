@@ -1,7 +1,6 @@
 {
   "@@locale": "en",
   "addNewTodo": "Add new todo",
-  "addTodo": "Add todo",
   "backlog": "Backlog",
   "changeToFittingList": "Should the following fitting list be selected?",
   "completed": "completed",

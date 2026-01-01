@@ -514,7 +514,7 @@ class _TodoListPageState extends State<TodoListPage> {
           ),
 
           floatingActionButton: FloatingActionButton(
-            tooltip: loc.addTodo,
+            tooltip: loc.addNewTodo,
             mini: true,
             child: const Icon(Icons.add),
             onPressed: () async {

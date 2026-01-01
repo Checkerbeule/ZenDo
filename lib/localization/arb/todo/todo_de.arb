@@ -1,7 +1,6 @@
 {
   "@@locale": "de",
   "addNewTodo": "Neue Aufgabe hinzufügen",
-  "addTodo": "Aufgabe hinzufügen",
   "backlog": "Backlog",
   "changeToFittingList": "Soll die folgende passende Liste ausgewählt werden?",
   "completed": "erledigt",
