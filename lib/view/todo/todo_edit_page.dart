@@ -53,6 +53,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
   bool isExpanded = false;
   double lowerSnap = 0.32;
   double upperSnap = 0.94;
+  double lastKeayboardHeight = 0;
 
   bool get isTodoEdited {
     if (isNewTodo) return true;
@@ -90,17 +91,18 @@ class _TodoEditPageState extends State<TodoEditPage> {
       });
     });
 
-    sheetController.addListener(_snapListener);
+    WidgetsBinding.instance.addPostFrameCallback((_) => updateSnaps());
   }
 
-  void _snapListener() {
-    final size = sheetController.size;
-    final isUpperSnap = (size - upperSnap).abs() < 0.01;
-    final isLowerSnap = (size - lowerSnap).abs() < 0.01;
+  void updateSnaps() {
+    lowerSnap = calcLowerSnapSize();
+    upperSnap = calcUpperSnapSize();
 
-    if (isLowerSnap || isUpperSnap) {
-      isExpanded = isUpperSnap;
-    }
+    sheetController.animateTo(
+      isExpanded ? upperSnap : lowerSnap,
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+    );
   }
 
   double calcLowerSnapSize() {
@@ -158,14 +160,12 @@ class _TodoEditPageState extends State<TodoEditPage> {
         .toList();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      lowerSnap = calcLowerSnapSize();
-      upperSnap = calcUpperSnapSize();
-      final targetPosition = isExpanded ? upperSnap : lowerSnap;
-      sheetController.animateTo(
-        targetPosition,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOut,
-      );
+      final currentKeyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
+
+      if (lastKeayboardHeight != currentKeyboardHeight) {
+        lastKeayboardHeight = currentKeyboardHeight;
+        updateSnaps();
+      }
     });
 
     return SafeArea(
@@ -175,384 +175,399 @@ class _TodoEditPageState extends State<TodoEditPage> {
           color: backgroundColor,
           borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
         ),
-        child: DraggableScrollableSheet(
-          controller: sheetController,
-          initialChildSize: isExpanded ? upperSnap : lowerSnap,
-          maxChildSize: upperSnap,
-          minChildSize: 0.2,
-          snap: true,
-          snapSizes: [lowerSnap, upperSnap],
-          expand: false,
-          builder: (context, scrollController) {
-            return Column(
-              children: [
-                // Header
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onVerticalDragUpdate: (details) {
-                    sheetController.jumpTo(
-                      (sheetController.size -
-                          details.delta.dy /
-                              MediaQuery.sizeOf(context).height),
-                    );
-                  },
-                  onVerticalDragEnd: (details) {
-                    final up = details.velocity.pixelsPerSecond.dy < 0;
-                    final target = up ? upperSnap : lowerSnap;
+        child: NotificationListener<ScrollEndNotification>(
+          onNotification: (notification) {
+            final midPoint = (lowerSnap + upperSnap) / 2;
+            isExpanded = sheetController.size > midPoint;
 
-                    sheetController.animateTo(
-                      target,
-                      duration: const Duration(milliseconds: 120),
-                      curve: Curves.easeOut,
-                    );
-                  },
-                  child: Container(
-                    key: headerKey,
-                    alignment: Alignment.topCenter,
-                    padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        // Draghandle
-                        Container(
-                          margin: const EdgeInsets.only(top: 12),
-                          width: 40,
-                          height: 3,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              isNewTodo ? loc.addNewTodo : loc.editTodo,
-                              style: TextTheme.of(context).headlineSmall,
-                            ),
-                            if (todo != null)
-                              IconButton(
-                                icon: const Icon(Icons.delete_forever),
-                                color: Theme.of(context).colorScheme.error,
-                                onPressed: () async {
-                                  final navigator = Navigator.of(context);
-                                  final delete =
-                                      await showDialogWithScaleTransition<bool>(
-                                        context: context,
-                                        child: DeleteDialog(
-                                          title: '${loc.deleteTodo}?',
-                                          text: loc.deleteTodoQuestion,
-                                        ),
-                                      );
-                                  if (delete != null && delete) {
-                                    try {
-                                      final TodoList list = manager
-                                          .getListByScope(todo!.listScope!)!;
-                                      widget.todoState
-                                          .performAcitionOnList<bool>(
-                                            () => list.deleteTodo(todo!),
-                                          );
-                                      navigator.pop();
-                                    } catch (e) {
-                                      logger.e(
-                                        'Error deleting todo: $todo\n${e.toString()}',
-                                      );
-                                    }
-                                  }
-                                },
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Form / body
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    physics: const ClampingScrollPhysics(),
-                    padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
-                    child: Form(
-                      key: formKey,
+            return false;
+          },
+          child: DraggableScrollableSheet(
+            controller: sheetController,
+            initialChildSize: isExpanded ? upperSnap : lowerSnap,
+            maxChildSize: upperSnap,
+            minChildSize: 0.2,
+            snap: true,
+            snapSizes: [lowerSnap, upperSnap],
+            expand: false,
+            builder: (context, scrollController) {
+              return Column(
+                children: [
+                  // Header
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onVerticalDragUpdate: (details) {
+                      sheetController.jumpTo(
+                        (sheetController.size -
+                            details.delta.dy /
+                                MediaQuery.sizeOf(context).height),
+                      );
+                    },
+                    onVerticalDragEnd: (details) {
+                      final up = details.velocity.pixelsPerSecond.dy < 0;
+                      final target = up ? upperSnap : lowerSnap;
+                      isExpanded = up;
+
+                      sheetController.animateTo(
+                        target,
+                        duration: const Duration(milliseconds: 120),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                    child: Container(
+                      key: headerKey,
+                      alignment: Alignment.topCenter,
+                      padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
                       child: Column(
                         children: [
-                          Column(
-                            key: formTopKey,
+                          // Draghandle
+                          Container(
+                            margin: const EdgeInsets.only(top: 12),
+                            width: 40,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              TextFormField(
-                                controller: titleController,
-                                autocorrect: true,
-                                textCapitalization:
-                                    TextCapitalization.sentences,
-                                maxLength: 40,
-                                maxLengthEnforcement: MaxLengthEnforcement
-                                    .truncateAfterCompositionEnds,
-                                decoration: InputDecoration(
-                                  labelText: loc.titleLable,
-                                  hintText: loc.titleHintText,
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return loc.errorTitleEmpty;
-                                  }
-                                  if (isNewTodo &&
-                                          !manager.isTodoTitleVacant(
-                                            value,
-                                            selectedScope,
-                                          ) ||
-                                      (!isNewTodo &&
-                                          todo!.title != value &&
-                                          !manager.isTodoTitleVacant(
-                                            value,
-                                            selectedScope,
-                                          ))) {
-                                    return loc.errorTitleUnavailable;
-                                  }
-                                  return null;
-                                },
+                              Text(
+                                isNewTodo ? loc.addNewTodo : loc.editTodo,
+                                style: TextTheme.of(context).headlineSmall,
                               ),
-                              TextFormField(
-                                controller: descriptionController,
-                                autocorrect: true,
-                                keyboardType: TextInputType.multiline,
-                                textCapitalization:
-                                    TextCapitalization.sentences,
-                                minLines: 1,
-                                maxLines: 3,
-                                decoration: InputDecoration(
-                                  labelText: loc.descriptionLabel,
-                                  hintText: loc.descriptionHintText,
+                              if (todo != null)
+                                IconButton(
+                                  icon: const Icon(Icons.delete_forever),
+                                  color: Theme.of(context).colorScheme.error,
+                                  onPressed: () async {
+                                    final navigator = Navigator.of(context);
+                                    final delete =
+                                        await showDialogWithScaleTransition<
+                                          bool
+                                        >(
+                                          context: context,
+                                          child: DeleteDialog(
+                                            title: '${loc.deleteTodo}?',
+                                            text: loc.deleteTodoQuestion,
+                                          ),
+                                        );
+                                    if (delete != null && delete) {
+                                      try {
+                                        final TodoList list = manager
+                                            .getListByScope(todo!.listScope!)!;
+                                        widget.todoState
+                                            .performAcitionOnList<bool>(
+                                              () => list.deleteTodo(todo!),
+                                            );
+                                        navigator.pop();
+                                      } catch (e) {
+                                        logger.e(
+                                          'Error deleting todo: $todo\n${e.toString()}',
+                                        );
+                                      }
+                                    }
+                                  },
                                 ),
-                              ),
                             ],
                           ),
-                          DropdownButtonFormField(
-                            decoration: InputDecoration(
-                              labelText: '${loc.list}: ',
-                              icon: const Icon(Icons.view_column),
-                            ),
-                            items: listScopeDropDownItems,
-                            initialValue: selectedScope,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedScope = value;
-                                expirationDateController.text =
-                                    manager
-                                        .calcExpirationDate(selectedScope)
-                                        ?.formatYmD(locale) ??
-                                    ' - ';
-                              });
-                            },
-                            validator: (value) {
-                              if (isNewTodo &&
-                                      !manager.isTodoTitleVacant(
-                                        titleController.text,
-                                        value as ListScope,
-                                      ) ||
-                                  (!isNewTodo &&
-                                      todo!.title != titleController.text &&
-                                      !manager.isTodoTitleVacant(
-                                        titleController.text,
-                                        value as ListScope,
-                                      ))) {
-                                return loc
-                                    .errorTodoAllreadyExistsInDestinationList;
-                              }
-                              return null;
-                            },
-                          ),
-                          TextFormField(
-                            key: expirationDateKey,
-                            controller: expirationDateController,
-                            enabled: selectedScope != ListScope.backlog,
-                            keyboardType: TextInputType.none,
-                            showCursor: false,
-                            decoration: InputDecoration(
-                              labelText: loc.dueOn,
-                              icon: Icon(
-                                Icons.edit_calendar,
-                                color:
-                                    todo?.expirationDate?.isBefore(
-                                          DateTime.now(),
-                                        ) ??
-                                        false
-                                    ? Theme.of(context).colorScheme.error
-                                    : null,
-                              ),
-                            ),
-                            onTap: () async {
-                              final now = DateTime.now();
-                              final selectedDate = tryParseLocalized(
-                                expirationDateController.text,
-                                locale,
-                              );
-
-                              final activeScopes = manager.scopes;
-                              if (activeScopes.last == ListScope.backlog &&
-                                  activeScopes.length <= 1) {
-                                return; // no date selection possible for backlog
-                              }
-                              final lastScopeWithDuration =
-                                  activeScopes.last == ListScope.backlog
-                                  ? activeScopes[activeScopes.length - 2]
-                                        .duration
-                                  : activeScopes.last.duration;
-                              final firstDate =
-                                  selectedDate != null &&
-                                      selectedDate.isBefore(now)
-                                  ? selectedDate
-                                  : now;
-
-                              final DateTime? pickedDate = await showDatePicker(
-                                context: context,
-                                initialDate: selectedDate ?? now,
-                                firstDate: firstDate,
-                                lastDate: now.add(lastScopeWithDuration),
-                              );
-                              if (pickedDate != null) {
-                                expirationDateController.value =
-                                    TextEditingValue(
-                                      text: pickedDate.formatYmD(locale),
-                                    );
-                              }
-                            },
-                            validator: (value) {
-                              if (selectedScope == ListScope.backlog) {
-                                return null;
-                              }
-                              if (value == null) {
-                                return loc.noDateelectedError;
-                              }
-                              final selectedDate = tryParseLocalized(
-                                value,
-                                locale,
-                              );
-                              if (selectedDate == null) {
-                                return '${loc.invalidDateFormatError}: $value';
-                              }
-
-                              final fittingScope = manager
-                                  .getScopeForExpirationDate(selectedDate);
-                              if (fittingScope == null) {
-                                return loc.dateDoesNotFitAnyListError;
-                              }
-                              if (fittingScope != selectedScope) {
-                                return '${loc.dateDoesNotFitListError}: ${selectedScope.label(context)}';
-                              }
-
-                              return null;
-                            },
-                          ),
-                          if (todo != null) ...[
-                            const SizedBox(height: 16),
-                            Text(
-                              '${loc.createdOn}: '
-                              '${todo!.creationDate.formatYmD(locale)}',
-                            ),
-                          ],
                         ],
                       ),
                     ),
                   ),
-                ),
-                // Footer
-                Container(
-                  key: footerKey,
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  color: backgroundColor,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.error,
+                  // Form / body
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
+                      child: Form(
+                        key: formKey,
+                        child: Column(
+                          children: [
+                            Column(
+                              key: formTopKey,
+                              children: [
+                                TextFormField(
+                                  controller: titleController,
+                                  autocorrect: true,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  maxLength: 40,
+                                  maxLengthEnforcement: MaxLengthEnforcement
+                                      .truncateAfterCompositionEnds,
+                                  decoration: InputDecoration(
+                                    labelText: loc.titleLable,
+                                    hintText: loc.titleHintText,
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return loc.errorTitleEmpty;
+                                    }
+                                    if (isNewTodo &&
+                                            !manager.isTodoTitleVacant(
+                                              value,
+                                              selectedScope,
+                                            ) ||
+                                        (!isNewTodo &&
+                                            todo!.title != value &&
+                                            !manager.isTodoTitleVacant(
+                                              value,
+                                              selectedScope,
+                                            ))) {
+                                      return loc.errorTitleUnavailable;
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                TextFormField(
+                                  controller: descriptionController,
+                                  autocorrect: true,
+                                  keyboardType: TextInputType.multiline,
+                                  textCapitalization:
+                                      TextCapitalization.sentences,
+                                  minLines: 1,
+                                  maxLines: 3,
+                                  decoration: InputDecoration(
+                                    labelText: loc.descriptionLabel,
+                                    hintText: loc.descriptionHintText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            DropdownButtonFormField(
+                              decoration: InputDecoration(
+                                labelText: '${loc.list}: ',
+                                icon: const Icon(Icons.view_column),
+                              ),
+                              items: listScopeDropDownItems,
+                              initialValue: selectedScope,
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedScope = value;
+                                  expirationDateController.text =
+                                      manager
+                                          .calcExpirationDate(selectedScope)
+                                          ?.formatYmD(locale) ??
+                                      ' - ';
+                                });
+                              },
+                              validator: (value) {
+                                if (isNewTodo &&
+                                        !manager.isTodoTitleVacant(
+                                          titleController.text,
+                                          value as ListScope,
+                                        ) ||
+                                    (!isNewTodo &&
+                                        todo!.title != titleController.text &&
+                                        !manager.isTodoTitleVacant(
+                                          titleController.text,
+                                          value as ListScope,
+                                        ))) {
+                                  return loc
+                                      .errorTodoAllreadyExistsInDestinationList;
+                                }
+                                return null;
+                              },
+                            ),
+                            TextFormField(
+                              key: expirationDateKey,
+                              controller: expirationDateController,
+                              enabled: selectedScope != ListScope.backlog,
+                              keyboardType: TextInputType.none,
+                              showCursor: false,
+                              decoration: InputDecoration(
+                                labelText: loc.dueOn,
+                                icon: Icon(
+                                  Icons.edit_calendar,
+                                  color:
+                                      todo?.expirationDate?.isBefore(
+                                            DateTime.now(),
+                                          ) ??
+                                          false
+                                      ? Theme.of(context).colorScheme.error
+                                      : null,
+                                ),
+                              ),
+                              onTap: () async {
+                                final now = DateTime.now();
+                                final selectedDate = tryParseLocalized(
+                                  expirationDateController.text,
+                                  locale,
+                                );
+
+                                final activeScopes = manager.scopes;
+                                if (activeScopes.last == ListScope.backlog &&
+                                    activeScopes.length <= 1) {
+                                  return; // no date selection possible for backlog
+                                }
+                                final lastScopeWithDuration =
+                                    activeScopes.last == ListScope.backlog
+                                    ? activeScopes[activeScopes.length - 2]
+                                          .duration
+                                    : activeScopes.last.duration;
+                                final firstDate =
+                                    selectedDate != null &&
+                                        selectedDate.isBefore(now)
+                                    ? selectedDate
+                                    : now;
+
+                                final DateTime? pickedDate =
+                                    await showDatePicker(
+                                      context: context,
+                                      initialDate: selectedDate ?? now,
+                                      firstDate: firstDate,
+                                      lastDate: now.add(lastScopeWithDuration),
+                                    );
+                                if (pickedDate != null) {
+                                  expirationDateController.value =
+                                      TextEditingValue(
+                                        text: pickedDate.formatYmD(locale),
+                                      );
+                                }
+                              },
+                              validator: (value) {
+                                if (selectedScope == ListScope.backlog) {
+                                  return null;
+                                }
+                                if (value == null) {
+                                  return loc.noDateelectedError;
+                                }
+                                final selectedDate = tryParseLocalized(
+                                  value,
+                                  locale,
+                                );
+                                if (selectedDate == null) {
+                                  return '${loc.invalidDateFormatError}: $value';
+                                }
+
+                                final fittingScope = manager
+                                    .getScopeForExpirationDate(selectedDate);
+                                if (fittingScope == null) {
+                                  return loc.dateDoesNotFitAnyListError;
+                                }
+                                if (fittingScope != selectedScope) {
+                                  return '${loc.dateDoesNotFitListError}: ${selectedScope.label(context)}';
+                                }
+
+                                return null;
+                              },
+                            ),
+                            if (todo != null) ...[
+                              const SizedBox(height: 16),
+                              Text(
+                                '${loc.createdOn}: '
+                                '${todo!.creationDate.formatYmD(locale)}',
+                              ),
+                            ],
+                          ],
                         ),
-                        child: Text(
-                          MaterialLocalizations.of(context).cancelButtonLabel,
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
                       ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Theme.of(
-                            context,
-                          ).colorScheme.primary,
+                    ),
+                  ),
+                  // Footer
+                  Container(
+                    key: footerKey,
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    color: backgroundColor,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.error,
+                          ),
+                          child: Text(
+                            MaterialLocalizations.of(context).cancelButtonLabel,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
                         ),
-                        child: Text(
-                          MaterialLocalizations.of(context).saveButtonLabel,
-                        ),
-                        onPressed: () async {
-                          if (isTodoEdited) {
-                            if (formKey.currentState!.validate()) {
-                              late final Todo todoToReturn;
-                              final selectedExpirationDate =
-                                  selectedScope == ListScope.backlog
-                                  ? null
-                                  : parseLocalized(
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
+                          ),
+                          child: Text(
+                            MaterialLocalizations.of(context).saveButtonLabel,
+                          ),
+                          onPressed: () async {
+                            if (isTodoEdited) {
+                              if (formKey.currentState!.validate()) {
+                                late final Todo todoToReturn;
+                                final selectedExpirationDate =
+                                    selectedScope == ListScope.backlog
+                                    ? null
+                                    : parseLocalized(
+                                        expirationDateController.text,
+                                        locale,
+                                      );
+                                if (isNewTodo) {
+                                  todoToReturn = Todo(
+                                    title: titleController.text,
+                                    description: descriptionController.text,
+                                  );
+                                  todoToReturn.expirationDate =
+                                      selectedExpirationDate;
+                                } else {
+                                  todoToReturn = todo!.copyWith(
+                                    title: titleController.text,
+                                    description: descriptionController.text,
+                                    listScope: selectedScope,
+                                    expirationDate: selectedExpirationDate,
+                                  );
+                                }
+                                Navigator.of(context).pop(todoToReturn);
+                              } else {
+                                final selectedExpirationDate =
+                                    tryParseLocalized(
                                       expirationDateController.text,
                                       locale,
                                     );
-                              if (isNewTodo) {
-                                todoToReturn = Todo(
-                                  title: titleController.text,
-                                  description: descriptionController.text,
-                                );
-                                todoToReturn.expirationDate =
-                                    selectedExpirationDate;
-                              } else {
-                                todoToReturn = todo!.copyWith(
-                                  title: titleController.text,
-                                  description: descriptionController.text,
-                                  listScope: selectedScope,
-                                  expirationDate: selectedExpirationDate,
-                                );
-                              }
-                              Navigator.of(context).pop(todoToReturn);
-                            } else {
-                              final selectedExpirationDate = tryParseLocalized(
-                                expirationDateController.text,
-                                locale,
-                              );
-                              if (selectedExpirationDate != null) {
-                                final fittingScope = manager
-                                    .getScopeForExpirationDate(
-                                      selectedExpirationDate,
-                                    );
-                                if (fittingScope != null &&
-                                    selectedScope != fittingScope) {
-                                  final isOk =
-                                      await showDialogWithScaleTransition<bool>(
-                                        context: context,
-                                        child: OkCancelDialog(
-                                          title:
-                                              '${loc.dateDoesNotFitListError}: "${selectedScope.label(context)}"',
-                                          text:
-                                              '${loc.changeToFittingList} "${fittingScope.label(context)}"',
-                                        ),
+                                if (selectedExpirationDate != null) {
+                                  final fittingScope = manager
+                                      .getScopeForExpirationDate(
+                                        selectedExpirationDate,
                                       );
-                                  if (isOk != null && isOk) {
-                                    setState(() {
-                                      selectedScope = fittingScope;
-                                      formKey.currentState!.validate();
-                                    });
+                                  if (fittingScope != null &&
+                                      selectedScope != fittingScope) {
+                                    final isOk =
+                                        await showDialogWithScaleTransition<
+                                          bool
+                                        >(
+                                          context: context,
+                                          child: OkCancelDialog(
+                                            title:
+                                                '${loc.dateDoesNotFitListError}: "${selectedScope.label(context)}"',
+                                            text:
+                                                '${loc.changeToFittingList} "${fittingScope.label(context)}"',
+                                          ),
+                                        );
+                                    if (isOk != null && isOk) {
+                                      setState(() {
+                                        selectedScope = fittingScope;
+                                        formKey.currentState!.validate();
+                                      });
+                                    }
                                   }
                                 }
                               }
+                            } else {
+                              Navigator.of(context).pop();
                             }
-                          } else {
-                            Navigator.of(context).pop();
-                          }
-                        },
-                      ),
-                    ],
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                //),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
