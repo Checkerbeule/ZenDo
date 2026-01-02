@@ -66,6 +66,7 @@ class ZenDoApp extends StatelessWidget {
           return MaterialApp(
             title: 'ZenDo',
             theme: ThemeData(
+              useMaterial3: true,
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
             ),
             locale: l10n.locale,

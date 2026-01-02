@@ -12,10 +12,10 @@ class TodoLocalizationsEn extends TodoLocalizations {
   String get addNewTodo => 'Add new todo';
 
   @override
-  String get addTodo => 'Add todo';
+  String get backlog => 'Backlog';
 
   @override
-  String get backlog => 'Backlog';
+  String get changeToFittingList => 'Should the following fitting list be selected?';
 
   @override
   String get completed => 'completed';
@@ -34,6 +34,12 @@ class TodoLocalizationsEn extends TodoLocalizations {
 
   @override
   String get daily_adv => 'Daily';
+
+  @override
+  String get dateDoesNotFitAnyListError => 'Date does not fit any list';
+
+  @override
+  String get dateDoesNotFitListError => 'Date does not fit selected list';
 
   @override
   String get deleteTodo => 'Delete todo';
@@ -66,6 +72,9 @@ class TodoLocalizationsEn extends TodoLocalizations {
   String get expirationDate => 'Due date';
 
   @override
+  String get invalidDateFormatError => 'Invalid date format';
+
+  @override
   String get list => 'List';
 
   @override
@@ -84,6 +93,9 @@ class TodoLocalizationsEn extends TodoLocalizations {
 
   @override
   String get next => 'next';
+
+  @override
+  String get noDateelectedError => 'Not date selected';
 
   @override
   String get noOpenTodosLeft => 'No open todos left';

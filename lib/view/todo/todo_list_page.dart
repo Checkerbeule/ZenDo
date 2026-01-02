@@ -10,7 +10,6 @@ import 'package:zen_do/model/todo/todo.dart';
 import 'package:zen_do/model/todo/todo_list.dart';
 import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/dialog_helper.dart';
-import 'package:zen_do/view/todo/add_todo_page.dart';
 import 'package:zen_do/view/todo/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/view/todo/todo_edit_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
@@ -345,16 +344,15 @@ class _TodoListPageState extends State<TodoListPage> {
                                 horizontal: 10,
                               ),
                               onTap: () async {
-                                final updatedTodo =
-                                    await showDialogWithScaleTransition<Todo>(
-                                      context: context,
-                                      //tapPosition: tapPosition, not used at the moment
-                                      child: TodoEditPage(
-                                        todo: todo,
-                                        todoState: todoState,
-                                      ),
-                                      barrierDismissable: false,
-                                    );
+                                final updatedTodo = await showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (context) => TodoEditPage.editTodo(
+                                    todo: todo,
+                                    todoState: todoState,
+                                  ),
+                                );
+
                                 if (updatedTodo != null) {
                                   if (updatedTodo.listScope != todo.listScope) {
                                     todoState.performAcitionOnList(
@@ -431,7 +429,8 @@ class _TodoListPageState extends State<TodoListPage> {
                                     const SizedBox(width: 5),
                                     Tooltip(
                                       message:
-                                          '${loc.dueOn} ${formatDate(todo.expirationDate!)} !',
+                                          '${loc.dueOn} '
+                                          '${todo.expirationDate!.formatYmD(Localizations.localeOf(context))}',
                                       child: Icon(
                                         Icons.access_time_rounded,
                                         color: Theme.of(
@@ -487,7 +486,6 @@ class _TodoListPageState extends State<TodoListPage> {
                           todoState.doneTodosExpanded[listScope] ?? false,
                       onExpansionChanged: (bool expanding) =>
                           todoState.toggleExpansion(listScope),
-                      //expanded = expanding,
                       children: [
                         for (var todo in list.doneTodos)
                           ListTile(
@@ -516,19 +514,17 @@ class _TodoListPageState extends State<TodoListPage> {
           ),
 
           floatingActionButton: FloatingActionButton(
-            tooltip: loc.addTodo,
+            tooltip: loc.addNewTodo,
             mini: true,
             child: const Icon(Icons.add),
             onPressed: () async {
               Todo? newTodo = await showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
-                builder: (BuildContext context) {
-                  return AddTodoPage(
-                    listManager: todoState.listManager!,
-                    listScope: listScope,
-                  );
-                },
+                builder: (context) => TodoEditPage.newTodo(
+                  todoState: todoState,
+                  listScope: listScope,
+                ),
               );
               if (newTodo != null) {
                 todoState.performAcitionOnList<bool>(

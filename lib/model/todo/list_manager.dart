@@ -99,11 +99,11 @@ class ListManager {
       return false;
     }
 
-    final indexOfListContainigTodo = getIndexOfList(todo.listScope!);
+    final indexOfListContainigTodo = _getIndexOfList(todo.listScope!);
     if (indexOfListContainigTodo <= 0) {
       return false;
     }
-    final scopeToSubtract = allLists[indexOfListContainigTodo - 1].scope;
+    final scopeToSubtract = lists[indexOfListContainigTodo - 1].scope;
     final transferDate = todo.expirationDate!.subtract(
       scopeToSubtract.duration,
     );
@@ -124,19 +124,19 @@ class ListManager {
   }
 
   TodoList? getPreviousList(ListScope scope) {
-    final indexOfCurrentList = getIndexOfList(scope);
+    final indexOfCurrentList = _getIndexOfList(scope);
     if (indexOfCurrentList < 0 || indexOfCurrentList + 1 >= _lists.length) {
       return null;
     }
-    return allLists.elementAt(indexOfCurrentList + 1);
+    return lists.elementAt(indexOfCurrentList + 1);
   }
 
   TodoList? getNextList(ListScope scope) {
-    final indexOfCurrentList = getIndexOfList(scope);
+    final indexOfCurrentList = _getIndexOfList(scope);
     if (indexOfCurrentList <= 0) {
       return null;
     }
-    return allLists.elementAt(indexOfCurrentList - 1);
+    return lists.elementAt(indexOfCurrentList - 1);
   }
 
   Future<bool> moveToNextList(Todo todo) async {
@@ -179,7 +179,7 @@ class ListManager {
     bool isDeleted = false;
     bool isAdded = false;
 
-    if (allScopes.contains(destination)) {
+    if (scopes.contains(destination)) {
       destinationList = getListByScope(destination);
     }
     if (destinationList == null) {
@@ -210,6 +210,7 @@ class ListManager {
 
     isDeleted = await originList.deleteTodo(todoToUpdate);
     if (isDeleted) {
+      todo.expirationDate = null;
       isAdded = await destinationList.addTodo(todo);
       if (!isAdded) {
         //revert if add to destination not possible
@@ -235,6 +236,30 @@ class ListManager {
     return listOfScope.isTodoTitleVacant(title);
   }
 
+  /// Calculates the expiration date based on the given [ListScope].
+  /// Returns null if the [ListScope] is Backlog.
+  DateTime? calcExpirationDate(ListScope scope) {
+    return getListByScope(scope)?.calcExpirationDate();
+  }
+
+  /// Returns the most fitting ListScope for the given expirationDate.
+  ListScope? getScopeForExpirationDate(DateTime expirationDate) {
+    for (final scope in scopes) {
+      if (scope == ListScope.backlog) {
+        continue;
+      }
+      if (expirationDate.isBefore(
+        calcExpirationDate(scope)!.add(Duration(days: 1)),
+      )) {
+        return scope;
+      }
+    }
+    if(scopes.contains(ListScope.backlog)) {
+      return ListScope.backlog;
+    }
+    return null;
+  }
+
   /// Returns the number of expired [Todo]s in all active lists.
   int get expiredTodosCount {
     int count = 0;
@@ -253,26 +278,20 @@ class ListManager {
     return _lists.length;
   }
 
-  List<TodoList> get allLists {
+  List<TodoList> get lists {
     final lists = _lists.toList();
     lists.sort((a, b) => a.compareTo(b));
     return lists;
   }
 
-  List<ListScope> get allScopes {
-    List<ListScope> scopes = [];
-    for (final list in allLists) {
-      scopes.add(list.scope);
-    }
-    return scopes;
-  }
+  List<ListScope> get scopes => lists.map((l) => l.scope).toList();
 
   List<TodoList> get listsWithAutotransfer {
-    return allLists.where((l) => l.scope.isAutoTransfer).toList();
+    return lists.where((l) => l.scope.isAutoTransfer).toList();
   }
 
-  int getIndexOfList(ListScope scope) {
-    return allLists.indexWhere((l) => l.scope == scope);
+  int _getIndexOfList(ListScope scope) {
+    return lists.indexWhere((l) => l.scope == scope);
   }
 
   TodoList? getListByScope(ListScope scope) {

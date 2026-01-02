@@ -24,6 +24,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get habits => 'Habits';
 
   @override
+  String get no => 'No';
+
+  @override
   String get notes => 'Notes';
 
   @override
@@ -37,4 +40,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get undo => 'Undo';
+
+  @override
+  String get yes => 'Yes';
 }
