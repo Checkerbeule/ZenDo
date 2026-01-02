@@ -24,6 +24,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get habits => 'Gewohnheiten';
 
   @override
+  String get no => 'Nein';
+
+  @override
   String get notes => 'Notizen';
 
   @override
@@ -37,4 +40,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get undo => 'Rückgängig';
+
+  @override
+  String get yes => 'Ja';
 }

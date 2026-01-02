@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
+import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
@@ -218,45 +219,52 @@ class _TodoEditPageState extends State<TodoEditPage> {
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              isNewTodo ? loc.addNewTodo : loc.editTodo,
-                              style: TextTheme.of(context).headlineSmall,
-                            ),
-                            if (todo != null)
-                              IconButton(
-                                icon: const Icon(Icons.delete_forever),
-                                color: Theme.of(context).colorScheme.error,
-                                onPressed: () async {
-                                  final navigator = Navigator.of(context);
-                                  final delete =
-                                      await showDialogWithScaleTransition<bool>(
-                                        context: context,
-                                        child: DeleteDialog(
-                                          title: '${loc.deleteTodo}?',
-                                          text: loc.deleteTodoQuestion,
-                                        ),
-                                      );
-                                  if (delete != null && delete) {
-                                    try {
-                                      final TodoList list = manager
-                                          .getListByScope(todo!.listScope!)!;
-                                      widget.todoState
-                                          .performAcitionOnList<bool>(
-                                            () => list.deleteTodo(todo!),
-                                          );
-                                      navigator.pop();
-                                    } catch (e) {
-                                      logger.e(
-                                        'Error deleting todo: $todo\n${e.toString()}',
-                                      );
-                                    }
-                                  }
-                                },
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minHeight: 48.0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                isNewTodo ? loc.addNewTodo : loc.editTodo,
+                                style: TextTheme.of(context).headlineSmall,
                               ),
-                          ],
+                              if (todo != null)
+                                IconButton(
+                                  icon: const Icon(Icons.delete_forever),
+                                  color: Theme.of(context).colorScheme.error,
+                                  onPressed: () async {
+                                    final navigator = Navigator.of(context);
+                                    final delete =
+                                        await showDialogWithScaleTransition<
+                                          bool
+                                        >(
+                                          context: context,
+                                          child: DeleteDialog(
+                                            title: '${loc.deleteTodo}?',
+                                            text: loc.deleteTodoQuestion,
+                                          ),
+                                        );
+                                    if (delete != null && delete) {
+                                      try {
+                                        final TodoList list = manager
+                                            .getListByScope(todo!.listScope!)!;
+                                        widget.todoState
+                                            .performAcitionOnList<bool>(
+                                              () => list.deleteTodo(todo!),
+                                            );
+                                        navigator.pop();
+                                      } catch (e) {
+                                        logger.e(
+                                          'Error deleting todo: $todo\n${e.toString()}',
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -517,6 +525,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                     );
                                 if (fittingScope != null &&
                                     selectedScope != fittingScope) {
+                                  final appLoc = AppLocalizations.of(context);
                                   final isOk =
                                       await showDialogWithScaleTransition<bool>(
                                         context: context,
@@ -525,6 +534,8 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                               '${loc.dateDoesNotFitListError}: "${selectedScope.label(context)}"',
                                           text:
                                               '${loc.changeToFittingList} "${fittingScope.label(context)}"',
+                                          okButtonText: appLoc.yes,
+                                          cancelButtonText: appLoc.no,
                                         ),
                                       );
                                   if (isOk != null && isOk) {

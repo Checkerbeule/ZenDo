@@ -5,9 +5,11 @@
   "dataLoadErrorHeadline": "Laden der Daten fehlgeschlagen!",
   "dataLoadErrorMessage": "Schließen Sie die App und öffenen Sie sie zu einem späteren Zeitpunkt erneut.\nSollte der Fehler anschließend weiterhin bestehen, löschen Sie den App-Cache (Ihre Daten bleiben erhalten).",
   "habits": "Gewohnheiten",
+  "no": "Nein",
   "notes": "Notizen",
   "openAppSettings": "Einstellungen öffnen",
   "sorting": "Sortierung",
   "todos": "Aufgaben",
-  "undo": "Rückgängig"
+  "undo": "Rückgängig",
+  "yes": "Ja"
 }

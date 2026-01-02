@@ -12,9 +12,6 @@ class TodoLocalizationsDe extends TodoLocalizations {
   String get addNewTodo => 'Neue Aufgabe hinzufügen';
 
   @override
-  String get addTodo => 'Aufgabe hinzufügen';
-
-  @override
   String get backlog => 'Backlog';
 
   @override

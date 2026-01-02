@@ -76,7 +76,16 @@ class DeleteDialog extends BaseDialog {
 }
 
 class OkCancelDialog extends BaseDialog {
-  const OkCancelDialog({required super.title, required super.text, super.key});
+  const OkCancelDialog({
+    required super.title,
+    required super.text,
+    super.key,
+    this.okButtonText,
+    this.cancelButtonText,
+  });
+
+  final String? okButtonText;
+  final String? cancelButtonText;
 
   @override
   List<Widget> getActions(BuildContext context) => [
@@ -84,7 +93,9 @@ class OkCancelDialog extends BaseDialog {
       style: TextButton.styleFrom(
         foregroundColor: Theme.of(context).colorScheme.error,
       ),
-      child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+      child: Text(
+        cancelButtonText ?? MaterialLocalizations.of(context).cancelButtonLabel,
+      ),
       onPressed: () {
         Navigator.of(context).pop(false);
       },
@@ -94,7 +105,9 @@ class OkCancelDialog extends BaseDialog {
         foregroundColor: Theme.of(context).colorScheme.primary,
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       ),
-      child: Text(MaterialLocalizations.of(context).okButtonLabel),
+      child: Text(
+        okButtonText ?? MaterialLocalizations.of(context).okButtonLabel,
+      ),
       onPressed: () {
         Navigator.of(context).pop(true);
       },

@@ -12,9 +12,6 @@ class TodoLocalizationsEn extends TodoLocalizations {
   String get addNewTodo => 'Add new todo';
 
   @override
-  String get addTodo => 'Add todo';
-
-  @override
   String get backlog => 'Backlog';
 
   @override

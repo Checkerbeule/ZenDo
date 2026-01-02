@@ -101,12 +101,6 @@ abstract class TodoLocalizations {
   /// **'Add new todo'**
   String get addNewTodo;
 
-  /// No description provided for @addTodo.
-  ///
-  /// In en, this message translates to:
-  /// **'Add todo'**
-  String get addTodo;
-
   /// No description provided for @backlog.
   ///
   /// In en, this message translates to:
