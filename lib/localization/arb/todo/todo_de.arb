@@ -1,16 +1,16 @@
 {
   "@@locale": "de",
   "addNewTodo": "Neue Aufgabe hinzufügen",
-  "backlog": "Backlog",
+  "backlog": "Speicher",
   "changeToFittingList": "Soll die folgende passende Liste ausgewählt werden?",
   "completed": "erledigt",
   "completedTodos": "Erledigte Aufgaben",
   "createdOn": "Erstellt am",
   "creationDate": "Erstalldatum",
-  "daily_adj": "tägliche",
-  "daily_adv": "Täglich",
+  "dailyList": "Tagesliste",
   "dateDoesNotFitAnyListError": "Datum passt zu keiner Liste",
   "dateDoesNotFitListError": "Datum passt nicht zur gewählten Liste",
+  "day": "Tag",
   "deleteTodo": "Aufgabe löschen",
   "deleteTodoQuestion": "Diese Aufgabe wirklich unwiederbringlich löschen?",
   "descriptionHintText": "Beschreibung (optional)",
@@ -24,17 +24,9 @@
   "invalidDateFormatError": "Falsches Datumsformat",
   "list": "Liste",
   "loadingTodosIndicator": "Lade Aufgaben...",
-  "monthly_adj": "monatliche",
-  "monthly_adv": "Monatlich",
-  "moveToXList": "Verschieben in\n{ListScopeLabel} Liste",
-  "@moveToXList": {
-    "placeholders": {
-      "ListScopeLabel": {
-        "type": "String",
-        "example": "Wöchentlich"
-      }
-    }
-  },
+  "month": "Monat",
+  "monthlyList": "Monatsliste",
+  "moveTo": "Verschieben in",
   "next": "nächste",
   "noDateelectedError": "Kein Datum ausgewählt",
   "noOpenTodosLeft": "Keine offenen Aufgaben vorhanden",
@@ -52,8 +44,8 @@
     }
   },
   "todoTitle": "Aufgaben-Titel",
-  "weekly_adj": "wöchentliche",
-  "weekly_adv": "Wöchentlich",
-  "yearly_adj": "jährliche",
-  "yearly_adv": "Jährlich"
+  "week": "Woche",
+  "weeklyList": "Wochenliste",
+  "year": "Jahr",
+  "yearlyList": "Jahresliste"
 }

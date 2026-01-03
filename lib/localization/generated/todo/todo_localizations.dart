@@ -104,7 +104,7 @@ abstract class TodoLocalizations {
   /// No description provided for @backlog.
   ///
   /// In en, this message translates to:
-  /// **'Backlog'**
+  /// **'Stash'**
   String get backlog;
 
   /// No description provided for @changeToFittingList.
@@ -137,17 +137,11 @@ abstract class TodoLocalizations {
   /// **'Creation date'**
   String get creationDate;
 
-  /// No description provided for @daily_adj.
+  /// No description provided for @dailyList.
   ///
   /// In en, this message translates to:
-  /// **'daily'**
-  String get daily_adj;
-
-  /// No description provided for @daily_adv.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily'**
-  String get daily_adv;
+  /// **'Daily List'**
+  String get dailyList;
 
   /// No description provided for @dateDoesNotFitAnyListError.
   ///
@@ -160,6 +154,12 @@ abstract class TodoLocalizations {
   /// In en, this message translates to:
   /// **'Date does not fit selected list'**
   String get dateDoesNotFitListError;
+
+  /// No description provided for @day.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get day;
 
   /// No description provided for @deleteTodo.
   ///
@@ -239,23 +239,23 @@ abstract class TodoLocalizations {
   /// **'Loading Todos...'**
   String get loadingTodosIndicator;
 
-  /// No description provided for @monthly_adj.
+  /// No description provided for @month.
   ///
   /// In en, this message translates to:
-  /// **'monthly'**
-  String get monthly_adj;
+  /// **'Month'**
+  String get month;
 
-  /// No description provided for @monthly_adv.
+  /// No description provided for @monthlyList.
   ///
   /// In en, this message translates to:
-  /// **'Monthly'**
-  String get monthly_adv;
+  /// **'Monthly List'**
+  String get monthlyList;
 
-  /// No description provided for @moveToXList.
+  /// No description provided for @moveTo.
   ///
   /// In en, this message translates to:
-  /// **'Move to\n{ListScopeLabel} list'**
-  String moveToXList(String ListScopeLabel);
+  /// **'Move to'**
+  String get moveTo;
 
   /// No description provided for @next.
   ///
@@ -311,29 +311,29 @@ abstract class TodoLocalizations {
   /// **'Todo-Title'**
   String get todoTitle;
 
-  /// No description provided for @weekly_adj.
+  /// No description provided for @week.
   ///
   /// In en, this message translates to:
-  /// **'weekly'**
-  String get weekly_adj;
+  /// **'Week'**
+  String get week;
 
-  /// No description provided for @weekly_adv.
+  /// No description provided for @weeklyList.
   ///
   /// In en, this message translates to:
-  /// **'Weekly'**
-  String get weekly_adv;
+  /// **'Weekly List'**
+  String get weeklyList;
 
-  /// No description provided for @yearly_adj.
+  /// No description provided for @year.
   ///
   /// In en, this message translates to:
-  /// **'yearly'**
-  String get yearly_adj;
+  /// **'Year'**
+  String get year;
 
-  /// No description provided for @yearly_adv.
+  /// No description provided for @yearlyList.
   ///
   /// In en, this message translates to:
-  /// **'Yearly'**
-  String get yearly_adv;
+  /// **'Yearly List'**
+  String get yearlyList;
 }
 
 class _TodoLocalizationsDelegate extends LocalizationsDelegate<TodoLocalizations> {
