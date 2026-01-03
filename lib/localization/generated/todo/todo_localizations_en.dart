@@ -12,7 +12,7 @@ class TodoLocalizationsEn extends TodoLocalizations {
   String get addNewTodo => 'Add new todo';
 
   @override
-  String get backlog => 'Backlog';
+  String get backlog => 'Stash';
 
   @override
   String get changeToFittingList => 'Should the following fitting list be selected?';
@@ -30,16 +30,16 @@ class TodoLocalizationsEn extends TodoLocalizations {
   String get creationDate => 'Creation date';
 
   @override
-  String get daily_adj => 'daily';
-
-  @override
-  String get daily_adv => 'Daily';
+  String get dailyList => 'Daily List';
 
   @override
   String get dateDoesNotFitAnyListError => 'Date does not fit any list';
 
   @override
   String get dateDoesNotFitListError => 'Date does not fit selected list';
+
+  @override
+  String get day => 'Day';
 
   @override
   String get deleteTodo => 'Delete todo';
@@ -81,15 +81,13 @@ class TodoLocalizationsEn extends TodoLocalizations {
   String get loadingTodosIndicator => 'Loading Todos...';
 
   @override
-  String get monthly_adj => 'monthly';
+  String get month => 'Month';
 
   @override
-  String get monthly_adv => 'Monthly';
+  String get monthlyList => 'Monthly List';
 
   @override
-  String moveToXList(String ListScopeLabel) {
-    return 'Move to\n$ListScopeLabel list';
-  }
+  String get moveTo => 'Move to';
 
   @override
   String get next => 'next';
@@ -121,14 +119,14 @@ class TodoLocalizationsEn extends TodoLocalizations {
   String get todoTitle => 'Todo-Title';
 
   @override
-  String get weekly_adj => 'weekly';
+  String get week => 'Week';
 
   @override
-  String get weekly_adv => 'Weekly';
+  String get weeklyList => 'Weekly List';
 
   @override
-  String get yearly_adj => 'yearly';
+  String get year => 'Year';
 
   @override
-  String get yearly_adv => 'Yearly';
+  String get yearlyList => 'Yearly List';
 }

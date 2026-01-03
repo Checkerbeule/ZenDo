@@ -138,7 +138,7 @@ class TodoPage extends StatelessWidget {
                     ).colorScheme.primaryContainer,
                     toolbarHeight: 0,
                     bottom: TabBar(
-                      labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 15),
                       isScrollable: true,
                       tabAlignment: TabAlignment.center,
                       dividerColor: Theme.of(context).primaryColor,
@@ -160,7 +160,7 @@ class TodoPage extends StatelessWidget {
                                     child: Icon(list.scope.icon),
                                   )
                                 : Icon(list.scope.icon),
-                            text: list.scope.label(context),
+                            text: list.scope.listName(context),
                           ),
                       ],
                     ),

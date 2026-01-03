@@ -188,9 +188,8 @@ class _TodoListPageState extends State<TodoListPage> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      loc.moveToXList(
-                                        previousListScope.labelAdj(context),
-                                      ),
+                                      '${loc.moveTo}\n'
+                                      '${previousListScope.listName(context)}',
                                     ),
                                     const SizedBox(width: 10),
                                     Icon(
@@ -223,9 +222,8 @@ class _TodoListPageState extends State<TodoListPage> {
                                     ),
                                     const SizedBox(width: 10),
                                     Text(
-                                      loc.moveToXList(
-                                        nextListScope.labelAdj(context),
-                                      ),
+                                      '${loc.moveTo}\n'
+                                      '${nextListScope.listName(context)}',
                                       textAlign: TextAlign.end,
                                     ),
                                   ],
@@ -280,7 +278,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                 listManager
                                     .getPreviousList(list.scope)
                                     ?.scope
-                                    .labelAdj(context) ??
+                                    .listName(context) ??
                                 loc.next;
                             isMoved = await todoState
                                 .performAcitionOnList<bool>(
@@ -293,7 +291,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                 listManager
                                     .getNextList(list.scope)
                                     ?.scope
-                                    .labelAdj(context) ??
+                                    .listName(context) ??
                                 loc.previous;
                             isMoved = await todoState
                                 .performAcitionOnList<bool>(

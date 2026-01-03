@@ -1,16 +1,16 @@
 {
   "@@locale": "en",
   "addNewTodo": "Add new todo",
-  "backlog": "Backlog",
+  "backlog": "Stash",
   "changeToFittingList": "Should the following fitting list be selected?",
   "completed": "completed",
   "completedTodos": "Completed todos",
   "createdOn": "Created on",
   "creationDate": "Creation date",
-  "daily_adj": "daily",
-  "daily_adv": "Daily",
+  "dailyList": "Daily List",
   "dateDoesNotFitAnyListError": "Date does not fit any list",
   "dateDoesNotFitListError": "Date does not fit selected list",
+  "day": "Day",
   "deleteTodo": "Delete todo",
   "deleteTodoQuestion": "Do you really want to permanently delete this task?",
   "descriptionHintText": "Description (optional)",
@@ -24,17 +24,9 @@
   "invalidDateFormatError": "Invalid date format",
   "list": "List",
   "loadingTodosIndicator": "Loading Todos...",
-  "monthly_adj": "monthly",
-  "monthly_adv": "Monthly",
-  "moveToXList": "Move to\n{ListScopeLabel} list",
-  "@moveToXList": {
-    "placeholders": {
-      "ListScopeLabel": {
-        "type": "String",
-        "example": "Daily"
-      }
-    }
-  },
+  "month": "Month",
+  "monthlyList": "Monthly List",
+  "moveTo": "Move to",
   "next": "next",
   "noDateelectedError": "Not date selected",
   "noOpenTodosLeft": "No open todos left",
@@ -52,8 +44,8 @@
     }
   },
   "todoTitle": "Todo-Title",
-  "weekly_adj": "weekly",
-  "weekly_adv": "Weekly",
-  "yearly_adj": "yearly",
-  "yearly_adv": "Yearly"
+  "week": "Week",
+  "weeklyList": "Weekly List",
+  "year": "Year",
+  "yearlyList": "Yearly List"
 }

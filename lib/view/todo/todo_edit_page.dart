@@ -200,7 +200,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                     sheetController.animateTo(
                       target,
                       duration: Duration(milliseconds: duration),
-                      curve: Curves.easeOut,
+                      curve: Curves.easeIn,
                     );
                   },
                   child: Container(
