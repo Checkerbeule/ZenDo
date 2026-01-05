@@ -161,7 +161,14 @@ class ListManager {
     return await moveAndUpdateTodo(todo: todo, destination: previousList.scope);
   }
 
-  /// Moves the given [todo] from its containing list, to another [destination] list
+  /// Moves the given [todo] from its containing list, to another [destination]-list.
+  /// 
+  /// If [oldTodo] is null, the given [todo] only moves to the [destination] list.
+  /// 
+  /// If [oldTodo] is not null, the given [todo] replaces the [oldTodo]. So [oldTodo] is going to be deleted from its origin-list
+  /// and [todo] (with updated information) is going to be placed in [destination]-list.
+  /// 
+  /// Returns true if successfull and false otherwise.
   Future<bool> moveAndUpdateTodo({
     Todo? oldTodo,
     required Todo todo,
@@ -210,7 +217,10 @@ class ListManager {
 
     isDeleted = await originList.deleteTodo(todoToUpdate);
     if (isDeleted) {
-      todo.expirationDate = null;
+      if (oldTodo == null) {
+        // if there are no changes on the todo, a new expirationDate has to be calculated vio addTodo() ...
+        todo.expirationDate = null;
+      } // ... otherwise the updated todo has allready a new expirationDate
       isAdded = await destinationList.addTodo(todo);
       if (!isAdded) {
         //revert if add to destination not possible
@@ -254,7 +264,7 @@ class ListManager {
         return scope;
       }
     }
-    if(scopes.contains(ListScope.backlog)) {
+    if (scopes.contains(ListScope.backlog)) {
       return ListScope.backlog;
     }
     return null;

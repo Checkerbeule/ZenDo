@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
-import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
@@ -136,7 +135,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
             value: scope,
             child: Text(
               style: TextStyle(fontWeight: FontWeight.normal),
-              scope.label(context),
+              scope.listName(context),
             ),
           ),
         )
@@ -200,7 +199,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                     sheetController.animateTo(
                       target,
                       duration: Duration(milliseconds: duration),
-                      curve: Curves.easeIn,
+                      curve: Curves.decelerate,
                     );
                   },
                   child: Container(
@@ -220,9 +219,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                           ),
                         ),
                         ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            minHeight: 48.0,
-                          ),
+                          constraints: const BoxConstraints(minHeight: 48.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -384,7 +381,6 @@ class _TodoEditPageState extends State<TodoEditPage> {
                               ),
                             ),
                             onTap: () async {
-                              final now = DateTime.now();
                               final selectedDate = tryParseLocalized(
                                 expirationDateController.text,
                                 locale,
@@ -395,22 +391,23 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   activeScopes.length <= 1) {
                                 return; // no date selection possible for backlog
                               }
-                              final lastScopeWithDuration =
-                                  activeScopes.last == ListScope.backlog
-                                  ? activeScopes[activeScopes.length - 2]
-                                        .duration
-                                  : activeScopes.last.duration;
-                              final firstDate =
-                                  selectedDate != null &&
-                                      selectedDate.isBefore(now)
-                                  ? selectedDate
-                                  : now;
+
+                              final nextList = manager.getNextList(
+                                selectedScope,
+                              );
+                              final firstDate = nextList == null
+                                  ? DateTime.now()
+                                  : manager
+                                        .calcExpirationDate(nextList.scope)!
+                                        .add(Duration(days: 1));
 
                               final DateTime? pickedDate = await showDatePicker(
                                 context: context,
-                                initialDate: selectedDate ?? now,
+                                initialDate: selectedDate ?? DateTime.now(),
                                 firstDate: firstDate,
-                                lastDate: now.add(lastScopeWithDuration),
+                                lastDate: manager.calcExpirationDate(
+                                  selectedScope,
+                                )!,
                               );
                               if (pickedDate != null) {
                                 expirationDateController.value =
@@ -513,39 +510,6 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                 );
                               }
                               Navigator.of(context).pop(todoToReturn);
-                            } else {
-                              final selectedExpirationDate = tryParseLocalized(
-                                expirationDateController.text,
-                                locale,
-                              );
-                              if (selectedExpirationDate != null) {
-                                final fittingScope = manager
-                                    .getScopeForExpirationDate(
-                                      selectedExpirationDate,
-                                    );
-                                if (fittingScope != null &&
-                                    selectedScope != fittingScope) {
-                                  final appLoc = AppLocalizations.of(context);
-                                  final isOk =
-                                      await showDialogWithScaleTransition<bool>(
-                                        context: context,
-                                        child: OkCancelDialog(
-                                          title:
-                                              '${loc.dateDoesNotFitListError}: "${selectedScope.label(context)}"',
-                                          text:
-                                              '${loc.changeToFittingList} "${fittingScope.label(context)}"',
-                                          okButtonText: appLoc.yes,
-                                          cancelButtonText: appLoc.no,
-                                        ),
-                                      );
-                                  if (isOk != null && isOk) {
-                                    setState(() {
-                                      selectedScope = fittingScope;
-                                      formKey.currentState!.validate();
-                                    });
-                                  }
-                                }
-                              }
                             }
                           } else {
                             Navigator.of(context).pop();
