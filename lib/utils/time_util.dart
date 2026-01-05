@@ -22,29 +22,25 @@ Duration durationUntilNextMidnight({
 /// Supports multiple date formats for robustness.
 /// Throws a [FormatException] if parsing fails for all supported formats.
 DateTime parseLocalized(String dateString, Locale locale) {
-  final formatUs = DateFormat('MM/dd/yyyy');
-  final formatUk = DateFormat('dd/MM/yyyy');
-  final formatDe = DateFormat('dd.MM.yyyy');
+  final withoutWeekday = dateString.replaceFirst(
+    RegExp(r'^[A-Za-zÄÖÜäöüß]{2,4}\.?\s'),
+    '',
+  );
 
-  DateTime result;
   try {
-    result = DateFormat.yMd(locale.toLanguageTag()).parse(dateString);
+    return DateFormat.yMd(locale.toLanguageTag()).parse(withoutWeekday);
   } catch (_) {
-    try {
-      result = formatUs.parse(dateString);
-    } catch (_) {
+    for (final f in [
+      DateFormat('MM/dd/yyyy'),
+      DateFormat('dd/MM/yyyy'),
+      DateFormat('dd.MM.yyyy'),
+    ]) {
       try {
-        result = formatUk.parse(dateString);
-      } catch (_) {
-        try {
-          result = formatDe.parse(dateString);
-        } catch (_) {
-          rethrow;
-        }
-      }
+        return f.parse(withoutWeekday);
+      } catch (_) {}
     }
+    rethrow;
   }
-  return result;
 }
 
 /// Tries to parse a date string [dateString] according to the provided [locale].
@@ -59,7 +55,10 @@ DateTime? tryParseLocalized(String dateString, Locale locale) {
 
 extension DateTimeX on DateTime {
   String formatYmD(Locale locale) {
-    return DateFormat.yMd(locale.toLanguageTag()).format(this);
+    final languageTag = locale.toLanguageTag();
+    final weekday = DateFormat.E(languageTag).format(this);
+    final date = DateFormat.yMd(languageTag).format(this);
+    return '$weekday. $date';
   }
 
   /// Normalizes the DateTime to remove time components (hours, minutes, seconds, milliseconds).

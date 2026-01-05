@@ -86,7 +86,7 @@ void main() {
 
       final formattedDate = date.formatYmD(locale);
 
-      expect(formattedDate, '25.12.2023');
+      expect(formattedDate, 'Mo. 25.12.2023');
     });
 
     test('$className format DateTime with locale en US successfully', () {
@@ -95,7 +95,7 @@ void main() {
 
       final formattedDate = date.formatYmD(locale);
 
-      expect(formattedDate, '12/25/2023');
+      expect(formattedDate, 'Mon. 12/25/2023');
     });
 
     test('$className format DateTime with locale en GB successfully', () {
@@ -104,7 +104,7 @@ void main() {
 
       final formattedDate = date.formatYmD(locale);
 
-      expect(formattedDate, '25/12/2023');
+      expect(formattedDate, 'Mon. 25/12/2023');
     });
 
     test('$className format DateTime with invalid locale fails', () {
