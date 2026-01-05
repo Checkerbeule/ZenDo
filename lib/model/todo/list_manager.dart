@@ -35,7 +35,7 @@ class ListManager {
       final scopes = settings.getActiveListScopes();
       final manager = ListManager(lists, activeScopes: scopes);
 
-      manager.transferTodos();
+      await manager.transferTodos();
       await PersistenceHelper.closeAndRelease();
       logger.d('AutoTransfer of expired todos successfully finished!');
       return true;

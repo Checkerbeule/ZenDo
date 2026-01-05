@@ -1,0 +1,9 @@
+# Zeigt ALLES an, was mit deinem Prozess passiert (auch System-Fehler beim Isolate-Start)
+adb logcat --pid=$(adb shell pidof -s com.example.zen_do)
+
+# WorkManager logs anzeigen
+adb shell dumpsys jobscheduler | grep -A 20 "com.example.zen_do"
+
+# Installiert die APK via adb (-r = reinstall)
+adb install -r ./build/app/outputs/flutter-apk/app-release.apk
+adb install -r ./build/app/outputs/flutter-apk/app-debug.apk

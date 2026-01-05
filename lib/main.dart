@@ -2,12 +2,10 @@ import 'package:arb_utils/state_managers/l10n_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:workmanager/workmanager.dart';
-import 'package:zen_do/callback_dispatcher.dart';
+import 'package:zen_do/background_task_helper.dart';
 import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/localizations_config.dart';
 import 'package:zen_do/persistence/hive_initializer.dart';
-import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/habits/habit_page.dart';
 import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/settings/settings_page.dart';
@@ -21,26 +19,7 @@ void main() async {
 
   await HiveInitializer.initFlutter();
 
-  await Workmanager().initialize(callbackDispatcher);
-  await Workmanager().cancelByUniqueName(
-    'dailyTodoTransfer',
-  ); // TODO change to 'dailyTodoTransfer_v2' on next build
-  await Workmanager().registerPeriodicTask(
-    "dailyTodoTransfer_v2", // TODO change back to 'dailyTodoTransfer' on next build
-    "transferExpiredTodos",
-    backoffPolicy: BackoffPolicy.linear,
-    backoffPolicyDelay: Duration(minutes: 3),
-    initialDelay: durationUntilNextMidnight(),
-    frequency: const Duration(hours: 24),
-    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
-    constraints: Constraints(
-      networkType: NetworkType.notRequired,
-      requiresBatteryNotLow: false,
-      requiresCharging: false,
-      requiresDeviceIdle: false,
-      requiresStorageNotLow: false,
-    ),
-  );
+  await initAndRegisterBackgroundTasks();
 
   WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
 
