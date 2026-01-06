@@ -1,0 +1,32 @@
+# ZenDo Source-Available License (ZSAL) 2026
+
+Copyright (c) 2026 Robin Schäfer (Checkerbeule)
+
+## 1. Purpose and Scope
+This license governs the use of the software in this repository. The software is provided **source-available** to allow transparency, public contribution, and personal use.
+
+## 2. Permitted Use
+You are permitted to:
+- **View and Download**: Access and read the source code.
+- **Private Use**: Run and modify the software for **personal, non-commercial purposes only**. This includes using the software privately for any personal or professional purposes. Any modifications may not be redistributed or used commercially.
+- **Contribute**: Submit bug reports, suggestions, and code contributions (Pull Requests).
+
+## 3. Restrictions
+You may **not**:
+- **Commercial Use**: Sell, rent, lease, or use the software for commercial gain or provide it as professional services.
+- **Redistribution**: Redistribute the software or its source code as a standalone product or as part of another package without explicit written permission from the author.
+- **Competing Products**: Use the source code to create a monetized competing product.
+
+## 4. Contributions
+By submitting a Pull Request or contributing code, you agree that:
+- You grant the author a **perpetual, irrevocable, worldwide, royalty-free, exclusive license** to use, modify, and commercially exploit your contribution.
+- The author retains the right to **change the licensing model** for future versions (e.g., introducing subscription or proprietary features) without further consent.
+
+## 5. Reservation of Rights
+The author (copyright holder) reserves the exclusive right to:
+- Monetize the software in any form (subscriptions, one-time purchases, sponsorships, etc.).
+- Change the license terms for future releases.
+- Distribute the software under different commercial licenses.
+
+## 6. Disclaimer
+THE SOFTWARE IS PROVIDED "**AS IS**", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR ITS USE.

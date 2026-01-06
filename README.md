@@ -1,16 +1,57 @@
-# zen_do
+# ZenDo
+[![Flutter](https://img.shields.io/badge/Flutter-3.38.5-blue)](https://docs.flutter.dev/install/archive)
+[![Dart](https://img.shields.io/badge/Dart-3.10.4-blue)](https://dart.dev/resources/whats-new)
+[![License](https://img.shields.io/badge/License-ZSAL-blue)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Checkerbeule/ZenDo/automated-tests.yml?branch=main)](https://github.com/Checkerbeule/ZenDo/actions)
 
-A new Flutter project.
+A minimalist **Flutter** productivity app, combining **tasks, notes, routines** and **pomodoro timer** with a calm, distraction-free UX for stress-free self-management.
 
-## Getting Started
+> **Work in Progress**  
+> Not released yet. **Currently not published in Play Store**.
 
-This project is a starting point for a Flutter application.
+## Screenshots
+**Home / Todo Page**  
+<img src="assets/screenshots/Screenshot_main_todo_page.png?raw=true" width="300"/>
 
-A few resources to get you started if this is your first Flutter project:
+**Todo BottomSheet**  
+<img src="assets/screenshots/Screenshot_todo_bottomsheet.png?raw=true" width="300"/>
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+**Settings**  
+<img src="assets/screenshots/Screenshot_settings_full.png?raw=true" width="300"/>
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech Stack
+- **Flutter** (Material 3)
+- **Dart**
+- **Provider** (State Management)
+- **Hive** (Local Storage)
+
+## Features in progress
+- Task management
+- Cloud backup
+- Task & list labels
+
+## Features planned
+- Pomodoro timer
+- Daily routines & habit tracking
+- Statistics & insights
+- Notes
+- Shared tasks and lists
+
+## Supported languages
+- English
+- German
+
+## Goals
+- Slim, modern UI
+- Cross-platform support
+- Clean architecture
+- Offline-first
+- Designed to help users stay organized without feeling overwhelmed.
+
+## Project Status
+Early development, rapid iteration, not optimized for production yet.
+
+---
+
+Made with focus on simplicity & developer craftsmanship.  
+Feedback and ideas welcome via **issues**.
