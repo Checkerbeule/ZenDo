@@ -41,9 +41,13 @@ class Todo {
   @HiveField(6)
   int? order;
 
-  Todo({required String title, String? description})
-    : id = Uuid().v4(),
-      creationDate = DateTime.now() {
+  Todo({
+    required String title,
+    String? description,
+    this.expirationDate,
+    this.listScope,
+  }) : id = Uuid().v4(),
+       creationDate = DateTime.now() {
     this.title = title;
     this.description = description;
   }
