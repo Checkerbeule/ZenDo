@@ -1,5 +1,8 @@
 # ZenDo
-> ! [License](LICENSE)
+![Flutter](https://img.shields.io/badge/Flutter-3.13-blue)
+![Dart](https://img.shields.io/badge/Dart-3.1-blue)
+[![License](https://img.shields.io/badge/License-ZSAL-blue)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Checkerbeule/ZenDo/flutter.yml?branch=main)](https://github.com/Checkerbeule/ZenDo/actions)
 
 A minimalist **Flutter** productivity app, combining **tasks, notes, routines** and **pomodoro timer** with a calm, distraction-free UX for stress-free self-management.
 
