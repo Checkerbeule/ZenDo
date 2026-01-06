@@ -9,6 +9,16 @@ A minimalist **Flutter** productivity app, combining **tasks, notes, routines** 
 > **Work in Progress**  
 > Not released yet. **Currently not published in Play Store**.
 
+## Screenshots
+**Home / Todo Page**  
+<img src="assets/screenshots/Screenshot_main_todo_page.png" width="300"/>
+
+**Todo BottomSheet**  
+<img src="assets/screenshots/Screenshot_todo_bottomsheet.png" width="300"/>
+
+**Settings**  
+<img src="assets/screenshots/Screenshot_settings_full.png" width="300"/>
+
 ## Tech Stack
 - **Flutter** (Material 3)
 - **Dart**
