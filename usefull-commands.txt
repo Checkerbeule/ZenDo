@@ -6,4 +6,3 @@ adb shell dumpsys jobscheduler | grep -A 20 "com.example.zen_do"
 
 # Installiert die APK via adb (-r = reinstall)
 adb install -r ./build/app/outputs/flutter-apk/app-release.apk
-adb install -r ./build/app/outputs/flutter-apk/app-debug.apk

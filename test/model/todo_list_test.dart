@@ -606,7 +606,7 @@ void main() {
         expect(todo.order, 1000);
       });
 
-      test('$className restoreTodo sets keeps order on todo', () {
+      test('$className restoreTodo keeps order on todo', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');
@@ -619,7 +619,7 @@ void main() {
       });
 
       test(
-        '$className reorder on moved todo thats not in list not possible',
+        '$className reorder on moved todo that is not in list not possible',
         () {
           final list = TodoList(ListScope.daily);
           final todoNotInList = Todo(title: '0');
