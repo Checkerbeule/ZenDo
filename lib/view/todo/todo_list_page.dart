@@ -527,7 +527,9 @@ class _TodoListPageState extends State<TodoListPage> {
               );
               if (newTodo != null) {
                 todoState.performAcitionOnList<bool>(
-                  () => list.addTodo(newTodo),
+                  () => listManager
+                      .getListByScope(newTodo.listScope!)!
+                      .addTodo(newTodo),
                 );
               }
             },

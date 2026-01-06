@@ -498,9 +498,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                 todoToReturn = Todo(
                                   title: titleController.text,
                                   description: descriptionController.text,
+                                  expirationDate: selectedExpirationDate,
+                                  listScope: selectedScope,
                                 );
-                                todoToReturn.expirationDate =
-                                    selectedExpirationDate;
                               } else {
                                 todoToReturn = todo!.copyWith(
                                   title: titleController.text,
