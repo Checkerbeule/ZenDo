@@ -194,7 +194,9 @@ class _TodoEditPageState extends State<TodoEditPage> {
                       0.25,
                       0.94,
                     );
-                    final duration = (120 + (velocity.abs() / 10)).toInt();
+                    final duration = (300 + (velocity.abs() / 10))
+                        .clamp(200, 600)
+                        .toInt();
 
                     sheetController.animateTo(
                       target,
