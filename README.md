@@ -1,16 +1,43 @@
-# zen_do
+# ZenDo
+> ! [License](LICENSE)
 
-A new Flutter project.
+A minimalist **Flutter** productivity app, combining **tasks, notes, routines** and **pomodoro timer** with a calm, distraction-free UX for stress-free self-management.
 
-## Getting Started
+> **Work in Progress**  
+> Not released yet. **Currently not published in Play Store**.
 
-This project is a starting point for a Flutter application.
+## Tech Stack
+- **Flutter** (Material 3)
+- **Dart**
+- **Provider** (State Management)
+- **Hive** (Local Storage)
 
-A few resources to get you started if this is your first Flutter project:
+## Features in progress
+- Task management
+- Cloud backup
+- Task & list labels
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Features planned
+- Pomodoro timer
+- Daily routines & habit tracking
+- Statistics & insights
+- Notes
+- Shared tasks and lists
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Supported languages
+- English
+- German
+
+## Goals
+- Slim, modern UI
+- Cross-platform support
+- Clean architecture
+- Offline-first
+
+## Project Status
+Early development, rapid iteration, not optimized for production yet.
+
+---
+
+Made with focus on simplicity & developer craftsmanship.  
+Feedback and ideas welcome via **issues**.
