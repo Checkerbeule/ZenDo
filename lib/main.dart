@@ -6,7 +6,7 @@ import 'package:zen_do/background_task_helper.dart';
 import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/localizations_config.dart';
 import 'package:zen_do/persistence/hive_initializer.dart';
-import 'package:zen_do/view/habits/habit_page.dart';
+import 'package:zen_do/view/coming_soon_page.dart';
 import 'package:zen_do/view/page_type.dart';
 import 'package:zen_do/view/settings/settings_page.dart';
 import 'package:zen_do/view/todo/todo_page.dart';
@@ -63,6 +63,7 @@ class ZenDoAppState extends ChangeNotifier {
   Map<PageType, int> pageMessages = {
     PageType.todos: 0,
     PageType.habits: 0,
+    PageType.pomodoro: 0,
     PageType.notes: 0,
   };
 
@@ -115,10 +116,9 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             index: pageIndex,
             children: [
               const TodoPage(),
-              const HabitPage(), //TODO implement Habit Page
-              Center(
-                child: Text(PageType.notes.label(context)),
-              ), //TODO implement notes Page
+              const ComingSoonPage(feature: 'Habit tracking'),
+              const ComingSoonPage(feature: 'Pomodoro timer'),
+              const ComingSoonPage(feature: 'Notes'),
             ],
           ),
           bottomNavigationBar: NavigationBar(

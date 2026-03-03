@@ -1,6 +1,7 @@
 {
   "@@locale": "de",
   "closeApp": "App schließen",
+  "comingSoonMessage": "Wir arbeiten bereits an diesem Feature. Es wird bald verfügbar sein!",
   "custom": "Benutzerdefiniert",
   "dataLoadErrorHeadline": "Laden der Daten fehlgeschlagen!",
   "dataLoadErrorMessage": "Schließen Sie die App und öffenen Sie sie zu einem späteren Zeitpunkt erneut.\nSollte der Fehler anschließend weiterhin bestehen, löschen Sie den App-Cache (Ihre Daten bleiben erhalten).",

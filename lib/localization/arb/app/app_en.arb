@@ -1,6 +1,7 @@
 {
   "@@locale": "en",
   "closeApp": "Close app",
+  "comingSoonMessage": "Great things take time. This feature is on its way!",
   "custom": "Custom",
   "dataLoadErrorHeadline": "Loading data failed!",
   "dataLoadErrorMessage": "Close the app and reopen it later. If the error still exists, clear the app cache (your data will be retained).",

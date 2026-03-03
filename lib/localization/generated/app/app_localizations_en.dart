@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get closeApp => 'Close app';
 
   @override
+  String get comingSoonMessage => 'Great things take time. This feature is on its way!';
+
+  @override
   String get custom => 'Custom';
 
   @override

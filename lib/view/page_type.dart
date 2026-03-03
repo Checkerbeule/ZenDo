@@ -4,7 +4,8 @@ import 'package:zen_do/localization/generated/app/app_localizations.dart';
 enum PageType {
   todos(),
   habits(),
-  notes();
+  notes(),
+  pomodoro();
 
   const PageType();
 }
@@ -17,6 +18,8 @@ extension PageTypeX on PageType {
         return loc.todos;
       case PageType.habits:
         return loc.habits;
+      case PageType.pomodoro:
+        return 'Pomodoro';
       case PageType.notes:
         return loc.notes;
     }
@@ -28,6 +31,8 @@ extension PageTypeX on PageType {
         return Icons.view_list_outlined;
       case PageType.habits:
         return Icons.track_changes;
+      case PageType.pomodoro:
+        return Icons.timer_outlined;
       case PageType.notes:
         return Icons.edit_note;
     }
