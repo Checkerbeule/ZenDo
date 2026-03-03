@@ -101,6 +101,12 @@ abstract class AppLocalizations {
   /// **'Close app'**
   String get closeApp;
 
+  /// No description provided for @comingSoonMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Great things take time. This feature is on its way!'**
+  String get comingSoonMessage;
+
   /// No description provided for @custom.
   ///
   /// In en, this message translates to:

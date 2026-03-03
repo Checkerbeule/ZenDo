@@ -12,6 +12,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get closeApp => 'App schließen';
 
   @override
+  String get comingSoonMessage => 'Wir arbeiten bereits an diesem Feature. Es wird bald verfügbar sein!';
+
+  @override
   String get custom => 'Benutzerdefiniert';
 
   @override
