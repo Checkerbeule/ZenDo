@@ -2,7 +2,7 @@ import 'package:arb_utils/state_managers/l10n_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/background_task_helper.dart';
+import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/localizations_config.dart';
 import 'package:zen_do/persistence/hive_initializer.dart';
@@ -19,7 +19,7 @@ void main() async {
 
   await HiveInitializer.initFlutter();
 
-  await initAndRegisterBackgroundTasks();
+  await Workmanager().cancelAll(); //TODO remove for next build
 
   WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
 
@@ -124,6 +124,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
           bottomNavigationBar: NavigationBar(
             backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
             indicatorColor: Theme.of(context).colorScheme.inversePrimary,
+            labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
             labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((
               Set<WidgetState> states,
             ) {
@@ -131,10 +132,12 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
                 return TextStyle(
                   color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.bold,
+                  overflow: TextOverflow.ellipsis,
                 );
               }
               return TextStyle(
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
+                overflow: TextOverflow.ellipsis,
               );
             }),
             selectedIndex: pageIndex,

@@ -28,7 +28,7 @@ extension PageTypeX on PageType {
   IconData get icon {
     switch (this) {
       case PageType.todos:
-        return Icons.view_list_outlined;
+        return Icons.format_list_bulleted_rounded;
       case PageType.habits:
         return Icons.track_changes;
       case PageType.pomodoro:

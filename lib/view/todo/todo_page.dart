@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/main.dart';
@@ -62,6 +63,17 @@ class TodoState extends ChangeNotifier {
     try {
       List<TodoList> loadedLists = await PersistenceHelper.loadAll();
       listManager = ListManager(loadedLists, activeScopes: activeScopes);
+
+      var prefs = await SharedPreferences.getInstance();
+      var lastTransferDateString = prefs.getString('lastTodoTransferDate');
+      var now = DateTime.now().toIso8601String().substring(0, 10);
+      if(lastTransferDateString == null
+        || lastTransferDateString != now) {
+          logger.d('Transfering todos on app start. Last run: $lastTransferDateString');
+          listManager!.transferTodos();
+          await prefs.setString('lastTodoTransferDate', now);
+        }
+
       isLoading = false;
 
       appState?.updateMessageCount(
