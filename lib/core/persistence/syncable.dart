@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
-mixin SyncTable on Table {
+mixin Syncable on Table {
   TextColumn get uuid => text()
       .withLength(min: 36, max: 36)
       .unique()

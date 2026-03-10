@@ -3,12 +3,11 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $TagsTableTable extends TagsTable
-    with TableInfo<$TagsTableTable, TagsTableData> {
+class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $TagsTableTable(this.attachedDatabase, [this._alias]);
+  $TagsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
   @override
   late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
@@ -45,7 +44,7 @@ class $TagsTableTable extends TagsTable
         type: DriftSqlType.int,
         requiredDuringInsert: false,
         defaultValue: Constant(SyncStatus.localOnly.index),
-      ).withConverter<SyncStatus>($TagsTableTable.$convertersyncStatus);
+      ).withConverter<SyncStatus>($TagsTable.$convertersyncStatus);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -94,10 +93,10 @@ class $TagsTableTable extends TagsTable
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'tags_table';
+  static const String $name = 'tags';
   @override
   VerificationContext validateIntegrity(
-    Insertable<TagsTableData> instance, {
+    Insertable<Tag> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -139,9 +138,9 @@ class $TagsTableTable extends TagsTable
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  TagsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TagsTableData(
+    return Tag(
       uuid: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}uuid'],
@@ -150,7 +149,7 @@ class $TagsTableTable extends TagsTable
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
-      syncStatus: $TagsTableTable.$convertersyncStatus.fromSql(
+      syncStatus: $TagsTable.$convertersyncStatus.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.int,
           data['${effectivePrefix}sync_status'],
@@ -172,22 +171,22 @@ class $TagsTableTable extends TagsTable
   }
 
   @override
-  $TagsTableTable createAlias(String alias) {
-    return $TagsTableTable(attachedDatabase, alias);
+  $TagsTable createAlias(String alias) {
+    return $TagsTable(attachedDatabase, alias);
   }
 
   static TypeConverter<SyncStatus, int> $convertersyncStatus =
       const SyncStatusConverter();
 }
 
-class TagsTableData extends DataClass implements Insertable<TagsTableData> {
+class Tag extends DataClass implements Insertable<Tag> {
   final String uuid;
   final DateTime updatedAt;
   final SyncStatus syncStatus;
   final int id;
   final String name;
   final int color;
-  const TagsTableData({
+  const Tag({
     required this.uuid,
     required this.updatedAt,
     required this.syncStatus,
@@ -202,7 +201,7 @@ class TagsTableData extends DataClass implements Insertable<TagsTableData> {
     map['updated_at'] = Variable<DateTime>(updatedAt);
     {
       map['sync_status'] = Variable<int>(
-        $TagsTableTable.$convertersyncStatus.toSql(syncStatus),
+        $TagsTable.$convertersyncStatus.toSql(syncStatus),
       );
     }
     map['id'] = Variable<int>(id);
@@ -211,8 +210,8 @@ class TagsTableData extends DataClass implements Insertable<TagsTableData> {
     return map;
   }
 
-  TagsTableCompanion toCompanion(bool nullToAbsent) {
-    return TagsTableCompanion(
+  TagsCompanion toCompanion(bool nullToAbsent) {
+    return TagsCompanion(
       uuid: Value(uuid),
       updatedAt: Value(updatedAt),
       syncStatus: Value(syncStatus),
@@ -222,12 +221,12 @@ class TagsTableData extends DataClass implements Insertable<TagsTableData> {
     );
   }
 
-  factory TagsTableData.fromJson(
+  factory Tag.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TagsTableData(
+    return Tag(
       uuid: serializer.fromJson<String>(json['uuid']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       syncStatus: serializer.fromJson<SyncStatus>(json['syncStatus']),
@@ -249,14 +248,14 @@ class TagsTableData extends DataClass implements Insertable<TagsTableData> {
     };
   }
 
-  TagsTableData copyWith({
+  Tag copyWith({
     String? uuid,
     DateTime? updatedAt,
     SyncStatus? syncStatus,
     int? id,
     String? name,
     int? color,
-  }) => TagsTableData(
+  }) => Tag(
     uuid: uuid ?? this.uuid,
     updatedAt: updatedAt ?? this.updatedAt,
     syncStatus: syncStatus ?? this.syncStatus,
@@ -264,8 +263,8 @@ class TagsTableData extends DataClass implements Insertable<TagsTableData> {
     name: name ?? this.name,
     color: color ?? this.color,
   );
-  TagsTableData copyWithCompanion(TagsTableCompanion data) {
-    return TagsTableData(
+  Tag copyWithCompanion(TagsCompanion data) {
+    return Tag(
       uuid: data.uuid.present ? data.uuid.value : this.uuid,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncStatus: data.syncStatus.present
@@ -279,7 +278,7 @@ class TagsTableData extends DataClass implements Insertable<TagsTableData> {
 
   @override
   String toString() {
-    return (StringBuffer('TagsTableData(')
+    return (StringBuffer('Tag(')
           ..write('uuid: $uuid, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
@@ -295,7 +294,7 @@ class TagsTableData extends DataClass implements Insertable<TagsTableData> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is TagsTableData &&
+      (other is Tag &&
           other.uuid == this.uuid &&
           other.updatedAt == this.updatedAt &&
           other.syncStatus == this.syncStatus &&
@@ -304,14 +303,14 @@ class TagsTableData extends DataClass implements Insertable<TagsTableData> {
           other.color == this.color);
 }
 
-class TagsTableCompanion extends UpdateCompanion<TagsTableData> {
+class TagsCompanion extends UpdateCompanion<Tag> {
   final Value<String> uuid;
   final Value<DateTime> updatedAt;
   final Value<SyncStatus> syncStatus;
   final Value<int> id;
   final Value<String> name;
   final Value<int> color;
-  const TagsTableCompanion({
+  const TagsCompanion({
     this.uuid = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncStatus = const Value.absent(),
@@ -319,7 +318,7 @@ class TagsTableCompanion extends UpdateCompanion<TagsTableData> {
     this.name = const Value.absent(),
     this.color = const Value.absent(),
   });
-  TagsTableCompanion.insert({
+  TagsCompanion.insert({
     this.uuid = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncStatus = const Value.absent(),
@@ -328,7 +327,7 @@ class TagsTableCompanion extends UpdateCompanion<TagsTableData> {
     required int color,
   }) : name = Value(name),
        color = Value(color);
-  static Insertable<TagsTableData> custom({
+  static Insertable<Tag> custom({
     Expression<String>? uuid,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncStatus,
@@ -346,7 +345,7 @@ class TagsTableCompanion extends UpdateCompanion<TagsTableData> {
     });
   }
 
-  TagsTableCompanion copyWith({
+  TagsCompanion copyWith({
     Value<String>? uuid,
     Value<DateTime>? updatedAt,
     Value<SyncStatus>? syncStatus,
@@ -354,7 +353,7 @@ class TagsTableCompanion extends UpdateCompanion<TagsTableData> {
     Value<String>? name,
     Value<int>? color,
   }) {
-    return TagsTableCompanion(
+    return TagsCompanion(
       uuid: uuid ?? this.uuid,
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
@@ -375,7 +374,7 @@ class TagsTableCompanion extends UpdateCompanion<TagsTableData> {
     }
     if (syncStatus.present) {
       map['sync_status'] = Variable<int>(
-        $TagsTableTable.$convertersyncStatus.toSql(syncStatus.value),
+        $TagsTable.$convertersyncStatus.toSql(syncStatus.value),
       );
     }
     if (id.present) {
@@ -392,7 +391,7 @@ class TagsTableCompanion extends UpdateCompanion<TagsTableData> {
 
   @override
   String toString() {
-    return (StringBuffer('TagsTableCompanion(')
+    return (StringBuffer('TagsCompanion(')
           ..write('uuid: $uuid, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
@@ -407,16 +406,16 @@ class TagsTableCompanion extends UpdateCompanion<TagsTableData> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $TagsTableTable tagsTable = $TagsTableTable(this);
+  late final $TagsTable tags = $TagsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [tagsTable];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [tags];
 }
 
-typedef $$TagsTableTableCreateCompanionBuilder =
-    TagsTableCompanion Function({
+typedef $$TagsTableCreateCompanionBuilder =
+    TagsCompanion Function({
       Value<String> uuid,
       Value<DateTime> updatedAt,
       Value<SyncStatus> syncStatus,
@@ -424,8 +423,8 @@ typedef $$TagsTableTableCreateCompanionBuilder =
       required String name,
       required int color,
     });
-typedef $$TagsTableTableUpdateCompanionBuilder =
-    TagsTableCompanion Function({
+typedef $$TagsTableUpdateCompanionBuilder =
+    TagsCompanion Function({
       Value<String> uuid,
       Value<DateTime> updatedAt,
       Value<SyncStatus> syncStatus,
@@ -434,9 +433,8 @@ typedef $$TagsTableTableUpdateCompanionBuilder =
       Value<int> color,
     });
 
-class $$TagsTableTableFilterComposer
-    extends Composer<_$AppDatabase, $TagsTableTable> {
-  $$TagsTableTableFilterComposer({
+class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -475,9 +473,8 @@ class $$TagsTableTableFilterComposer
   );
 }
 
-class $$TagsTableTableOrderingComposer
-    extends Composer<_$AppDatabase, $TagsTableTable> {
-  $$TagsTableTableOrderingComposer({
+class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -515,9 +512,9 @@ class $$TagsTableTableOrderingComposer
   );
 }
 
-class $$TagsTableTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TagsTableTable> {
-  $$TagsTableTableAnnotationComposer({
+class $$TagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -546,35 +543,32 @@ class $$TagsTableTableAnnotationComposer
       $composableBuilder(column: $table.color, builder: (column) => column);
 }
 
-class $$TagsTableTableTableManager
+class $$TagsTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $TagsTableTable,
-          TagsTableData,
-          $$TagsTableTableFilterComposer,
-          $$TagsTableTableOrderingComposer,
-          $$TagsTableTableAnnotationComposer,
-          $$TagsTableTableCreateCompanionBuilder,
-          $$TagsTableTableUpdateCompanionBuilder,
-          (
-            TagsTableData,
-            BaseReferences<_$AppDatabase, $TagsTableTable, TagsTableData>,
-          ),
-          TagsTableData,
+          $TagsTable,
+          Tag,
+          $$TagsTableFilterComposer,
+          $$TagsTableOrderingComposer,
+          $$TagsTableAnnotationComposer,
+          $$TagsTableCreateCompanionBuilder,
+          $$TagsTableUpdateCompanionBuilder,
+          (Tag, BaseReferences<_$AppDatabase, $TagsTable, Tag>),
+          Tag,
           PrefetchHooks Function()
         > {
-  $$TagsTableTableTableManager(_$AppDatabase db, $TagsTableTable table)
+  $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$TagsTableTableFilterComposer($db: db, $table: table),
+              $$TagsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$TagsTableTableOrderingComposer($db: db, $table: table),
+              $$TagsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$TagsTableTableAnnotationComposer($db: db, $table: table),
+              $$TagsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> uuid = const Value.absent(),
@@ -583,7 +577,7 @@ class $$TagsTableTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<int> color = const Value.absent(),
-              }) => TagsTableCompanion(
+              }) => TagsCompanion(
                 uuid: uuid,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,
@@ -599,7 +593,7 @@ class $$TagsTableTableTableManager
                 Value<int> id = const Value.absent(),
                 required String name,
                 required int color,
-              }) => TagsTableCompanion.insert(
+              }) => TagsCompanion.insert(
                 uuid: uuid,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,
@@ -615,27 +609,23 @@ class $$TagsTableTableTableManager
       );
 }
 
-typedef $$TagsTableTableProcessedTableManager =
+typedef $$TagsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $TagsTableTable,
-      TagsTableData,
-      $$TagsTableTableFilterComposer,
-      $$TagsTableTableOrderingComposer,
-      $$TagsTableTableAnnotationComposer,
-      $$TagsTableTableCreateCompanionBuilder,
-      $$TagsTableTableUpdateCompanionBuilder,
-      (
-        TagsTableData,
-        BaseReferences<_$AppDatabase, $TagsTableTable, TagsTableData>,
-      ),
-      TagsTableData,
+      $TagsTable,
+      Tag,
+      $$TagsTableFilterComposer,
+      $$TagsTableOrderingComposer,
+      $$TagsTableAnnotationComposer,
+      $$TagsTableCreateCompanionBuilder,
+      $$TagsTableUpdateCompanionBuilder,
+      (Tag, BaseReferences<_$AppDatabase, $TagsTable, Tag>),
+      Tag,
       PrefetchHooks Function()
     >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$TagsTableTableTableManager get tagsTable =>
-      $$TagsTableTableTableManager(_db, _db.tagsTable);
+  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
 }

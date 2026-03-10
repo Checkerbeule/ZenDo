@@ -2,12 +2,12 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:zen_do/model/sync_table.dart';
-import 'package:zen_do/model/tags_table.dart';
+import 'package:zen_do/core/persistence/syncable.dart';
+import 'package:zen_do/features/tags/data/tags.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [TagsTable])
+@DriftDatabase(tables: [Tags])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(QueryExecutor? executor) : super(executor ?? _openConnection());
 
