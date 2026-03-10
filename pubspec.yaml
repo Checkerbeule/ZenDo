@@ -27,19 +27,18 @@ environment:
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
+isar_version: &isar_version ^3.1.0+1
 dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-
   provider: ^6.1.5+1
   logger: ^2.6.2
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  hive_generator: ^2.0.1
   path_provider: ^2.1.5
-  build_runner: ^2.4.13
+  #build_runner: ^2.4.13 # remove
   workmanager: ^0.9.0+3
   synchronized: ^3.4.0
   intl: any
@@ -50,6 +49,8 @@ dependencies:
   flutter_settings_ui: ^3.0.1
   package_info_plus: ^9.0.0
   arb_utils: ^0.10.0
+  drift: 2.32.0
+  drift_flutter: ^0.3.0
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +63,9 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   mockito: ^5.4.4
+  build_runner: ^2.4.13
+  #hive_generator: ^2.0.1 # incompatible with drift_dev
+  drift_dev: ^2.32.0 # incompatible with hive_generator
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

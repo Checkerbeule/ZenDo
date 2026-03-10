@@ -11,5 +11,3 @@ flutter gen-l10n --no-nullable-getter --arb-dir ${dir_path}/arb/todo --template-
 dart run arb_utils sort --natural-ordering ${dir_path}/arb/settings/settings_en.arb
 dart run arb_utils sort --natural-ordering ${dir_path}/arb/settings/settings_de.arb
 flutter gen-l10n --no-nullable-getter --arb-dir ${dir_path}/arb/settings --template-arb-file settings_en.arb --output-dir ${dir_path}/generated/settings --output-localization-file settings_localizations.dart --output-class SettingsLocalizations
-
-
