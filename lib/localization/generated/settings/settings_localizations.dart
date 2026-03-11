@@ -143,12 +143,6 @@ abstract class SettingsLocalizations {
   /// **'Send feedback'**
   String get feedbackViaMail;
 
-  /// No description provided for @labelsSettingsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Labels'**
-  String get labelsSettingsLabel;
-
   /// No description provided for @languageEnglish.
   ///
   /// In en, this message translates to:
@@ -232,6 +226,12 @@ abstract class SettingsLocalizations {
   /// In en, this message translates to:
   /// **'Support the developer'**
   String get supportTheDev;
+
+  /// No description provided for @tagsSettingsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your tags'**
+  String get tagsSettingsDescription;
 
   /// No description provided for @termsAndConditions.
   ///

@@ -33,9 +33,6 @@ class SettingsLocalizationsDe extends SettingsLocalizations {
   String get feedbackViaMail => 'Feedback geben';
 
   @override
-  String get labelsSettingsLabel => 'Labels';
-
-  @override
   String get languageEnglish => 'Englisch';
 
   @override
@@ -54,7 +51,7 @@ class SettingsLocalizationsDe extends SettingsLocalizations {
   String get lists => 'Listen';
 
   @override
-  String get listsSettingsDescription => 'Aufgaben-Listen wählen';
+  String get listsSettingsDescription => 'Wähle deine Aufgaben-Listen';
 
   @override
   String get loadingSettingsMessage => 'Lade Einstellungen ...';
@@ -76,6 +73,9 @@ class SettingsLocalizationsDe extends SettingsLocalizations {
 
   @override
   String get supportTheDev => 'Unterstütze den Entwickler';
+
+  @override
+  String get tagsSettingsDescription => 'Verwalte deine Tags';
 
   @override
   String get termsAndConditions => 'AGB / Lizenz';

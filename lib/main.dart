@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/localizations_config.dart';
 import 'package:zen_do/persistence/hive_initializer.dart';
@@ -33,6 +35,13 @@ class ZenDoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<AppDatabase>(
+          create: (_) => AppDatabase(),
+          dispose: (_, db) => db.close(),
+        ),
+        ProxyProvider<AppDatabase, TagRepository>(
+          update: (_, db, __) => DriftTagRepository(db),
+        ),
         ChangeNotifierProvider<ProviderL10n>(create: (_) => ProviderL10n()),
         ChangeNotifierProvider<ZenDoAppState>(create: (_) => ZenDoAppState()),
         ChangeNotifierProxyProvider<ZenDoAppState, TodoState>(

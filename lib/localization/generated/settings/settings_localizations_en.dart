@@ -33,9 +33,6 @@ class SettingsLocalizationsEn extends SettingsLocalizations {
   String get feedbackViaMail => 'Send feedback';
 
   @override
-  String get labelsSettingsLabel => 'Labels';
-
-  @override
   String get languageEnglish => 'English';
 
   @override
@@ -76,6 +73,9 @@ class SettingsLocalizationsEn extends SettingsLocalizations {
 
   @override
   String get supportTheDev => 'Support the developer';
+
+  @override
+  String get tagsSettingsDescription => 'Manage your tags';
 
   @override
   String get termsAndConditions => 'Terms and Conditions';

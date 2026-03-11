@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/ui/tag_management_screen.dart';
 import 'package:zen_do/localization/generated/settings/settings_localizations.dart';
 import 'package:zen_do/utils/locale_helper.dart';
 import 'package:zen_do/view/settings/language_settings_page.dart';
@@ -112,9 +114,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     hasChanged = changed ?? false;
                   },
                 ),
-                SettingsTile(
-                  title: Text(loc.labelsSettingsLabel),
+                SettingsTile.navigation(
+                  title: const Text('Tags'),
+                  description: Text(loc.tagsSettingsDescription),
                   leading: const Icon(Icons.label),
+                  onPressed: (context) async {
+                    await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute<bool>(
+                        builder: (context) => TagManagementScreen(
+                          repository: context.read<TagRepository>(),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
