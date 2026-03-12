@@ -51,6 +51,7 @@ dependencies:
   arb_utils: ^0.10.0
   drift: 2.32.0
   drift_flutter: ^0.3.0
+  flex_color_picker: ^3.8.0
 
 dev_dependencies:
   flutter_test:

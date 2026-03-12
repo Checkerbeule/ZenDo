@@ -95,6 +95,12 @@ abstract class TagsLocalizations {
     Locale('en')
   ];
 
+  /// No description provided for @addNewTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new Tag'**
+  String get addNewTag;
+
   /// No description provided for @addTag.
   ///
   /// In en, this message translates to:
@@ -113,6 +119,12 @@ abstract class TagsLocalizations {
   /// **'Delete tag?'**
   String get deleteTagTitle;
 
+  /// No description provided for @editTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Tag'**
+  String get editTag;
+
   /// No description provided for @errorLoadingTags.
   ///
   /// In en, this message translates to:
@@ -130,6 +142,30 @@ abstract class TagsLocalizations {
   /// In en, this message translates to:
   /// **'There are no tags yet.\nAdd some!'**
   String get noTagsAvailable;
+
+  /// No description provided for @tagColorHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a color'**
+  String get tagColorHeading;
+
+  /// No description provided for @tagColorSubheading.
+  ///
+  /// In en, this message translates to:
+  /// **'Color gradations'**
+  String get tagColorSubheading;
+
+  /// No description provided for @tagNameDecoration.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag name'**
+  String get tagNameDecoration;
+
+  /// No description provided for @tagNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag name'**
+  String get tagNameLabel;
 }
 
 class _TagsLocalizationsDelegate extends LocalizationsDelegate<TagsLocalizations> {

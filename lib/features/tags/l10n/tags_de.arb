@@ -1,5 +1,6 @@
 {
   "@@locale": "de",
+  "addNewTag": "Neues Tag",
   "addTag": "Tag hinzufügen",
   "deleteTagMessage": "Tag '{tagName}' wirklich löschen? Objekte mit diesem Tag bleiben erhalten, verlieren aber den Tag.",
   "@deleteTagMessage": {
@@ -11,7 +12,12 @@
     }
   },
   "deleteTagTitle": "Tag löschen?",
+  "editTag": "Tag bearbeiten",
   "errorLoadingTags": "Beim Laden der Tags ist ein Fehler aufgetreten.",
   "manageTagsScreenHeader": "Verwalte deine Tags, um Inhalte zu organisieren",
-  "noTagsAvailable": "Noch keine Tags vorhanden.\nFüge einige hinzu!"
+  "noTagsAvailable": "Noch keine Tags vorhanden.\nFüge einige hinzu!",
+  "tagColorHeading": "Wähle eine Farbe",
+  "tagColorSubheading": "Farbabstufungen",
+  "tagNameDecoration": "Name des Tags",
+  "tagNameLabel": "Tag Name"
 }

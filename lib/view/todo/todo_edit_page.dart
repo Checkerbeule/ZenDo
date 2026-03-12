@@ -162,7 +162,6 @@ class _TodoEditPageState extends State<TodoEditPage> {
           initialChildSize: maxSheetSize,
           maxChildSize: maxSheetSize,
           minChildSize: 0.25,
-
           expand: false,
           builder: (context, scrollController) {
             return Column(
@@ -284,6 +283,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                               TextFormField(
                                 controller: titleController,
                                 autocorrect: true,
+                                autofocus: true,
                                 textCapitalization:
                                     TextCapitalization.sentences,
                                 maxLength: 40,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/ui/tag_edit_sheet.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 import 'package:zen_do/localization/generated/tags/tags_localizations.dart';
 import 'package:zen_do/view/dialog_helper.dart';
@@ -9,6 +10,18 @@ class TagManagementScreen extends StatelessWidget {
   final TagRepository repository;
 
   const TagManagementScreen({required this.repository, super.key});
+
+  void _openEditor(BuildContext context, Tag? tag) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+      ),
+      builder: (context) =>
+          TagEditSheet(initialTag: tag, repository: repository),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +90,9 @@ class TagManagementScreen extends StatelessWidget {
                                       context: context,
                                       child: DeleteDialog(
                                         title: loc.deleteTagTitle,
-                                        text: loc.deleteTagMessage(tags[index].name),
+                                        text: loc.deleteTagMessage(
+                                          tags[index].name,
+                                        ),
                                       ),
                                     );
                                 if (delete != null && delete) {
@@ -86,7 +101,8 @@ class TagManagementScreen extends StatelessWidget {
                               },
                             ),
                             IconButton(
-                              onPressed: () {},
+                              onPressed: () =>
+                                  _openEditor(context, tags[index]),
                               icon: const Icon(Icons.edit),
                             ),
                           ],
@@ -101,7 +117,7 @@ class TagManagementScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () => _openEditor(context, null),
         label: Text(loc.addTag),
         icon: const Icon(Icons.add),
       ),

@@ -133,7 +133,6 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
           bottomNavigationBar: NavigationBar(
             backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
             indicatorColor: Theme.of(context).colorScheme.inversePrimary,
-            labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
             labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((
               Set<WidgetState> states,
             ) {

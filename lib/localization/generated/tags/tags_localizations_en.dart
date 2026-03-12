@@ -9,6 +9,9 @@ class TagsLocalizationsEn extends TagsLocalizations {
   TagsLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get addNewTag => 'Add new Tag';
+
+  @override
   String get addTag => 'Add Tag';
 
   @override
@@ -20,6 +23,9 @@ class TagsLocalizationsEn extends TagsLocalizations {
   String get deleteTagTitle => 'Delete tag?';
 
   @override
+  String get editTag => 'Edit Tag';
+
+  @override
   String get errorLoadingTags => 'An error occurred while loading tags.';
 
   @override
@@ -27,4 +33,16 @@ class TagsLocalizationsEn extends TagsLocalizations {
 
   @override
   String get noTagsAvailable => 'There are no tags yet.\nAdd some!';
+
+  @override
+  String get tagColorHeading => 'Choose a color';
+
+  @override
+  String get tagColorSubheading => 'Color gradations';
+
+  @override
+  String get tagNameDecoration => 'Tag name';
+
+  @override
+  String get tagNameLabel => 'Tag name';
 }
