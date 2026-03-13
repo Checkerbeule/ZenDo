@@ -67,12 +67,13 @@ class TodoState extends ChangeNotifier {
       var prefs = await SharedPreferences.getInstance();
       var lastTransferDateString = prefs.getString('lastTodoTransferDate');
       var now = DateTime.now().toIso8601String().substring(0, 10);
-      if(lastTransferDateString == null
-        || lastTransferDateString != now) {
-          logger.d('Transfering todos on app start. Last run: $lastTransferDateString');
-          listManager!.transferTodos();
-          await prefs.setString('lastTodoTransferDate', now);
-        }
+      if (lastTransferDateString == null || lastTransferDateString != now) {
+        logger.d(
+          'Transfering todos on app start. Last run: $lastTransferDateString',
+        );
+        listManager!.transferTodos();
+        await prefs.setString('lastTodoTransferDate', now);
+      }
 
       isLoading = false;
 
@@ -157,6 +158,7 @@ class TodoPage extends StatelessWidget {
                       tabs: [
                         for (var list in listManager.lists)
                           Tab(
+                            height: 55,
                             icon:
                                 listManager.toBeTransferredOrExpiredCount(
                                       list,

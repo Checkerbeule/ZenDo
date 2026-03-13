@@ -26,29 +26,27 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
       pinned: false,
       floating: false,
       snap: false,
-      toolbarHeight: 40,
+      toolbarHeight: 30,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       title: Row(
         children: [
-          Expanded(
-            child: Text(
-              '${loc.sorting}: ${sortOption.label(context)}',
-              style: Theme.of(context).textTheme.bodyLarge,
-              overflow: TextOverflow.ellipsis,
-            ),
+          Text(
+            '${loc.sorting}: ${sortOption.label(context)}',
+            style: Theme.of(context).textTheme.bodyMedium,
+            overflow: TextOverflow.ellipsis,
           ),
           if (sortOption != SortOption.custom) ...[
             const SizedBox(width: 5),
             if (sortOrder == SortOrder.ascending) ...[
               Icon(
                 Icons.arrow_upward,
-                size: 20,
+                size: 16,
                 color: Theme.of(context).colorScheme.primary,
               ),
             ] else ...[
               Icon(
                 Icons.arrow_downward,
-                size: 20,
+                size: 16,
                 color: Theme.of(context).colorScheme.primary,
               ),
             ],
@@ -80,13 +78,13 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
                           Icon(
                             Icons.arrow_upward,
                             color: Theme.of(context).colorScheme.primary,
-                            size: 20,
+                            size: 18,
                           )
                         else
                           Icon(
                             Icons.arrow_downward,
                             color: Theme.of(context).colorScheme.primary,
-                            size: 20,
+                            size: 18,
                           ),
                       ],
                     ],
@@ -104,6 +102,8 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
           ],
           builder: (context, controller, child) {
             return IconButton(
+              icon: const Icon(Icons.sort, size: 18),
+              padding: EdgeInsets.all(5),
               onPressed: () {
                 if (controller.isOpen) {
                   controller.close();
@@ -111,7 +111,6 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
                   controller.open();
                 }
               },
-              icon: const Icon(Icons.sort),
             );
           },
         ),
@@ -123,7 +122,13 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
             child: IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
           ),
         ] else  */
-        ...[IconButton(icon: const Icon(Icons.filter_alt), onPressed: null)],
+        ...[
+          IconButton(
+            icon: const Icon(Icons.filter_alt, size: 18),
+            padding: EdgeInsets.all(5),
+            onPressed: null,
+          ),
+        ],
       ],
     );
   }

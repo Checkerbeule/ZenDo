@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/core/theme/theme.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/localizations_config.dart';
@@ -53,10 +54,7 @@ class ZenDoApp extends StatelessWidget {
         builder: (context, l10n, child) {
           return MaterialApp(
             title: 'ZenDo',
-            theme: ThemeData(
-              useMaterial3: true,
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
-            ),
+            theme: AppTheme.lightTheme,
             locale: l10n.locale,
             localizationsDelegates: localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
@@ -131,23 +129,6 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             ],
           ),
           bottomNavigationBar: NavigationBar(
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-            indicatorColor: Theme.of(context).colorScheme.inversePrimary,
-            labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((
-              Set<WidgetState> states,
-            ) {
-              if (states.contains(WidgetState.selected)) {
-                return TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  overflow: TextOverflow.ellipsis,
-                );
-              }
-              return TextStyle(
-                color: Theme.of(context).colorScheme.onSecondaryContainer,
-                overflow: TextOverflow.ellipsis,
-              );
-            }),
             selectedIndex: pageIndex,
             onDestinationSelected: (int index) {
               setState(() {

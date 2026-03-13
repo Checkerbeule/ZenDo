@@ -15,9 +15,6 @@ class TagManagementScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-      ),
       builder: (context) =>
           TagEditSheet(initialTag: tag, repository: repository),
     );
