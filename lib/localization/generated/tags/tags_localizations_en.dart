@@ -29,10 +29,16 @@ class TagsLocalizationsEn extends TagsLocalizations {
   String get errorLoadingTags => 'An error occurred while loading tags.';
 
   @override
+  String get loadingTags => 'Loading tags...';
+
+  @override
   String get manageTagsScreenHeader => 'Manage your tags to organize content';
 
   @override
-  String get noTagsAvailable => 'There are no tags yet.\nAdd some!';
+  String get noTagsAddSome => 'There are no tags yet.\nAdd some!';
+
+  @override
+  String get noTagsAvailable => 'No tags available for filtering';
 
   @override
   String get tagColorHeading => 'Choose a color';

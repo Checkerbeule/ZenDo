@@ -17,7 +17,7 @@ class AppTheme {
 
   static final NavigationBarThemeData _navigationBarTheme =
       NavigationBarThemeData(
-        height: 60,
+        height: 64,
         indicatorColor: Colors.transparent,
         backgroundColor: _colorScheme.secondaryContainer,
         labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((

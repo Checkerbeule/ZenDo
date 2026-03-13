@@ -9,7 +9,7 @@ class TagsLocalizationsDe extends TagsLocalizations {
   TagsLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get addNewTag => 'Neues Tag';
+  String get addNewTag => 'Neues Tag hinzufügen';
 
   @override
   String get addTag => 'Tag hinzufügen';
@@ -29,10 +29,16 @@ class TagsLocalizationsDe extends TagsLocalizations {
   String get errorLoadingTags => 'Beim Laden der Tags ist ein Fehler aufgetreten.';
 
   @override
+  String get loadingTags => 'Lade Tags...';
+
+  @override
   String get manageTagsScreenHeader => 'Verwalte deine Tags, um Inhalte zu organisieren';
 
   @override
-  String get noTagsAvailable => 'Noch keine Tags vorhanden.\nFüge einige hinzu!';
+  String get noTagsAddSome => 'Noch keine Tags vorhanden.\nFüge einige hinzu!';
+
+  @override
+  String get noTagsAvailable => 'Keine Tags zum Filtern vorhanden';
 
   @override
   String get tagColorHeading => 'Wähle eine Farbe';

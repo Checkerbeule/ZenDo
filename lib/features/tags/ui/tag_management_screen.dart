@@ -59,7 +59,7 @@ class TagManagementScreen extends StatelessWidget {
 
                 final tags = snapshot.data ?? [];
                 if (tags.isEmpty) {
-                  return Center(child: Text(loc.noTagsAvailable));
+                  return Center(child: Text(loc.noTagsAddSome));
                 }
 
                 return ListView.builder(

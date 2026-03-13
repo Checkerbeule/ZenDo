@@ -18,8 +18,8 @@ class TagWidget extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isCompact ? 6 : 10,
-        vertical: isCompact ? 2 : 5,
+        horizontal: isCompact ? 4 : 10,
+        vertical: isCompact ? 1 : 5,
       ),
       decoration: BoxDecoration(
         color: baseColor.withValues(alpha: .1),

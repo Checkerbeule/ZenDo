@@ -131,16 +131,28 @@ abstract class TagsLocalizations {
   /// **'An error occurred while loading tags.'**
   String get errorLoadingTags;
 
+  /// No description provided for @loadingTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading tags...'**
+  String get loadingTags;
+
   /// No description provided for @manageTagsScreenHeader.
   ///
   /// In en, this message translates to:
   /// **'Manage your tags to organize content'**
   String get manageTagsScreenHeader;
 
-  /// No description provided for @noTagsAvailable.
+  /// No description provided for @noTagsAddSome.
   ///
   /// In en, this message translates to:
   /// **'There are no tags yet.\nAdd some!'**
+  String get noTagsAddSome;
+
+  /// No description provided for @noTagsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags available for filtering'**
   String get noTagsAvailable;
 
   /// No description provided for @tagColorHeading.
