@@ -57,7 +57,7 @@ class TagWidget extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: isCompact ? 5 : 10,
-          vertical: isCompact ? 1 : 5,
+          vertical: isCompact ? 2 : 5,
         ),
         decoration: BoxDecoration(
           color: baseColor.withValues(alpha: isSelected ? 0.4 : 0.08),

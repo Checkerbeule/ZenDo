@@ -37,7 +37,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
       pinned: false,
       floating: false,
       snap: false,
-      toolbarHeight: 30,
+      toolbarHeight: 32,
       actionsPadding: const EdgeInsets.only(right: 22),
       titleSpacing: 10,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
@@ -67,7 +67,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
           }
 
           return SizedBox(
-            height: 30,
+            height: 32,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: tags.length,
@@ -112,7 +112,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
                           Icon(
                             Icons.swipe_vertical,
                             color: Theme.of(context).colorScheme.primary,
-                            size: 20,
+                            size: 18,
                           )
                         else if (sortOrder == SortOrder.ascending)
                           Icon(
@@ -167,7 +167,7 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
               alignment: Alignment(1, 0),
               backgroundColor: Theme.of(context).colorScheme.secondary,
               child: IconButton(
-                icon: const Icon(Icons.sort, size: 18),
+                icon: const Icon(Icons.sort, size: 22),
                 padding: EdgeInsets.all(5),
                 onPressed: () {
                   if (controller.isOpen) {

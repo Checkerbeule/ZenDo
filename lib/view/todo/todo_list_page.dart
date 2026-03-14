@@ -36,6 +36,12 @@ class _TodoListPageState extends State<TodoListPage> {
 
   List<Todo> get sortedAndFilteredTodos {
     final todos = List<Todo>.from(widget.list.todos);
+    if (tagFilter.isNotEmpty) {
+      todos.retainWhere(
+        (t) => t.tagUuids.any((tagUuid) => tagFilter.contains(tagUuid)),
+      );
+    }
+
     switch (sortOption) {
       case SortOption.custom:
         todos.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
@@ -109,6 +115,7 @@ class _TodoListPageState extends State<TodoListPage> {
           body: CustomScrollView(
             slivers: [
               SliverTodoSortFilterAppBar(
+                key: PageStorageKey('sort_filter_bar_${listScope.name}'),
                 sortOption: sortOption,
                 sortOrder: sortOrder,
                 excludedOptions: excludedSortOptions,
