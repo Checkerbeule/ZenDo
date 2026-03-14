@@ -79,10 +79,9 @@ class _TagEditSheetState extends State<TagEditSheet> {
             style: TextTheme.of(context).headlineSmall,
           ),
           SizedBox(height: 2),
-          TagWidget(
+          TagWidget.preview(
             name: _nameController.text,
             colorValue: _selectedColor.toARGB32(),
-            isCompact: true,
           ),
           SizedBox(height: 2),
           TextField(

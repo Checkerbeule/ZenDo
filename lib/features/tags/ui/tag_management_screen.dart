@@ -72,10 +72,7 @@ class TagManagementScreen extends StatelessWidget {
                           horizontal: 10,
                           vertical: 0,
                         ),
-                        title: TagWidget(
-                          name: tags[index].name,
-                          colorValue: tags[index].color,
-                        ),
+                        title: TagWidget.fromTag(tag: tags[index]),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

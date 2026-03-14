@@ -31,6 +31,7 @@ class _TodoListPageState extends State<TodoListPage> {
   late final SettingsService settings;
   SortOption sortOption = SortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
+  Set<String> tagFilter = {};
   Offset tapPosition = Offset.zero;
 
   List<Todo> get sortedAndFilteredTodos {
@@ -118,6 +119,12 @@ class _TodoListPageState extends State<TodoListPage> {
                   });
                   unawaited(settings.saveSortOption(listScope, sortOption));
                   unawaited(settings.saveSortOrder(listScope, sortOrder));
+                },
+                selectedTagUuids: tagFilter,
+                onFilterChanged: (updatedTagFilter) {
+                  setState(() {
+                    tagFilter = updatedTagFilter;
+                  });
                 },
               ),
               if (list.todos.isEmpty)

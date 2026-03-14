@@ -12,20 +12,22 @@ enum SortOption { custom, title, expirationDate, creationDate }
 enum SortOrder { ascending, descending }
 
 class SliverTodoSortFilterAppBar extends StatelessWidget {
+  final SortOption sortOption;
+  final SortOrder sortOrder;
+  final Set<SortOption> excludedOptions;
+  final void Function(SortOption option, SortOrder order) onSortChanged;
+  final Set<String> selectedTagUuids;
+  final void Function(Set<String> selectedTagUuids) onFilterChanged;
+
   SliverTodoSortFilterAppBar({
     super.key,
     required this.sortOption,
     required this.sortOrder,
     Set<SortOption>? excludedOptions,
     required this.onSortChanged,
-    //required this.onFilterChanged,
+    required this.selectedTagUuids,
+    required this.onFilterChanged,
   }) : excludedOptions = excludedOptions ?? {};
-
-  final SortOption sortOption;
-  final SortOrder sortOrder;
-  final Set<SortOption> excludedOptions;
-  final void Function(SortOption option, SortOrder order) onSortChanged;
-  //final void Function() onFilterChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -72,10 +74,19 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 5),
               separatorBuilder: (context, index) => const SizedBox(width: 5),
               itemBuilder: (context, index) {
-                return TagWidget(
-                  name: tags[index].name,
-                  colorValue: tags[index].color,
+                return TagWidget.fromTag(
+                  tag: tags[index],
                   isCompact: true,
+                  isSelected: selectedTagUuids.contains(tags[index].uuid),
+                  onTap: (uuid) {
+                    final newSelection = Set<String>.from(selectedTagUuids);
+                    if (newSelection.contains(uuid)) {
+                      newSelection.remove(uuid);
+                    } else {
+                      newSelection.add(uuid);
+                    }
+                    onFilterChanged(newSelection);
+                  },
                 );
               },
             ),
