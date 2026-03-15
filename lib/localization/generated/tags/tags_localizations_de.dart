@@ -1,0 +1,54 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'tags_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for German (`de`).
+class TagsLocalizationsDe extends TagsLocalizations {
+  TagsLocalizationsDe([String locale = 'de']) : super(locale);
+
+  @override
+  String get addNewTag => 'Neues Tag hinzufügen';
+
+  @override
+  String get addTag => 'Tag hinzufügen';
+
+  @override
+  String deleteTagMessage(String tagName) {
+    return 'Tag \'$tagName\' wirklich löschen? Objekte mit diesem Tag bleiben erhalten, verlieren aber den Tag.';
+  }
+
+  @override
+  String get deleteTagTitle => 'Tag löschen?';
+
+  @override
+  String get editTag => 'Tag bearbeiten';
+
+  @override
+  String get errorLoadingTags => 'Beim Laden der Tags ist ein Fehler aufgetreten.';
+
+  @override
+  String get loadingTags => 'Lade Tags...';
+
+  @override
+  String get manageTagsScreenHeader => 'Verwalte deine Tags, um Inhalte zu organisieren';
+
+  @override
+  String get noTagsAddSome => 'Noch keine Tags vorhanden.\nFüge einige hinzu!';
+
+  @override
+  String get noTagsAvailable => 'Keine Tags zum Filtern vorhanden';
+
+  @override
+  String get tagColorHeading => 'Wähle eine Farbe';
+
+  @override
+  String get tagColorSubheading => 'Farbabstufungen';
+
+  @override
+  String get tagNameDecoration => 'Name des Tags';
+
+  @override
+  String get tagNameLabel => 'Tag Name';
+}

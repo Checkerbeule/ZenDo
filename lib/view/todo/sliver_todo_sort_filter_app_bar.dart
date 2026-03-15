@@ -1,59 +1,97 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/ui/tag_widget.dart';
 import 'package:zen_do/localization/generated/app/app_localizations.dart';
+import 'package:zen_do/localization/generated/tags/tags_localizations.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 
+enum SortOption { custom, title, expirationDate, creationDate }
+
+enum SortOrder { ascending, descending }
+
 class SliverTodoSortFilterAppBar extends StatelessWidget {
+  final SortOption sortOption;
+  final SortOrder sortOrder;
+  final Set<SortOption> excludedOptions;
+  final void Function(SortOption option, SortOrder order) onSortChanged;
+  final Set<String> selectedTagUuids;
+  final void Function(Set<String> selectedTagUuids) onFilterChanged;
+
   SliverTodoSortFilterAppBar({
     super.key,
     required this.sortOption,
     required this.sortOrder,
     Set<SortOption>? excludedOptions,
     required this.onSortChanged,
-    //required this.onFilterChanged,
+    required this.selectedTagUuids,
+    required this.onFilterChanged,
   }) : excludedOptions = excludedOptions ?? {};
-
-  final SortOption sortOption;
-  final SortOrder sortOrder;
-  final Set<SortOption> excludedOptions;
-  final void Function(SortOption option, SortOrder order) onSortChanged;
-  //final void Function() onFilterChanged;
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
+    final loc = TagsLocalizations.of(context);
+    final TagRepository tagRepository = context.read<TagRepository>();
     return SliverAppBar(
-      actionsPadding: const EdgeInsets.only(right: 10),
       pinned: false,
       floating: false,
       snap: false,
-      toolbarHeight: 40,
+      toolbarHeight: 32,
+      actionsPadding: const EdgeInsets.only(right: 22),
+      titleSpacing: 10,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '${loc.sorting}: ${sortOption.label(context)}',
-              style: Theme.of(context).textTheme.bodyLarge,
-              overflow: TextOverflow.ellipsis,
+      title: StreamBuilder<List<Tag>>(
+        stream: tagRepository.watchTags(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Text(
+              loc.loadingTags,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+            );
+          }
+          if (snapshot.hasError) {
+            return Text(
+              loc.errorLoadingTags,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+            );
+          }
+
+          final tags = snapshot.data ?? [];
+          if (tags.isEmpty) {
+            return Center(child: Text(loc.noTagsAvailable));
+          }
+
+          return SizedBox(
+            height: 32,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: tags.length,
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              separatorBuilder: (context, index) => const SizedBox(width: 5),
+              itemBuilder: (context, index) {
+                return TagWidget.fromTag(
+                  tag: tags[index],
+                  isCompact: true,
+                  isSelected: selectedTagUuids.contains(tags[index].uuid),
+                  onTap: (uuid) {
+                    final newSelection = Set<String>.from(selectedTagUuids);
+                    if (newSelection.contains(uuid)) {
+                      newSelection.remove(uuid);
+                    } else {
+                      newSelection.add(uuid);
+                    }
+                    onFilterChanged(newSelection);
+                  },
+                );
+              },
             ),
-          ),
-          if (sortOption != SortOption.custom) ...[
-            const SizedBox(width: 5),
-            if (sortOrder == SortOrder.ascending) ...[
-              Icon(
-                Icons.arrow_upward,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ] else ...[
-              Icon(
-                Icons.arrow_downward,
-                size: 20,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ],
-          ],
-        ],
+          );
+        },
       ),
       actions: [
         MenuAnchor(
@@ -74,19 +112,19 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
                           Icon(
                             Icons.swipe_vertical,
                             color: Theme.of(context).colorScheme.primary,
-                            size: 20,
+                            size: 18,
                           )
                         else if (sortOrder == SortOrder.ascending)
                           Icon(
                             Icons.arrow_upward,
                             color: Theme.of(context).colorScheme.primary,
-                            size: 20,
+                            size: 18,
                           )
                         else
                           Icon(
                             Icons.arrow_downward,
                             color: Theme.of(context).colorScheme.primary,
-                            size: 20,
+                            size: 18,
                           ),
                       ],
                     ],
@@ -103,33 +141,49 @@ class SliverTodoSortFilterAppBar extends StatelessWidget {
                 ),
           ],
           builder: (context, controller, child) {
-            return IconButton(
-              onPressed: () {
-                if (controller.isOpen) {
-                  controller.close();
-                } else {
-                  controller.open();
-                }
-              },
-              icon: const Icon(Icons.sort),
+            return Badge(
+              label: sortOption == SortOption.custom
+                  ? const Icon(
+                      Icons.swipe_vertical,
+                      size: 12,
+                      color: Colors.white,
+                    )
+                  : Row(
+                      children: [
+                        Text('${sortOption.label(context).substring(0, 1)} '),
+                        sortOrder == SortOrder.ascending
+                            ? const Icon(
+                                Icons.arrow_upward,
+                                size: 12,
+                                color: Colors.white,
+                              )
+                            : const Icon(
+                                Icons.arrow_downward,
+                                size: 12,
+                                color: Colors.white,
+                              ),
+                      ],
+                    ),
+              alignment: Alignment(1, 0),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              child: IconButton(
+                icon: const Icon(Icons.sort, size: 22),
+                padding: EdgeInsets.all(5),
+                onPressed: () {
+                  if (controller.isOpen) {
+                    controller.close();
+                  } else {
+                    controller.open();
+                  }
+                },
+              ),
             );
           },
         ),
-        /* if (filter active) ...[
-          Badge(
-            label: Text('0'),
-            offset: Offset(1, 15),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            child: IconButton(icon: Icon(Icons.filter_alt), onPressed: null),
-          ),
-        ] else  */
-        ...[IconButton(icon: const Icon(Icons.filter_alt), onPressed: null)],
       ],
     );
   }
 }
-
-enum SortOption { custom, title, expirationDate, creationDate }
 
 extension SortOptionX on SortOption {
   String label(BuildContext context) {
@@ -146,5 +200,3 @@ extension SortOptionX on SortOption {
     }
   }
 }
-
-enum SortOrder { ascending, descending }

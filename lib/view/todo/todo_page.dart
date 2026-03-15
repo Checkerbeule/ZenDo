@@ -67,12 +67,13 @@ class TodoState extends ChangeNotifier {
       var prefs = await SharedPreferences.getInstance();
       var lastTransferDateString = prefs.getString('lastTodoTransferDate');
       var now = DateTime.now().toIso8601String().substring(0, 10);
-      if(lastTransferDateString == null
-        || lastTransferDateString != now) {
-          logger.d('Transfering todos on app start. Last run: $lastTransferDateString');
-          listManager!.transferTodos();
-          await prefs.setString('lastTodoTransferDate', now);
-        }
+      if (lastTransferDateString == null || lastTransferDateString != now) {
+        logger.d(
+          'Transfering todos on app start. Last run: $lastTransferDateString',
+        );
+        listManager!.transferTodos();
+        await prefs.setString('lastTodoTransferDate', now);
+      }
 
       isLoading = false;
 
@@ -157,21 +158,21 @@ class TodoPage extends StatelessWidget {
                       tabs: [
                         for (var list in listManager.lists)
                           Tab(
-                            icon:
-                                listManager.toBeTransferredOrExpiredCount(
-                                      list,
-                                    ) >
-                                    0
-                                ? Badge(
-                                    backgroundColor: Theme.of(
-                                      context,
-                                    ).colorScheme.tertiary,
-                                    label: Text(
-                                      '${listManager.toBeTransferredOrExpiredCount(list)}',
-                                    ),
-                                    child: Icon(list.scope.icon),
-                                  )
-                                : Icon(list.scope.icon),
+                            height: 60,
+                            icon: Badge(
+                              isLabelVisible:
+                                  listManager.toBeTransferredOrExpiredCount(
+                                    list,
+                                  ) >
+                                  0,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.tertiary,
+                              label: Text(
+                                '${listManager.toBeTransferredOrExpiredCount(list)}',
+                              ),
+                              child: Icon(list.scope.icon),
+                            ),
                             text: list.scope.listName(context),
                           ),
                       ],

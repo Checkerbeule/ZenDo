@@ -151,18 +151,13 @@ class _TodoEditPageState extends State<TodoEditPage> {
     });
 
     return SafeArea(
-      child: Container(
+      child: Padding(
         padding: MediaQuery.viewInsetsOf(context),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-        ),
         child: DraggableScrollableSheet(
           controller: sheetController,
           initialChildSize: maxSheetSize,
           maxChildSize: maxSheetSize,
           minChildSize: 0.25,
-
           expand: false,
           builder: (context, scrollController) {
             return Column(
@@ -284,6 +279,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                               TextFormField(
                                 controller: titleController,
                                 autocorrect: true,
+                                autofocus: true,
                                 textCapitalization:
                                     TextCapitalization.sentences,
                                 maxLength: 40,

@@ -1,0 +1,25 @@
+{
+  "@@locale": "en",
+  "addNewTag": "Add new Tag",
+  "addTag": "Add Tag",
+  "deleteTagMessage": "Delete the tag '{tagName}'?\nObjects with this tag will remain but lose the tag.",
+  "@deleteTagMessage": {
+    "placeholders": {
+      "tagName": {
+        "type": "String",
+        "example": "Urgent"
+      }
+    }
+  },
+  "deleteTagTitle": "Delete tag?",
+  "editTag": "Edit Tag",
+  "errorLoadingTags": "An error occurred while loading tags.",
+  "loadingTags": "Loading tags...",
+  "manageTagsScreenHeader": "Manage your tags to organize content",
+  "noTagsAddSome": "There are no tags yet.\nAdd some!",
+  "noTagsAvailable": "No tags available for filtering",
+  "tagColorHeading": "Choose a color",
+  "tagColorSubheading": "Color gradations",
+  "tagNameDecoration": "Tag name",
+  "tagNameLabel": "Tag name"
+}

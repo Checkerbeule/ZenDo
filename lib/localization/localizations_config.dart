@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/generated/settings/settings_localizations.dart';
+import 'package:zen_do/localization/generated/tags/tags_localizations.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 
 List<LocalizationsDelegate<dynamic>> localizationsDelegates = [
@@ -11,4 +12,5 @@ List<LocalizationsDelegate<dynamic>> localizationsDelegates = [
   AppLocalizations.delegate,
   TodoLocalizations.delegate,
   SettingsLocalizations.delegate,
+  TagsLocalizations.delegate,
 ];
