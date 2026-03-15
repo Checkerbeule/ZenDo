@@ -20,7 +20,7 @@ class TodoAdapter extends TypeAdapter<Todo> {
         title: fields[0] as String,
         expirationDate: fields[3] as DateTime?,
         listScope: fields[5] as ListScope?,
-        tagUuids: (fields[8] as Set?)?.cast<String>(),
+        tagUuids: (fields[8] as List?)?.cast<String>().toSet(),
       )
       .._title = fields[0] as String
       .._description = fields[1] as String?
