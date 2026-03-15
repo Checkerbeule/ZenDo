@@ -12,7 +12,7 @@ class AppTheme {
   static const Radius _defaultRadius = Radius.circular(10);
 
   static const AppBarThemeData _appBarTheme = AppBarThemeData(
-    toolbarHeight: 40,
+    toolbarHeight: 34,
   );
 
   static final NavigationBarThemeData _navigationBarTheme =

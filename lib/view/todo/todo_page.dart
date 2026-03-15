@@ -158,22 +158,21 @@ class TodoPage extends StatelessWidget {
                       tabs: [
                         for (var list in listManager.lists)
                           Tab(
-                            height: 55,
-                            icon:
-                                listManager.toBeTransferredOrExpiredCount(
-                                      list,
-                                    ) >
-                                    0
-                                ? Badge(
-                                    backgroundColor: Theme.of(
-                                      context,
-                                    ).colorScheme.tertiary,
-                                    label: Text(
-                                      '${listManager.toBeTransferredOrExpiredCount(list)}',
-                                    ),
-                                    child: Icon(list.scope.icon),
-                                  )
-                                : Icon(list.scope.icon),
+                            height: 60,
+                            icon: Badge(
+                              isLabelVisible:
+                                  listManager.toBeTransferredOrExpiredCount(
+                                    list,
+                                  ) >
+                                  0,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.tertiary,
+                              label: Text(
+                                '${listManager.toBeTransferredOrExpiredCount(list)}',
+                              ),
+                              child: Icon(list.scope.icon),
+                            ),
                             text: list.scope.listName(context),
                           ),
                       ],

@@ -103,6 +103,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             actions: [
               IconButton(
+                padding: const EdgeInsets.all(5),
                 icon: const Icon(Icons.settings),
                 onPressed: () async {
                   final hasChanged = await Navigator.push<bool>(
@@ -138,27 +139,22 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             destinations: <Widget>[
               for (var page in appState.pageMessages.entries)
                 NavigationDestination(
-                  icon: page.value > 0
-                      ? Badge(
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                          label: Text('${page.value}'),
-                          child: Icon(page.key.icon),
-                        )
-                      : Icon(page.key.icon),
+                  icon: Badge(
+                    isLabelVisible: page.value > 0,
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    label: Text('${page.value}'),
+                    child: Icon(page.key.icon),
+                  ),
                   label: page.key.label(context),
-                  selectedIcon: page.value > 0
-                      ? Badge(
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                          label: Text('${page.value}'),
-                          child: Icon(
-                            page.key.icon,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        )
-                      : Icon(
-                          page.key.icon,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                  selectedIcon: Badge(
+                    isLabelVisible: page.value > 0,
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    label: Text('${page.value}'),
+                    child: Icon(
+                      page.key.icon,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
                 ),
             ],
           ),

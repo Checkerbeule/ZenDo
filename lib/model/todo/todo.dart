@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
@@ -125,7 +126,7 @@ class Todo {
         other.expirationDate == expirationDate &&
         other.completionDate == completionDate &&
         other.listScope == listScope &&
-        other.tagUuids == tagUuids;
+        setEquals(other.tagUuids, tagUuids);
   }
 
   @override
