@@ -94,111 +94,136 @@ class _SliverTodoSortFilterAppBarState
       actionsPadding: const EdgeInsets.only(right: 22),
       titleSpacing: 0,
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      title: ShaderMask(
-        shaderCallback: (Rect bounds) {
-          return LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              Colors.transparent,
-              Colors.black,
-              Colors.black,
-              Colors.transparent,
-            ],
-            stops: [0.0, _leftFadeStart, _rightFadeEnd, 1.0],
-          ).createShader(bounds);
-        },
-        blendMode: BlendMode.dstIn,
-        child: Padding(
-          padding: EdgeInsetsGeometry.only(left: 5),
-          child: StreamBuilder<List<Tag>>(
-            stream: tagRepository.watchTags(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final tags = snapshot.data!;
-                if (tags.isEmpty) {
-                  return Center(child: Text(loc.noTagsAvailable));
-                }
-
-                WidgetsBinding.instance.addPostFrameCallback(
-                  (_) => _handleScroll(),
-                );
-                return SizedBox(
-                  height: 32,
-                  child: ListView.separated(
-                    controller: _scrollController,
-                    scrollDirection: Axis.horizontal,
-                    itemCount: tags.length,
-                    padding: const EdgeInsets.symmetric(vertical: 5),
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 5),
-                    itemBuilder: (context, index) {
-                      return TagWidget.fromTag(
-                        tag: tags[index],
-                        isCompact: true,
-                        isSelected: widget.selectedTagUuids.contains(
-                          tags[index].uuid,
-                        ),
-                        onTap: (uuid) {
-                          final newSelection = Set<String>.from(
-                            widget.selectedTagUuids,
-                          );
-                          if (newSelection.contains(uuid)) {
-                            newSelection.remove(uuid);
-                          } else {
-                            newSelection.add(uuid);
-                          }
-                          widget.onFilterChanged(newSelection);
-                        },
-                      );
-                    },
-                  ),
-                );
-              } else {
-                if (snapshot.hasError) {
-                  return Text(
-                    loc.errorLoadingTags,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontStyle: FontStyle.italic,
-                    ),
-                  );
-                }
-                return Text(
-                  loc.loadingTags,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
-                );
-              }
+      title: LayoutBuilder(
+        builder: (context, constraints) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
+          return ShaderMask(
+            shaderCallback: (Rect bounds) {
+              return LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Colors.transparent,
+                  Colors.black,
+                  Colors.black,
+                  Colors.transparent,
+                ],
+                stops: [0.0, _leftFadeStart, _rightFadeEnd, 1.0],
+              ).createShader(bounds);
             },
-          ),
-        ),
+            blendMode: BlendMode.dstIn,
+            child: Padding(
+              padding: EdgeInsetsGeometry.only(left: 5),
+              child: StreamBuilder<List<Tag>>(
+                stream: tagRepository.watchTags(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final tags = snapshot.data!;
+                    if (tags.isEmpty) {
+                      return Center(child: Text(loc.noTagsAvailable));
+                    }
+
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) => _handleScroll(),
+                    );
+                    return SizedBox(
+                      height: 32,
+                      child: ListView.separated(
+                        controller: _scrollController,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: tags.length,
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 5),
+                        itemBuilder: (context, index) {
+                          return TagWidget.fromTag(
+                            tag: tags[index],
+                            isCompact: true,
+                            isSelected: widget.selectedTagUuids.contains(
+                              tags[index].uuid,
+                            ),
+                            onTap: (uuid) {
+                              final newSelection = Set<String>.from(
+                                widget.selectedTagUuids,
+                              );
+                              if (newSelection.contains(uuid)) {
+                                newSelection.remove(uuid);
+                              } else {
+                                newSelection.add(uuid);
+                              }
+                              widget.onFilterChanged(newSelection);
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  } else {
+                    if (snapshot.hasError) {
+                      return Text(
+                        loc.errorLoadingTags,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontStyle: FontStyle.italic,
+                        ),
+                      );
+                    }
+                    return Text(
+                      loc.loadingTags,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.italic,
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+          );
+        },
       ),
       actions: [
-        AnimatedSize(
-          duration: Duration(milliseconds: 200),
+        AnimatedContainer(
+          duration: Duration(milliseconds: 300),
           curve: Curves.easeInOut,
+          width: widget.selectedTagUuids.isNotEmpty ? 32.0 : 0.0,
           child: AnimatedSwitcher(
-            duration: Duration(milliseconds: 200),
+            duration: Duration(milliseconds: 300),
             transitionBuilder: (child, animation) {
               return FadeTransition(
                 opacity: animation,
-                child: ScaleTransition(scale: animation, child: child),
+                child: ScaleTransition(
+                  scale: CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutBack,
+                    reverseCurve: Curves.easeIn,
+                  ),
+                  child: child,
+                ),
               );
             },
             child: widget.selectedTagUuids.isNotEmpty
-                ? Badge(
-                    key: ValueKey('clear_button'),
-                    alignment: Alignment(1, 0),
-                    backgroundColor: Theme.of(context).colorScheme.secondary,
-                    label: Text(widget.selectedTagUuids.length.toString()),
-                    child: IconButton(
-                      onPressed: () {
-                        widget.selectedTagUuids.clear();
-                        widget.onFilterChanged(widget.selectedTagUuids);
-                      },
-                      icon: Icon(Icons.close, size: 22),
-                      padding: EdgeInsets.all(5),
+                ? InkWell(
+                    radius: 20,
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    onTap: () {
+                      widget.selectedTagUuids.clear();
+                      widget.onFilterChanged(widget.selectedTagUuids);
+                    },
+                    child: Badge(
+                      key: ValueKey('clear_button'),
+                      alignment: Alignment(1.5, 0),
+                      padding: EdgeInsets.all(0),
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                      label: Text(
+                        widget.selectedTagUuids.length.toString(),
+                        style: TextStyle(fontSize: 10),
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          widget.selectedTagUuids.clear();
+                          widget.onFilterChanged(widget.selectedTagUuids);
+                        },
+                        icon: Icon(Icons.close, size: 22),
+                        padding: EdgeInsets.all(5),
+                      ),
                     ),
                   )
                 : SizedBox(key: ValueKey('empty_space')),
@@ -216,9 +241,9 @@ class _SliverTodoSortFilterAppBarState
                         sortOption.label(context),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      if (this.widget.sortOption == sortOption) ...[
+                      if (widget.sortOption == sortOption) ...[
                         const SizedBox(width: 5),
-                        if (this.widget.sortOption == SortOption.custom)
+                        if (widget.sortOption == SortOption.custom)
                           Icon(
                             Icons.swipe_vertical,
                             color: Theme.of(context).colorScheme.primary,
@@ -240,9 +265,9 @@ class _SliverTodoSortFilterAppBarState
                     ],
                   ),
                   onPressed: () {
-                    final order = this.widget.sortOption == SortOption.custom
+                    final order = widget.sortOption == SortOption.custom
                         ? SortOrder.ascending
-                        : this.widget.sortOption == sortOption &&
+                        : widget.sortOption == sortOption &&
                               widget.sortOrder == SortOrder.ascending
                         ? SortOrder.descending
                         : SortOrder.ascending;
@@ -251,43 +276,54 @@ class _SliverTodoSortFilterAppBarState
                 ),
           ],
           builder: (context, controller, child) {
-            return Badge(
-              label: widget.sortOption == SortOption.custom
-                  ? const Icon(
-                      Icons.swipe_vertical,
-                      size: 12,
-                      color: Colors.white,
-                    )
-                  : Row(
-                      children: [
-                        Text(
-                          '${widget.sortOption.label(context).substring(0, 1)} ',
-                        ),
-                        widget.sortOrder == SortOrder.ascending
-                            ? const Icon(
-                                Icons.arrow_upward,
-                                size: 12,
-                                color: Colors.white,
-                              )
-                            : const Icon(
-                                Icons.arrow_downward,
-                                size: 12,
-                                color: Colors.white,
-                              ),
-                      ],
-                    ),
-              alignment: Alignment(1, 0),
-              backgroundColor: Theme.of(context).colorScheme.secondary,
-              child: IconButton(
-                icon: const Icon(Icons.sort, size: 22),
-                padding: EdgeInsets.all(5),
-                onPressed: () {
-                  if (controller.isOpen) {
-                    controller.close();
-                  } else {
-                    controller.open();
-                  }
-                },
+            return InkWell(
+              radius: 20,
+              borderRadius: BorderRadius.all(Radius.circular(20)),
+              onTap: () {
+                if (controller.isOpen) {
+                  controller.close();
+                } else {
+                  controller.open();
+                }
+              },
+              child: Badge(
+                alignment: Alignment(1, 0),
+                backgroundColor: Theme.of(context).colorScheme.secondary,
+                label: widget.sortOption == SortOption.custom
+                    ? const Icon(
+                        Icons.swipe_vertical,
+                        size: 12,
+                        color: Colors.white,
+                      )
+                    : Row(
+                        children: [
+                          Text(
+                            '${widget.sortOption.label(context).substring(0, 1)} ',
+                          ),
+                          widget.sortOrder == SortOrder.ascending
+                              ? const Icon(
+                                  Icons.arrow_upward,
+                                  size: 12,
+                                  color: Colors.white,
+                                )
+                              : const Icon(
+                                  Icons.arrow_downward,
+                                  size: 12,
+                                  color: Colors.white,
+                                ),
+                        ],
+                      ),
+                child: IconButton(
+                  icon: const Icon(Icons.sort, size: 22),
+                  padding: EdgeInsets.all(5),
+                  onPressed: () {
+                    if (controller.isOpen) {
+                      controller.close();
+                    } else {
+                      controller.open();
+                    }
+                  },
+                ),
               ),
             );
           },

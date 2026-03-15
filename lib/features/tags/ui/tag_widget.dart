@@ -52,7 +52,7 @@ class TagWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final baseColor = Color(color);
 
-    return GestureDetector(
+    return InkWell(
       onTap: onTap != null ? () => onTap!(uuid) : null,
       child: Container(
         padding: EdgeInsets.symmetric(
