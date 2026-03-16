@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
+import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
@@ -33,6 +36,8 @@ class _TodoListPageState extends State<TodoListPage> {
   SortOption sortOption = SortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
   Offset tapPosition = Offset.zero;
+  StreamSubscription<List<Tag>>? _tagSubscription;
+  Map<String, Tag> _tagsByUuid = {};
 
   List<Todo> getSortedAndFilteredTodos(Set<String> tagFilter) {
     final todos = List<Todo>.from(widget.list.todos);
@@ -90,6 +95,21 @@ class _TodoListPageState extends State<TodoListPage> {
   void initState() {
     super.initState();
     _loadSettings();
+    _tagSubscription = context.read<TagRepository>().watchTags().listen((
+      allTags,
+    ) {
+      if (mounted) {
+        setState(() {
+          _tagsByUuid = {for (var tag in allTags) tag.uuid: tag};
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tagSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -101,6 +121,7 @@ class _TodoListPageState extends State<TodoListPage> {
         ? {SortOption.expirationDate}
         : {};
     final tagFilter = context.watch<TodoState>().getTagFilter(listScope);
+
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
         final listManager = todoState.listManager!;
@@ -177,9 +198,7 @@ class _TodoListPageState extends State<TodoListPage> {
                       )
                     : SliverReorderableList(
                         key: const ValueKey('todo_list'),
-                        itemCount: getSortedAndFilteredTodos(
-                          tagFilter,
-                        ).length,
+                        itemCount: getSortedAndFilteredTodos(tagFilter).length,
                         proxyDecorator: (child, index, animation) {
                           return AnimatedBuilder(
                             animation: animation,
@@ -522,6 +541,25 @@ class _TodoListPageState extends State<TodoListPage> {
                                           ),
                                         ],
                                       ],
+                                    ),
+                                    subtitle: Wrap(
+                                      alignment: WrapAlignment.start,
+                                      spacing: 2,
+                                      runSpacing: 2,
+                                      children: todo.tagUuids.map((uuid) {
+                                        final tag = _tagsByUuid[uuid];
+                                        if (tag == null) {
+                                          return const SizedBox.shrink();
+                                        }
+
+                                        return Icon(
+                                          Icons.label,
+                                          size: 14,
+                                          color: Color(
+                                            _tagsByUuid[uuid]!.color,
+                                          ),
+                                        );
+                                      }).toList(),
                                     ),
                                     trailing: IconButton(
                                       onPressed: () async {
