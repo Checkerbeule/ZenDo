@@ -65,7 +65,6 @@ class _SliverTodoSortFilterAppBarState
     }
 
     double newLeft = current > 0 ? 0.05 : 0.0;
-
     double newRight = current < max ? 0.95 : 1.0;
 
     if (newLeft != _leftFadeStart || newRight != _rightFadeEnd) {
@@ -203,10 +202,7 @@ class _SliverTodoSortFilterAppBarState
                 ? InkWell(
                     radius: 20,
                     borderRadius: BorderRadius.all(Radius.circular(20)),
-                    onTap: () {
-                      widget.selectedTagUuids.clear();
-                      widget.onFilterChanged(widget.selectedTagUuids);
-                    },
+                    onTap: () => _clearTagFilters(),
                     child: Badge(
                       key: ValueKey('clear_button'),
                       alignment: Alignment(1.5, 0),
@@ -217,10 +213,7 @@ class _SliverTodoSortFilterAppBarState
                         style: TextStyle(fontSize: 10),
                       ),
                       child: IconButton(
-                        onPressed: () {
-                          widget.selectedTagUuids.clear();
-                          widget.onFilterChanged(widget.selectedTagUuids);
-                        },
+                        onPressed: () => _clearTagFilters(),
                         icon: Icon(Icons.close, size: 22),
                         padding: EdgeInsets.all(5),
                       ),
@@ -279,13 +272,7 @@ class _SliverTodoSortFilterAppBarState
             return InkWell(
               radius: 20,
               borderRadius: BorderRadius.all(Radius.circular(20)),
-              onTap: () {
-                if (controller.isOpen) {
-                  controller.close();
-                } else {
-                  controller.open();
-                }
-              },
+              onTap: () => _toggleSortMenu(controller),
               child: Badge(
                 alignment: Alignment(1, 0),
                 backgroundColor: Theme.of(context).colorScheme.secondary,
@@ -316,13 +303,7 @@ class _SliverTodoSortFilterAppBarState
                 child: IconButton(
                   icon: const Icon(Icons.sort, size: 22),
                   padding: EdgeInsets.all(5),
-                  onPressed: () {
-                    if (controller.isOpen) {
-                      controller.close();
-                    } else {
-                      controller.open();
-                    }
-                  },
+                  onPressed: () => _toggleSortMenu(controller),
                 ),
               ),
             );
@@ -330,6 +311,19 @@ class _SliverTodoSortFilterAppBarState
         ),
       ],
     );
+  }
+
+  void _clearTagFilters() {
+    widget.selectedTagUuids.clear();
+    widget.onFilterChanged(widget.selectedTagUuids);
+  }
+
+  void _toggleSortMenu(MenuController controller) {
+    if (controller.isOpen) {
+      controller.close();
+    } else {
+      controller.open();
+    }
   }
 }
 

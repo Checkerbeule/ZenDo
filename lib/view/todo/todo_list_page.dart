@@ -134,16 +134,41 @@ class _TodoListPageState extends State<TodoListPage> {
                   });
                 },
               ),
-              if (list.todos.isEmpty)
-                SliverList(
-                  delegate: SliverChildListDelegate.fixed([
-                    ListTile(
-                      title: Text(
-                        loc.noOpenTodosLeft,
-                        textAlign: TextAlign.center,
-                      ),
+
+              if (sortedAndFilteredTodos.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 20.0,
+                      horizontal: 24.0,
                     ),
-                  ]),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          tagFilter.isNotEmpty
+                              ? Icons.filter_list_alt
+                              : Icons.done_all_rounded,
+                          size: 48,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.6),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          loc.noTodosFound,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        Text(
+                          tagFilter.isNotEmpty
+                              ? loc.checkTodoFilters
+                              : loc.everythingDone,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
                 )
               else
                 SliverReorderableList(
@@ -471,7 +496,6 @@ class _TodoListPageState extends State<TodoListPage> {
                                     );
                                   }
                                 },
-                                //_showDeleteDialog(context, widget.list, todo),
                                 icon: const Icon(Icons.delete_forever),
                                 color: Theme.of(context).colorScheme.tertiary,
                               ),
