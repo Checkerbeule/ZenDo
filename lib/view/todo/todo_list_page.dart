@@ -12,7 +12,6 @@ import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/model/todo/todo.dart';
 import 'package:zen_do/model/todo/todo_list.dart';
-import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/dialog_helper.dart';
 import 'package:zen_do/view/todo/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/view/todo/todo_edit_page.dart';
@@ -206,17 +205,8 @@ class _TodoListPageState extends State<TodoListPage> {
                               return Transform.scale(
                                 scale: 1.0,
                                 child: Material(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(3),
-                                    side: BorderSide(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary
-                                          .withValues(alpha: 0.5),
-                                      width: 1,
-                                    ),
-                                  ),
                                   elevation: 5,
+                                  color: Colors.transparent,
                                   child: child,
                                 ),
                               );
@@ -426,7 +416,26 @@ class _TodoListPageState extends State<TodoListPage> {
                                   );
                                 }
                               },
-                              child: Material(
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadiusGeometry.all(
+                                    Radius.circular(5),
+                                  ),
+                                  side: BorderSide(
+                                    color:
+                                        listManager.toBeTransferredTomorrow(
+                                              todo,
+                                            ) ||
+                                            (todo.expirationDate != null &&
+                                                todo.expirationDate!.isBefore(
+                                                  DateTime.now(),
+                                                ))
+                                        ? Theme.of(context).colorScheme.error
+                                              .withValues(alpha: 0.5)
+                                        : Colors.transparent,
+                                  ),
+                                ),
+                                elevation: 0.2,
                                 child: Listener(
                                   onPointerUp: (event) {
                                     tapPosition = event.position;
@@ -518,28 +527,6 @@ class _TodoListPageState extends State<TodoListPage> {
                                                       TextOverflow.ellipsis,
                                                 ),
                                               ),
-                                        if (listManager.toBeTransferredTomorrow(
-                                              todo,
-                                            ) ||
-                                            (todo.expirationDate != null &&
-                                                todo.expirationDate!.isBefore(
-                                                  DateTime.now(),
-                                                ))) ...[
-                                          const SizedBox(width: 5),
-                                          Tooltip(
-                                            textAlign: TextAlign.center,
-                                            message:
-                                                '${loc.dueOn}\n'
-                                                '${todo.expirationDate!.formatYmD(Localizations.localeOf(context))}',
-                                            child: Icon(
-                                              Icons.access_time_rounded,
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.error,
-                                              size: 18,
-                                            ),
-                                          ),
-                                        ],
                                       ],
                                     ),
                                     subtitle: Wrap(
