@@ -2,6 +2,7 @@
   "@@locale": "de",
   "addNewTag": "Neues Tag hinzufügen",
   "addTag": "Tag hinzufügen",
+  "connectedTags": "Verknüpfte Tags",
   "deleteTagMessage": "Tag '{tagName}' wirklich löschen? Objekte mit diesem Tag bleiben erhalten, verlieren aber den Tag.",
   "@deleteTagMessage": {
     "placeholders": {

@@ -2,6 +2,7 @@
   "@@locale": "en",
   "addNewTag": "Add new Tag",
   "addTag": "Add Tag",
+  "connectedTags": "Connected tags",
   "deleteTagMessage": "Delete the tag '{tagName}'?\nObjects with this tag will remain but lose the tag.",
   "@deleteTagMessage": {
     "placeholders": {

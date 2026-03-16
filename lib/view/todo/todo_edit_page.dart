@@ -1,6 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
+import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/ui/tag_widget.dart';
+import 'package:zen_do/localization/generated/tags/tags_localizations.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/todo/list_manager.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
@@ -47,6 +53,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
   late final TextEditingController titleController;
   late final TextEditingController descriptionController;
   late final TextEditingController expirationDateController;
+  late final Set<String> tagUuids;
 
   final DraggableScrollableController sheetController =
       DraggableScrollableController();
@@ -59,6 +66,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
     return todo!.title != titleController.text.trim() ||
         todo!.description != descriptionController.text.trim() ||
         todo!.listScope != selectedScope ||
+        !setEquals(todo!.tagUuids, tagUuids) ||
         (selectedScope != ListScope.backlog &&
             todo!.expirationDate !=
                 parseLocalized(expirationDateController.text, locale));
@@ -77,6 +85,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
     descriptionController = TextEditingController(
       text: todo?.description ?? '',
     );
+    tagUuids = Set.from(todo?.tagUuids ?? {});
     expirationDateController = TextEditingController(text: ' - ');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -126,8 +135,10 @@ class _TodoEditPageState extends State<TodoEditPage> {
   @override
   Widget build(BuildContext context) {
     final loc = TodoLocalizations.of(context);
+    final tagLoc = TagsLocalizations.of(context);
     final locale = Localizations.localeOf(context);
     final backgroundColor = Theme.of(context).colorScheme.surfaceContainerLow;
+    final TagRepository tagRepository = context.read<TagRepository>();
 
     final List<DropdownMenuItem> listScopeDropDownItems = manager.scopes
         .map(
@@ -324,121 +335,195 @@ class _TodoEditPageState extends State<TodoEditPage> {
                               ),
                             ],
                           ),
-                          DropdownButtonFormField(
-                            decoration: InputDecoration(
-                              labelText: '${loc.list}: ',
-                              icon: const Icon(Icons.view_column),
-                            ),
-                            items: listScopeDropDownItems,
-                            initialValue: selectedScope,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedScope = value;
-                                expirationDateController.text =
-                                    manager
-                                        .calcExpirationDate(selectedScope)
-                                        ?.formatYmD(locale) ??
-                                    ' - ';
-                              });
-                            },
-                            validator: (value) {
-                              if (isNewTodo &&
-                                      !manager.isTodoTitleVacant(
-                                        titleController.text,
-                                        value as ListScope,
-                                      ) ||
-                                  (!isNewTodo &&
-                                      todo!.title != titleController.text &&
-                                      !manager.isTodoTitleVacant(
-                                        titleController.text,
-                                        value as ListScope,
-                                      ))) {
-                                return loc
-                                    .errorTodoAllreadyExistsInDestinationList;
-                              }
-                              return null;
-                            },
-                          ),
-                          TextFormField(
-                            key: expirationDateKey,
-                            controller: expirationDateController,
-                            enabled: selectedScope != ListScope.backlog,
-                            keyboardType: TextInputType.none,
-                            showCursor: false,
-                            decoration: InputDecoration(
-                              labelText: loc.dueOn,
-                              icon: Icon(
-                                Icons.edit_calendar,
-                                color:
-                                    todo?.expirationDate?.isBefore(
-                                          DateTime.now(),
-                                        ) ??
-                                        false
-                                    ? Theme.of(context).colorScheme.error
-                                    : null,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField(
+                                  decoration: InputDecoration(
+                                    labelText: '${loc.list}: ',
+                                    icon: const Icon(Icons.view_column),
+                                  ),
+                                  items: listScopeDropDownItems,
+                                  initialValue: selectedScope,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedScope = value;
+                                      expirationDateController.text =
+                                          manager
+                                              .calcExpirationDate(selectedScope)
+                                              ?.formatYmD(locale) ??
+                                          ' - ';
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (isNewTodo &&
+                                            !manager.isTodoTitleVacant(
+                                              titleController.text,
+                                              value as ListScope,
+                                            ) ||
+                                        (!isNewTodo &&
+                                            todo!.title !=
+                                                titleController.text &&
+                                            !manager.isTodoTitleVacant(
+                                              titleController.text,
+                                              value as ListScope,
+                                            ))) {
+                                      return loc
+                                          .errorTodoAllreadyExistsInDestinationList;
+                                    }
+                                    return null;
+                                  },
+                                ),
                               ),
-                            ),
-                            onTap: () async {
-                              final selectedDate = tryParseLocalized(
-                                expirationDateController.text,
-                                locale,
-                              );
-
-                              final activeScopes = manager.scopes;
-                              if (activeScopes.last == ListScope.backlog &&
-                                  activeScopes.length <= 1) {
-                                return; // no date selection possible for backlog
-                              }
-
-                              final nextList = manager.getNextList(
-                                selectedScope,
-                              );
-                              final firstDate = nextList == null
-                                  ? DateTime.now()
-                                  : manager
-                                        .calcExpirationDate(nextList.scope)!
-                                        .add(Duration(days: 1));
-
-                              final DateTime? pickedDate = await showDatePicker(
-                                context: context,
-                                initialDate: selectedDate ?? DateTime.now(),
-                                firstDate: firstDate,
-                                lastDate: manager.calcExpirationDate(
-                                  selectedScope,
-                                )!,
-                              );
-                              if (pickedDate != null) {
-                                expirationDateController.value =
-                                    TextEditingValue(
-                                      text: pickedDate.formatYmD(locale),
+                              SizedBox(width: 5),
+                              Expanded(
+                                child: TextFormField(
+                                  key: expirationDateKey,
+                                  controller: expirationDateController,
+                                  enabled: selectedScope != ListScope.backlog,
+                                  keyboardType: TextInputType.none,
+                                  showCursor: false,
+                                  decoration: InputDecoration(
+                                    labelText: loc.dueOn,
+                                    icon: Icon(
+                                      Icons.edit_calendar,
+                                      color:
+                                          todo?.expirationDate?.isBefore(
+                                                DateTime.now(),
+                                              ) ??
+                                              false
+                                          ? Theme.of(context).colorScheme.error
+                                          : null,
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    final selectedDate = tryParseLocalized(
+                                      expirationDateController.text,
+                                      locale,
                                     );
-                              }
-                            },
-                            validator: (value) {
-                              if (selectedScope == ListScope.backlog) {
-                                return null;
-                              }
-                              if (value == null) {
-                                return loc.noDateelectedError;
-                              }
-                              final selectedDate = tryParseLocalized(
-                                value,
-                                locale,
-                              );
-                              if (selectedDate == null) {
-                                return '${loc.invalidDateFormatError}: $value';
-                              }
 
-                              final fittingScope = manager
-                                  .getScopeForExpirationDate(selectedDate);
-                              if (fittingScope == null) {
-                                return loc.dateDoesNotFitAnyListError;
-                              }
-                              if (fittingScope != selectedScope) {
-                                return '${loc.dateDoesNotFitListError}: ${selectedScope.label(context)}';
-                              }
+                                    final activeScopes = manager.scopes;
+                                    if (activeScopes.last ==
+                                            ListScope.backlog &&
+                                        activeScopes.length <= 1) {
+                                      return; // no date selection possible for backlog
+                                    }
 
-                              return null;
+                                    final nextList = manager.getNextList(
+                                      selectedScope,
+                                    );
+                                    final firstDate = nextList == null
+                                        ? DateTime.now()
+                                        : manager
+                                              .calcExpirationDate(
+                                                nextList.scope,
+                                              )!
+                                              .add(Duration(days: 1));
+
+                                    final DateTime? pickedDate =
+                                        await showDatePicker(
+                                          context: context,
+                                          initialDate:
+                                              selectedDate ?? DateTime.now(),
+                                          firstDate: firstDate,
+                                          lastDate: manager.calcExpirationDate(
+                                            selectedScope,
+                                          )!,
+                                        );
+                                    if (pickedDate != null) {
+                                      expirationDateController.value =
+                                          TextEditingValue(
+                                            text: pickedDate.formatYmD(locale),
+                                          );
+                                    }
+                                  },
+                                  validator: (value) {
+                                    if (selectedScope == ListScope.backlog) {
+                                      return null;
+                                    }
+                                    if (value == null) {
+                                      return loc.noDateelectedError;
+                                    }
+                                    final selectedDate = tryParseLocalized(
+                                      value,
+                                      locale,
+                                    );
+                                    if (selectedDate == null) {
+                                      return '${loc.invalidDateFormatError}: $value';
+                                    }
+
+                                    final fittingScope = manager
+                                        .getScopeForExpirationDate(
+                                          selectedDate,
+                                        );
+                                    if (fittingScope == null) {
+                                      return loc.dateDoesNotFitAnyListError;
+                                    }
+                                    if (fittingScope != selectedScope) {
+                                      return '${loc.dateDoesNotFitListError}: ${selectedScope.label(context)}';
+                                    }
+
+                                    return null;
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '${tagLoc.connectedTags}:',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          StreamBuilder<List<Tag>>(
+                            stream: tagRepository.watchTags(),
+                            builder: (context, snapshot) {
+                              final tagLoc = TagsLocalizations.of(context);
+                              if (snapshot.hasData) {
+                                final tags = snapshot.data!;
+                                if (tags.isEmpty) {
+                                  return Center(
+                                    child: Text(tagLoc.noTagsAvailable),
+                                  );
+                                }
+                                return Wrap(
+                                  spacing: 5,
+                                  runSpacing: 5,
+                                  alignment: WrapAlignment.center,
+                                  children: tags.map((tag) {
+                                    return TagWidget.fromTag(
+                                      tag: tag,
+                                      isCompact: true,
+                                      isSelected: tagUuids.contains(tag.uuid),
+                                      onTap: (uuid) {
+                                        setState(() {
+                                          if (tagUuids.contains(uuid)) {
+                                            tagUuids.remove(uuid);
+                                          } else {
+                                            tagUuids.add(uuid);
+                                          }
+                                        });
+                                      },
+                                    );
+                                  }).toList(),
+                                );
+                              } else {
+                                if (snapshot.hasError) {
+                                  return Text(
+                                    tagLoc.errorLoadingTags,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(fontStyle: FontStyle.italic),
+                                  );
+                                }
+                                return Text(
+                                  tagLoc.loadingTags,
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(fontStyle: FontStyle.italic),
+                                );
+                              }
                             },
                           ),
                           if (todo != null) ...[
@@ -498,6 +583,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   description: descriptionController.text,
                                   expirationDate: selectedExpirationDate,
                                   listScope: selectedScope,
+                                  tagUuids: Set.from(tagUuids),
                                 );
                               } else {
                                 todoToReturn = todo!.copyWith(
@@ -505,6 +591,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   description: descriptionController.text,
                                   listScope: selectedScope,
                                   expirationDate: selectedExpirationDate,
+                                  tagUuids: Set.from(tagUuids),
                                 );
                               }
                               Navigator.of(context).pop(todoToReturn);

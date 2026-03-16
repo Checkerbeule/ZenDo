@@ -107,6 +107,12 @@ abstract class TagsLocalizations {
   /// **'Add Tag'**
   String get addTag;
 
+  /// No description provided for @connectedTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected tags'**
+  String get connectedTags;
+
   /// No description provided for @deleteTagMessage.
   ///
   /// In en, this message translates to:

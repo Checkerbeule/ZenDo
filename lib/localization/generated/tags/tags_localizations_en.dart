@@ -15,6 +15,9 @@ class TagsLocalizationsEn extends TagsLocalizations {
   String get addTag => 'Add Tag';
 
   @override
+  String get connectedTags => 'Connected tags';
+
+  @override
   String deleteTagMessage(String tagName) {
     return 'Delete the tag \'$tagName\'?\nObjects with this tag will remain but lose the tag.';
   }

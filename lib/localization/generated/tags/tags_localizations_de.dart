@@ -15,6 +15,9 @@ class TagsLocalizationsDe extends TagsLocalizations {
   String get addTag => 'Tag hinzufügen';
 
   @override
+  String get connectedTags => 'Verknüpfte Tags';
+
+  @override
   String deleteTagMessage(String tagName) {
     return 'Tag \'$tagName\' wirklich löschen? Objekte mit diesem Tag bleiben erhalten, verlieren aber den Tag.';
   }
