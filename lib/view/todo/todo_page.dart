@@ -27,6 +27,7 @@ class TodoState extends ChangeNotifier {
   bool isLoadingDataFailed = false;
   String? errorMessage;
   Map<ListScope, bool> doneTodosExpanded = {};
+  Map<ListScope, Set<String>> tagFilters = {};
 
   TodoState() {
     _initData();
@@ -97,6 +98,15 @@ class TodoState extends ChangeNotifier {
 
   void toggleExpansion(ListScope key) {
     doneTodosExpanded[key] = !(doneTodosExpanded[key] ?? true);
+  }
+
+  Set<String> getTagFilter(ListScope list) {
+    return tagFilters[list] ?? {};
+  }
+
+  void updateTagFilter(ListScope list, Set<String> updatedTagFilter) {
+    tagFilters[list] = updatedTagFilter;
+    notifyListeners();
   }
 
   Future<T> performAcitionOnList<T>(FutureOr<T> Function() action) async {

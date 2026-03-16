@@ -32,10 +32,9 @@ class _TodoListPageState extends State<TodoListPage> {
   late final SettingsService settings;
   SortOption sortOption = SortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
-  Set<String> tagFilter = {};
   Offset tapPosition = Offset.zero;
 
-  List<Todo> get sortedAndFilteredTodos {
+  List<Todo> getSortedAndFilteredTodos(Set<String> tagFilter) {
     final todos = List<Todo>.from(widget.list.todos);
     if (tagFilter.isNotEmpty) {
       todos.retainWhere(
@@ -101,6 +100,7 @@ class _TodoListPageState extends State<TodoListPage> {
     final Set<SortOption> excludedSortOptions = listScope == ListScope.backlog
         ? {SortOption.expirationDate}
         : {};
+    final tagFilter = context.watch<TodoState>().getTagFilter(listScope);
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
         final listManager = todoState.listManager!;
@@ -130,15 +130,16 @@ class _TodoListPageState extends State<TodoListPage> {
                 },
                 selectedTagUuids: tagFilter,
                 onFilterChanged: (updatedTagFilter) {
-                  setState(() {
-                    tagFilter = updatedTagFilter;
-                  });
+                  context.read<TodoState>().updateTagFilter(
+                    listScope,
+                    updatedTagFilter,
+                  );
                 },
               ),
 
               SliverAnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: sortedAndFilteredTodos.isEmpty
+                child: getSortedAndFilteredTodos(tagFilter).isEmpty
                     ? SliverToBoxAdapter(
                         key: const ValueKey('empty_state'),
                         child: Padding(
@@ -176,7 +177,9 @@ class _TodoListPageState extends State<TodoListPage> {
                       )
                     : SliverReorderableList(
                         key: const ValueKey('todo_list'),
-                        itemCount: sortedAndFilteredTodos.length,
+                        itemCount: getSortedAndFilteredTodos(
+                          tagFilter,
+                        ).length,
                         proxyDecorator: (child, index, animation) {
                           return AnimatedBuilder(
                             animation: animation,
@@ -204,16 +207,22 @@ class _TodoListPageState extends State<TodoListPage> {
                         onReorder: (oldIndex, newIndex) {
                           if (sortOption == SortOption.custom) {
                             setState(() {
-                              final moved = sortedAndFilteredTodos[oldIndex];
+                              final moved = getSortedAndFilteredTodos(
+                                tagFilter,
+                              )[oldIndex];
                               final previous = newIndex == 0
                                   ? null
-                                  : sortedAndFilteredTodos[newIndex - 1];
+                                  : getSortedAndFilteredTodos(
+                                      tagFilter,
+                                    )[newIndex - 1];
                               list.reorder(moved, previous);
                             });
                           }
                         },
                         itemBuilder: (context, index) {
-                          final todo = sortedAndFilteredTodos[index];
+                          final todo = getSortedAndFilteredTodos(
+                            tagFilter,
+                          )[index];
                           return ReorderableDelayedDragStartListener(
                             enabled: sortOption == SortOption.custom,
                             key: ValueKey(todo.id),
@@ -301,7 +310,9 @@ class _TodoListPageState extends State<TodoListPage> {
                                 }
                                 isMovable =
                                     destinationList?.isTodoTitleVacant(
-                                      sortedAndFilteredTodos[index].title,
+                                      getSortedAndFilteredTodos(
+                                        tagFilter,
+                                      )[index].title,
                                     ) ??
                                     false;
                                 if (!isMovable) {
@@ -315,8 +326,9 @@ class _TodoListPageState extends State<TodoListPage> {
                                 return true;
                               },
                               onDismissed: (direction) async {
-                                final todoToMove =
-                                    sortedAndFilteredTodos[index];
+                                final todoToMove = getSortedAndFilteredTodos(
+                                  tagFilter,
+                                )[index];
                                 final retainedExpirationDate =
                                     todoToMove.expirationDate;
                                 final retainedOrder = todoToMove.order;
