@@ -144,4 +144,32 @@ class PersistenceHelper {
       }
     });
   }
+
+  static Future<void> cleanupTagReferences(String tagUuid) async {
+    return await _runListOperationSafely(() async {
+      final box = await _getListBox();
+      final allLists = <TodoList>[];
+
+      for (final scope in ListScope.values) {
+        final list = box.get(scope.name);
+        if (list != null) {
+          list.initMaxOrderAfterLoad();
+          allLists.add(list);
+        }
+      }
+
+      for (final list in allLists) {
+        bool changed = false;
+        for (final todo in list.todos) {
+          if (todo.tagUuids.contains(tagUuid)) {
+            todo.tagUuids.remove(tagUuid);
+            changed = true;
+          }
+        }
+        if (changed) {
+          await box.put(list.scope.name, list);
+        }
+      }
+    });
+  }
 }

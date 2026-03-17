@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/domain/tag_delete_service.dart';
 import 'package:zen_do/features/tags/ui/tag_edit_sheet.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 import 'package:zen_do/localization/generated/tags/tags_localizations.dart';
@@ -8,8 +9,10 @@ import 'package:zen_do/view/dialog_helper.dart';
 
 class TagManagementScreen extends StatelessWidget {
   final TagRepository repository;
+  final TagDeleteService tagService;
 
-  const TagManagementScreen({required this.repository, super.key});
+  TagManagementScreen({required this.repository, super.key})
+    : tagService = TagDeleteService(tagRepo: repository);
 
   void _openEditor(BuildContext context, Tag? tag) {
     showModalBottomSheet(
@@ -90,7 +93,9 @@ class TagManagementScreen extends StatelessWidget {
                                       ),
                                     );
                                 if (delete != null && delete) {
-                                  repository.deleteTag(tags[index]);
+                                  tagService.deleteTagAndcleanupReferences(
+                                    tags[index],
+                                  );
                                 }
                               },
                             ),
