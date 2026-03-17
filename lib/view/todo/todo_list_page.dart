@@ -232,6 +232,12 @@ class _TodoListPageState extends State<TodoListPage> {
                           final todo = getSortedAndFilteredTodos(
                             tagFilter,
                           )[index];
+                          final isExpiredOrToBeTransferred =
+                              listManager.toBeTransferredTomorrow(todo) ||
+                              (todo.expirationDate != null &&
+                                  todo.expirationDate!.isBefore(
+                                    DateTime.now(),
+                                  ));
                           return ReorderableDelayedDragStartListener(
                             enabled: sortOption == SortOption.custom,
                             key: ValueKey(todo.id),
@@ -422,14 +428,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                     Radius.circular(5),
                                   ),
                                   side: BorderSide(
-                                    color:
-                                        listManager.toBeTransferredTomorrow(
-                                              todo,
-                                            ) ||
-                                            (todo.expirationDate != null &&
-                                                todo.expirationDate!.isBefore(
-                                                  DateTime.now(),
-                                                ))
+                                    color: isExpiredOrToBeTransferred
                                         ? Theme.of(context).colorScheme.error
                                               .withValues(alpha: 0.5)
                                         : Colors.transparent,
@@ -440,129 +439,142 @@ class _TodoListPageState extends State<TodoListPage> {
                                   onPointerUp: (event) {
                                     tapPosition = event.position;
                                   },
-                                  child: ListTile(
-                                    visualDensity: const VisualDensity(
-                                      vertical: -4,
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                    ),
-                                    onTap: () async {
-                                      final updatedTodo =
-                                          await showModalBottomSheet(
-                                            context: context,
-                                            isScrollControlled: true,
-                                            builder: (context) =>
-                                                TodoEditPage.editTodo(
-                                                  todo: todo,
-                                                  todoState: todoState,
-                                                ),
-                                          );
-
-                                      if (updatedTodo != null) {
-                                        if (updatedTodo.listScope !=
-                                            todo.listScope) {
-                                          todoState.performAcitionOnList(
-                                            () => listManager.moveAndUpdateTodo(
-                                              oldTodo: todo,
-                                              todo: updatedTodo,
-                                              destination:
-                                                  updatedTodo.listScope!,
-                                            ),
-                                          );
-                                        } else {
-                                          todoState.performAcitionOnList<bool>(
-                                            () => listManager
-                                                .getListByScope(
-                                                  updatedTodo.listScope!,
-                                                )!
-                                                .replaceTodo(todo, updatedTodo),
-                                          );
-                                        }
-                                      }
-                                    },
-                                    leading: IconButton(
-                                      onPressed: () => {
-                                        todoState.performAcitionOnList<void>(
-                                          () => list.markAsDone(todo),
-                                        ),
-                                      },
-                                      icon: const Icon(Icons.circle_outlined),
-                                    ),
-                                    title: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Flexible(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                todo.title,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              if (todo.description != null &&
-                                                  todo.description!.isNotEmpty)
-                                                Text(
-                                                  todo.description!,
-                                                  maxLines: 1,
-                                                  style: TextStyle(
-                                                    color: Theme.of(
-                                                      context,
-                                                    ).disabledColor,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    subtitle: Wrap(
-                                      alignment: WrapAlignment.start,
-                                      spacing: 2,
-                                      runSpacing: 2,
-                                      children: todo.tagUuids.map((uuid) {
-                                        final tag = _tagsByUuid[uuid];
-                                        if (tag == null) {
-                                          return const SizedBox.shrink();
-                                        }
-
-                                        return Icon(
-                                          Icons.label,
-                                          size: 14,
-                                          color: Color(
-                                            _tagsByUuid[uuid]!.color,
-                                          ).withValues(alpha: 0.8),
-                                        );
-                                      }).toList(),
-                                    ),
-                                    trailing: IconButton(
-                                      onPressed: () async {
-                                        final delete =
-                                            await showDialogWithScaleTransition<
-                                              bool
-                                            >(
-                                              context: context,
-                                              child: DeleteDialog(
-                                                title: '${loc.deleteTodo}?',
-                                                text: loc.deleteTodoQuestion,
-                                              ),
-                                            );
-                                        if (delete != null && delete) {
-                                          todoState.performAcitionOnList<bool>(
-                                            () => list.deleteTodo(todo),
-                                          );
-                                        }
-                                      },
-                                      icon: const Icon(Icons.delete_forever),
+                                  child: Badge(
+                                    offset: const Offset(2, 2),
+                                    padding: EdgeInsets.all(0),
+                                    alignment: Alignment.topLeft,
+                                    backgroundColor: Colors.transparent,
+                                    isLabelVisible: isExpiredOrToBeTransferred,
+                                    label: Icon(
+                                      Icons.access_time_outlined,
+                                      size: 15,
                                       color: Theme.of(
                                         context,
-                                      ).colorScheme.tertiary,
+                                      ).colorScheme.error,
+                                    ),
+                                    child: ListTile(
+                                      visualDensity: const VisualDensity(
+                                        vertical: -4,
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 5,
+                                          ),
+                                      onTap: () async {
+                                        final updatedTodo =
+                                            await showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              builder: (context) =>
+                                                  TodoEditPage.editTodo(
+                                                    todo: todo,
+                                                    todoState: todoState,
+                                                  ),
+                                            );
+
+                                        if (updatedTodo != null) {
+                                          if (updatedTodo.listScope !=
+                                              todo.listScope) {
+                                            todoState.performAcitionOnList(
+                                              () =>
+                                                  listManager.moveAndUpdateTodo(
+                                                    oldTodo: todo,
+                                                    todo: updatedTodo,
+                                                    destination:
+                                                        updatedTodo.listScope!,
+                                                  ),
+                                            );
+                                          } else {
+                                            todoState
+                                                .performAcitionOnList<bool>(
+                                                  () => listManager
+                                                      .getListByScope(
+                                                        updatedTodo.listScope!,
+                                                      )!
+                                                      .replaceTodo(
+                                                        todo,
+                                                        updatedTodo,
+                                                      ),
+                                                );
+                                          }
+                                        }
+                                      },
+                                      leading: IconButton(
+                                        onPressed: () => {
+                                          todoState.performAcitionOnList<void>(
+                                            () => list.markAsDone(todo),
+                                          ),
+                                        },
+                                        icon: const Icon(Icons.circle_outlined),
+                                      ),
+                                      title: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            todo.title,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+
+                                          if (todo.description != null &&
+                                              todo.description!.isNotEmpty)
+                                            Text(
+                                              todo.description!,
+                                              maxLines: 1,
+                                              style: TextStyle(
+                                                color: Theme.of(
+                                                  context,
+                                                ).disabledColor,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                        ],
+                                      ),
+                                      subtitle: Wrap(
+                                        alignment: WrapAlignment.start,
+                                        spacing: 2,
+                                        runSpacing: 2,
+                                        children: todo.tagUuids.map((uuid) {
+                                          final tag = _tagsByUuid[uuid];
+                                          if (tag == null) {
+                                            return const SizedBox.shrink();
+                                          }
+
+                                          return Icon(
+                                            Icons.label,
+                                            size: 14,
+                                            color: Color(
+                                              _tagsByUuid[uuid]!.color,
+                                            ).withValues(alpha: 0.8),
+                                          );
+                                        }).toList(),
+                                      ),
+                                      trailing: IconButton(
+                                        onPressed: () async {
+                                          final delete =
+                                              await showDialogWithScaleTransition<
+                                                bool
+                                              >(
+                                                context: context,
+                                                child: DeleteDialog(
+                                                  title: '${loc.deleteTodo}?',
+                                                  text: loc.deleteTodoQuestion,
+                                                ),
+                                              );
+                                          if (delete != null && delete) {
+                                            todoState
+                                                .performAcitionOnList<bool>(
+                                                  () => list.deleteTodo(todo),
+                                                );
+                                          }
+                                        },
+                                        icon: const Icon(Icons.delete_forever),
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.tertiary,
+                                      ),
                                     ),
                                   ),
                                 ),
