@@ -1,15 +1,16 @@
 import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/core/persistence/smart_delete_mixin.dart';
 import 'package:zen_do/core/persistence/syncable.dart';
 
 abstract class TagRepository {
   Stream<List<Tag>> watchTags();
   Future<int> createTag({required String name, required int color});
   Future<bool> updateTag(Tag tag);
-  Future<void> softDeleteTag(Tag tag);
-  Future<void> hardDeleteTag(Tag tag);
+  Future<void> deleteTag(Tag tag);
 }
 
-class DriftTagRepository implements TagRepository {
+class DriftTagRepository with SmartDeleteMixin implements TagRepository {
+  @override
   final AppDatabase db;
 
   DriftTagRepository(this.db);
@@ -42,22 +43,11 @@ class DriftTagRepository implements TagRepository {
         );
   }
 
-  /// Performs a soft delete by setting the [SyncStatus] to [SyncStatus.deleted] and updating the [updatedAt] timestamp.
+  /// Uses the SmartDeleteMixin to perform a smartDelete.
+  /// This hard deletes the given [tag] entity if [SyncStatus.localOnly] is present.
+  /// Soft delete is performed if the [tag] entity was synced with cloud (syncStatus != [SyncStatus.localOnly])
   @override
-  Future<void> softDeleteTag(Tag tag) {
-    return db
-        .update(db.tags)
-        .replace(
-          tag.copyWith(
-            syncStatus: SyncStatus.deleted,
-            updatedAt: DateTime.now(),
-          ),
-        );
-  }
-
-  /// Performs a hard delete by removing the tag from the database permanently.
-  @override
-  Future<void> hardDeleteTag(Tag tag) {
-    return (db.delete(db.tags)..where((t) => t.id.equals(tag.id))).go();
+  Future<void> deleteTag(Tag tag) {
+    return smartDelete(table: db.tags, entity: tag);
   }
 }

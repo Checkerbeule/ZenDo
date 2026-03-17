@@ -90,7 +90,7 @@ class TagManagementScreen extends StatelessWidget {
                                       ),
                                     );
                                 if (delete != null && delete) {
-                                  repository.softDeleteTag(tags[index]);
+                                  repository.deleteTag(tags[index]);
                                 }
                               },
                             ),

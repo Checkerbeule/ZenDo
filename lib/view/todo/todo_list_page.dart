@@ -205,7 +205,7 @@ class _TodoListPageState extends State<TodoListPage> {
                               return Transform.scale(
                                 scale: 1.0,
                                 child: Material(
-                                  elevation: 5,
+                                  elevation: 3,
                                   color: Colors.transparent,
                                   child: child,
                                 ),
@@ -441,6 +441,9 @@ class _TodoListPageState extends State<TodoListPage> {
                                     tapPosition = event.position;
                                   },
                                   child: ListTile(
+                                    visualDensity: const VisualDensity(
+                                      vertical: -4,
+                                    ),
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 10,
                                     ),
@@ -490,43 +493,33 @@ class _TodoListPageState extends State<TodoListPage> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        todo.description != null &&
-                                                todo.description!.isNotEmpty
-                                            ? Flexible(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      todo.title,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      todo.description!,
-                                                      maxLines: 1,
-                                                      style: TextStyle(
-                                                        color: Theme.of(
-                                                          context,
-                                                        ).disabledColor,
-                                                      ),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ],
-                                                ),
-                                              )
-                                            : Flexible(
-                                                child: Text(
-                                                  todo.title,
-                                                  textAlign: TextAlign.start,
+                                        Flexible(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                todo.title,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              if (todo.description != null &&
+                                                  todo.description!.isNotEmpty)
+                                                Text(
+                                                  todo.description!,
+                                                  maxLines: 1,
+                                                  style: TextStyle(
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).disabledColor,
+                                                  ),
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                 ),
-                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ],
                                     ),
                                     subtitle: Wrap(
@@ -544,7 +537,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                           size: 14,
                                           color: Color(
                                             _tagsByUuid[uuid]!.color,
-                                          ),
+                                          ).withValues(alpha: 0.8),
                                         );
                                       }).toList(),
                                     ),
