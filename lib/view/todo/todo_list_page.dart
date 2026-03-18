@@ -1,14 +1,17 @@
 import 'dart:async';
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:sliver_tools/sliver_tools.dart';
+import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/localization/generated/todo/todo_localizations.dart';
 import 'package:zen_do/model/appsettings/settings_service.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
 import 'package:zen_do/model/todo/todo.dart';
 import 'package:zen_do/model/todo/todo_list.dart';
-import 'package:zen_do/utils/time_util.dart';
 import 'package:zen_do/view/dialog_helper.dart';
 import 'package:zen_do/view/todo/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/view/todo/todo_edit_page.dart';
@@ -32,9 +35,17 @@ class _TodoListPageState extends State<TodoListPage> {
   SortOption sortOption = SortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
   Offset tapPosition = Offset.zero;
+  StreamSubscription<List<Tag>>? _tagSubscription;
+  Map<String, Tag> _tagsByUuid = {};
 
-  List<Todo> get sortedAndFilteredTodos {
+  List<Todo> getSortedAndFilteredTodos(Set<String> tagFilter) {
     final todos = List<Todo>.from(widget.list.todos);
+    if (tagFilter.isNotEmpty) {
+      todos.retainWhere(
+        (t) => t.tagUuids.any((tagUuid) => tagFilter.contains(tagUuid)),
+      );
+    }
+
     switch (sortOption) {
       case SortOption.custom:
         todos.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
@@ -83,6 +94,21 @@ class _TodoListPageState extends State<TodoListPage> {
   void initState() {
     super.initState();
     _loadSettings();
+    _tagSubscription = context.read<TagRepository>().watchTags().listen((
+      allTags,
+    ) {
+      if (mounted) {
+        setState(() {
+          _tagsByUuid = {for (var tag in allTags) tag.uuid: tag};
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tagSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -93,6 +119,8 @@ class _TodoListPageState extends State<TodoListPage> {
     final Set<SortOption> excludedSortOptions = listScope == ListScope.backlog
         ? {SortOption.expirationDate}
         : {};
+    final tagFilter = context.watch<TodoState>().getTagFilter(listScope);
+
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
         final listManager = todoState.listManager!;
@@ -108,6 +136,7 @@ class _TodoListPageState extends State<TodoListPage> {
           body: CustomScrollView(
             slivers: [
               SliverTodoSortFilterAppBar(
+                key: PageStorageKey('sort_filter_bar_${listScope.name}'),
                 sortOption: sortOption,
                 sortOrder: sortOrder,
                 excludedOptions: excludedSortOptions,
@@ -119,91 +148,103 @@ class _TodoListPageState extends State<TodoListPage> {
                   unawaited(settings.saveSortOption(listScope, sortOption));
                   unawaited(settings.saveSortOrder(listScope, sortOrder));
                 },
+                selectedTagUuids: tagFilter,
+                onFilterChanged: (updatedTagFilter) {
+                  context.read<TodoState>().updateTagFilter(
+                    listScope,
+                    updatedTagFilter,
+                  );
+                },
               ),
-              if (list.todos.isEmpty)
-                SliverList(
-                  delegate: SliverChildListDelegate.fixed([
-                    ListTile(
-                      title: Text(
-                        loc.noOpenTodosLeft,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ]),
-                )
-              else
-                SliverReorderableList(
-                  itemCount: sortedAndFilteredTodos.length,
-                  proxyDecorator: (child, index, animation) {
-                    return AnimatedBuilder(
-                      animation: animation,
-                      builder: (context, _) {
-                        return Transform.scale(
-                          scale: 1.0,
-                          child: Material(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(3),
-                              side: BorderSide(
+
+              SliverAnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: getSortedAndFilteredTodos(tagFilter).isEmpty
+                    ? SliverToBoxAdapter(
+                        key: const ValueKey('empty_state'),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 20.0,
+                            horizontal: 24.0,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                tagFilter.isNotEmpty
+                                    ? Icons.filter_list_alt
+                                    : Icons.done_all_rounded,
+                                size: 48,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.primary.withValues(alpha: 0.5),
-                                width: 1,
+                                ).colorScheme.primary.withValues(alpha: 0.6),
                               ),
-                            ),
-                            elevation: 5,
-                            child: child,
+                              const SizedBox(height: 12),
+                              Text(
+                                loc.noTodosFound,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              Text(
+                                tagFilter.isNotEmpty
+                                    ? loc.checkTodoFilters
+                                    : loc.everythingDone,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                        );
-                      },
-                    );
-                  },
-                  onReorder: (oldIndex, newIndex) {
-                    if (sortOption == SortOption.custom) {
-                      setState(() {
-                        final moved = sortedAndFilteredTodos[oldIndex];
-                        final previous = newIndex == 0
-                            ? null
-                            : sortedAndFilteredTodos[newIndex - 1];
-                        list.reorder(moved, previous);
-                      });
-                    }
-                  },
-                  itemBuilder: (context, index) {
-                    final todo = sortedAndFilteredTodos[index];
-                    return ReorderableDelayedDragStartListener(
-                      enabled: sortOption == SortOption.custom,
-                      key: ValueKey(todo.id),
-                      index: index,
-                      child: Dismissible(
-                        key: ValueKey(todo.id),
-                        background: Container(
-                          padding: EdgeInsetsGeometry.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          color: Theme.of(context).colorScheme.surfaceContainer,
-                          alignment: Alignment.centerLeft,
-                          child: !isLastList
-                              ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${loc.moveTo}\n'
-                                      '${previousListScope.listName(context)}',
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Icon(
-                                      Icons.arrow_forward,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                    ),
-                                  ],
-                                )
-                              : null,
                         ),
-                        secondaryBackground: !isFirstList
-                            ? Container(
+                      )
+                    : SliverReorderableList(
+                        key: const ValueKey('todo_list'),
+                        itemCount: getSortedAndFilteredTodos(tagFilter).length,
+                        proxyDecorator: (child, index, animation) {
+                          return AnimatedBuilder(
+                            animation: animation,
+                            builder: (context, _) {
+                              return Transform.scale(
+                                scale: 1.0,
+                                child: Material(
+                                  elevation: 3,
+                                  color: Colors.transparent,
+                                  child: child,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        onReorder: (oldIndex, newIndex) {
+                          if (sortOption == SortOption.custom) {
+                            setState(() {
+                              final moved = getSortedAndFilteredTodos(
+                                tagFilter,
+                              )[oldIndex];
+                              final previous = newIndex == 0
+                                  ? null
+                                  : getSortedAndFilteredTodos(
+                                      tagFilter,
+                                    )[newIndex - 1];
+                              list.reorder(moved, previous);
+                            });
+                          }
+                        },
+                        itemBuilder: (context, index) {
+                          final todo = getSortedAndFilteredTodos(
+                            tagFilter,
+                          )[index];
+                          final isExpiredOrToBeTransferred =
+                              listManager.toBeTransferredTomorrow(todo) ||
+                              (todo.expirationDate != null &&
+                                  todo.expirationDate!.isBefore(
+                                    DateTime.now(),
+                                  ));
+                          return ReorderableDelayedDragStartListener(
+                            enabled: sortOption == SortOption.custom,
+                            key: ValueKey(todo.id),
+                            index: index,
+                            child: Dismissible(
+                              key: ValueKey(todo.id),
+                              background: Container(
                                 padding: const EdgeInsetsGeometry.symmetric(
                                   horizontal: 10,
                                   vertical: 5,
@@ -211,264 +252,338 @@ class _TodoListPageState extends State<TodoListPage> {
                                 color: Theme.of(
                                   context,
                                 ).colorScheme.surfaceContainer,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Icon(
-                                      Icons.arrow_back,
+                                alignment: Alignment.centerLeft,
+                                child: !isLastList
+                                    ? Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${loc.moveTo}\n'
+                                            '${previousListScope.listName(context)}',
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Icon(
+                                            Icons.arrow_forward,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                          ),
+                                        ],
+                                      )
+                                    : null,
+                              ),
+                              secondaryBackground: !isFirstList
+                                  ? Container(
+                                      padding:
+                                          const EdgeInsetsGeometry.symmetric(
+                                            horizontal: 10,
+                                            vertical: 5,
+                                          ),
                                       color: Theme.of(
                                         context,
-                                      ).colorScheme.primary,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      '${loc.moveTo}\n'
-                                      '${nextListScope.listName(context)}',
-                                      textAlign: TextAlign.end,
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : null,
-                        direction: isFirstList && isLastList
-                            ? DismissDirection.none
-                            : isFirstList
-                            ? DismissDirection.startToEnd
-                            : isLastList
-                            ? DismissDirection.endToStart
-                            : DismissDirection.horizontal,
-                        confirmDismiss: (direction) async {
-                          late final bool isMovable;
-                          late final TodoList? destinationList;
-                          if (direction == DismissDirection.startToEnd) {
-                            destinationList = listManager.getPreviousList(
-                              listScope,
-                            );
-                          } else if (direction == DismissDirection.endToStart) {
-                            destinationList = listManager.getNextList(
-                              listScope,
-                            );
-                          }
-                          isMovable =
-                              destinationList?.isTodoTitleVacant(
-                                sortedAndFilteredTodos[index].title,
-                              ) ??
-                              false;
-                          if (!isMovable) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(loc.shiftNotPossible)),
-                            );
-                            return false;
-                          }
-                          return true;
-                        },
-                        onDismissed: (direction) async {
-                          final todoToMove = sortedAndFilteredTodos[index];
-                          final retainedExpirationDate =
-                              todoToMove.expirationDate;
-                          final retainedOrder = todoToMove.order;
-
-                          final messenger = ScaffoldMessenger.of(context);
-                          final appLocalizations = AppLocalizations.of(context);
-
-                          String destination = '';
-                          bool isMoved = false;
-                          if (direction == DismissDirection.startToEnd) {
-                            destination =
-                                listManager
-                                    .getPreviousList(list.scope)
-                                    ?.scope
-                                    .listName(context) ??
-                                loc.next;
-                            isMoved = await todoState
-                                .performAcitionOnList<bool>(
-                                  () => listManager.moveToPreviousList(
-                                    todoToMove,
-                                  ),
-                                );
-                          } else if (direction == DismissDirection.endToStart) {
-                            destination =
-                                listManager
-                                    .getNextList(list.scope)
-                                    ?.scope
-                                    .listName(context) ??
-                                loc.previous;
-                            isMoved = await todoState
-                                .performAcitionOnList<bool>(
-                                  () => listManager.moveToNextList(todoToMove),
-                                );
-                          }
-
-                          if (isMoved) {
-                            if (!mounted) return;
-
-                            messenger.clearSnackBars();
-                            messenger.showSnackBar(
-                              SnackBar(
-                                persist: false,
-                                content: Text(loc.todoMovedToX(destination)),
-                                action: SnackBarAction(
-                                  label: appLocalizations.undo,
-                                  onPressed: () async {
-                                    final isUndone = await todoState
-                                        .performAcitionOnList<bool>(
-                                          () => listManager.moveAndUpdateTodo(
-                                            todo: todoToMove,
-                                            destination: listScope,
+                                      ).colorScheme.surfaceContainer,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Icon(
+                                            Icons.arrow_back,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
                                           ),
-                                        );
-                                    if (isUndone) {
-                                      setState(() {
-                                        todoToMove.expirationDate =
-                                            retainedExpirationDate;
-                                        todoToMove.order = retainedOrder;
-                                      });
-                                    }
-                                  },
-                                ),
-                              ),
-                            );
-                          } else {
-                            logger.e('Todo could not be moved to other list!');
-                          }
-                        },
-                        child: Material(
-                          child: Listener(
-                            onPointerUp: (event) {
-                              tapPosition = event.position;
-                            },
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              onTap: () async {
-                                final updatedTodo = await showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (context) => TodoEditPage.editTodo(
-                                    todo: todo,
-                                    todoState: todoState,
-                                  ),
-                                );
-
-                                if (updatedTodo != null) {
-                                  if (updatedTodo.listScope != todo.listScope) {
-                                    todoState.performAcitionOnList(
-                                      () => listManager.moveAndUpdateTodo(
-                                        oldTodo: todo,
-                                        todo: updatedTodo,
-                                        destination: updatedTodo.listScope!,
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            '${loc.moveTo}\n'
+                                            '${nextListScope.listName(context)}',
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        ],
                                       ),
-                                    );
-                                  } else {
-                                    todoState.performAcitionOnList<bool>(
-                                      () => listManager
-                                          .getListByScope(
-                                            updatedTodo.listScope!,
-                                          )!
-                                          .replaceTodo(todo, updatedTodo),
-                                    );
-                                  }
+                                    )
+                                  : null,
+                              direction: isFirstList && isLastList
+                                  ? DismissDirection.none
+                                  : isFirstList
+                                  ? DismissDirection.startToEnd
+                                  : isLastList
+                                  ? DismissDirection.endToStart
+                                  : DismissDirection.horizontal,
+                              confirmDismiss: (direction) async {
+                                late final bool isMovable;
+                                late final TodoList? destinationList;
+                                if (direction == DismissDirection.startToEnd) {
+                                  destinationList = listManager.getPreviousList(
+                                    listScope,
+                                  );
+                                } else if (direction ==
+                                    DismissDirection.endToStart) {
+                                  destinationList = listManager.getNextList(
+                                    listScope,
+                                  );
                                 }
-                              },
-                              leading: IconButton(
-                                onPressed: () => {
-                                  todoState.performAcitionOnList<void>(
-                                    () => list.markAsDone(todo),
-                                  ),
-                                },
-                                icon: const Icon(Icons.circle_outlined),
-                              ),
-                              title: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  todo.description != null &&
-                                          todo.description!.isNotEmpty
-                                      ? Flexible(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                todo.title,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                todo.description!,
-                                                maxLines: 1,
-                                                style: TextStyle(
-                                                  color: Theme.of(
-                                                    context,
-                                                  ).disabledColor,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      : Flexible(
-                                          child: Text(
-                                            todo.title,
-                                            textAlign: TextAlign.start,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                  if (listManager.toBeTransferredTomorrow(
-                                        todo,
-                                      ) ||
-                                      (todo.expirationDate != null &&
-                                          todo.expirationDate!.isBefore(
-                                            DateTime.now(),
-                                          ))) ...[
-                                    const SizedBox(width: 5),
-                                    Tooltip(
-                                      textAlign: TextAlign.center,
-                                      message:
-                                          '${loc.dueOn}\n'
-                                          '${todo.expirationDate!.formatYmD(Localizations.localeOf(context))}',
-                                      child: Icon(
-                                        Icons.access_time_rounded,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.error,
-                                        size: 18,
-                                      ),
+                                isMovable =
+                                    destinationList?.isTodoTitleVacant(
+                                      getSortedAndFilteredTodos(
+                                        tagFilter,
+                                      )[index].title,
+                                    ) ??
+                                    false;
+                                if (!isMovable) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(loc.shiftNotPossible),
                                     ),
-                                  ],
-                                ],
-                              ),
-                              trailing: IconButton(
-                                onPressed: () async {
-                                  final delete =
-                                      await showDialogWithScaleTransition<bool>(
-                                        context: context,
-                                        child: DeleteDialog(
-                                          title: '${loc.deleteTodo}?',
-                                          text: loc.deleteTodoQuestion,
+                                  );
+                                  return false;
+                                }
+                                return true;
+                              },
+                              onDismissed: (direction) async {
+                                final todoToMove = getSortedAndFilteredTodos(
+                                  tagFilter,
+                                )[index];
+                                final retainedExpirationDate =
+                                    todoToMove.expirationDate;
+                                final retainedOrder = todoToMove.order;
+
+                                final messenger = ScaffoldMessenger.of(context);
+                                final appLocalizations = AppLocalizations.of(
+                                  context,
+                                );
+
+                                String destination = '';
+                                bool isMoved = false;
+                                if (direction == DismissDirection.startToEnd) {
+                                  destination =
+                                      listManager
+                                          .getPreviousList(list.scope)
+                                          ?.scope
+                                          .listName(context) ??
+                                      loc.next;
+                                  isMoved = await todoState
+                                      .performAcitionOnList<bool>(
+                                        () => listManager.moveToPreviousList(
+                                          todoToMove,
                                         ),
                                       );
-                                  if (delete != null && delete) {
-                                    todoState.performAcitionOnList<bool>(
-                                      () => list.deleteTodo(todo),
-                                    );
-                                  }
-                                },
-                                //_showDeleteDialog(context, widget.list, todo),
-                                icon: const Icon(Icons.delete_forever),
-                                color: Theme.of(context).colorScheme.tertiary,
+                                } else if (direction ==
+                                    DismissDirection.endToStart) {
+                                  destination =
+                                      listManager
+                                          .getNextList(list.scope)
+                                          ?.scope
+                                          .listName(context) ??
+                                      loc.previous;
+                                  isMoved = await todoState
+                                      .performAcitionOnList<bool>(
+                                        () => listManager.moveToNextList(
+                                          todoToMove,
+                                        ),
+                                      );
+                                }
+
+                                if (isMoved) {
+                                  if (!mounted) return;
+
+                                  messenger.clearSnackBars();
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      persist: false,
+                                      content: Text(
+                                        loc.todoMovedToX(destination),
+                                      ),
+                                      action: SnackBarAction(
+                                        label: appLocalizations.undo,
+                                        onPressed: () async {
+                                          final isUndone = await todoState
+                                              .performAcitionOnList<bool>(
+                                                () => listManager
+                                                    .moveAndUpdateTodo(
+                                                      todo: todoToMove,
+                                                      destination: listScope,
+                                                    ),
+                                              );
+                                          if (isUndone) {
+                                            setState(() {
+                                              todoToMove.expirationDate =
+                                                  retainedExpirationDate;
+                                              todoToMove.order = retainedOrder;
+                                            });
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  logger.e(
+                                    'Todo could not be moved to other list!',
+                                  );
+                                }
+                              },
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: const BorderRadiusGeometry.all(
+                                    Radius.circular(5),
+                                  ),
+                                  side: BorderSide(
+                                    color: isExpiredOrToBeTransferred
+                                        ? Theme.of(context).colorScheme.error
+                                              .withValues(alpha: 0.5)
+                                        : Colors.transparent,
+                                  ),
+                                ),
+                                elevation: 0.2,
+                                child: Listener(
+                                  onPointerUp: (event) {
+                                    tapPosition = event.position;
+                                  },
+                                  child: Badge(
+                                    offset: const Offset(2, 2),
+                                    padding: const EdgeInsets.all(0),
+                                    alignment: Alignment.topLeft,
+                                    backgroundColor: Colors.transparent,
+                                    isLabelVisible: isExpiredOrToBeTransferred,
+                                    label: Icon(
+                                      Icons.access_time_outlined,
+                                      size: 15,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.error,
+                                    ),
+                                    child: ListTile(
+                                      visualDensity: const VisualDensity(
+                                        vertical: -4,
+                                      ),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 5,
+                                          ),
+                                      onTap: () async {
+                                        final updatedTodo =
+                                            await showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              builder: (context) =>
+                                                  TodoEditPage.editTodo(
+                                                    todo: todo,
+                                                    todoState: todoState,
+                                                  ),
+                                            );
+
+                                        if (updatedTodo != null) {
+                                          if (updatedTodo.listScope !=
+                                              todo.listScope) {
+                                            todoState.performAcitionOnList(
+                                              () =>
+                                                  listManager.moveAndUpdateTodo(
+                                                    oldTodo: todo,
+                                                    todo: updatedTodo,
+                                                    destination:
+                                                        updatedTodo.listScope!,
+                                                  ),
+                                            );
+                                          } else {
+                                            todoState
+                                                .performAcitionOnList<bool>(
+                                                  () => listManager
+                                                      .getListByScope(
+                                                        updatedTodo.listScope!,
+                                                      )!
+                                                      .replaceTodo(
+                                                        todo,
+                                                        updatedTodo,
+                                                      ),
+                                                );
+                                          }
+                                        }
+                                      },
+                                      leading: IconButton(
+                                        onPressed: () => {
+                                          todoState.performAcitionOnList<void>(
+                                            () => list.markAsDone(todo),
+                                          ),
+                                        },
+                                        icon: const Icon(Icons.circle_outlined),
+                                      ),
+                                      title: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            todo.title,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+
+                                          if (todo.description != null &&
+                                              todo.description!.isNotEmpty)
+                                            Text(
+                                              todo.description!,
+                                              maxLines: 1,
+                                              style: TextStyle(
+                                                color: Theme.of(
+                                                  context,
+                                                ).disabledColor,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                        ],
+                                      ),
+                                      subtitle: Wrap(
+                                        alignment: WrapAlignment.start,
+                                        spacing: 2,
+                                        runSpacing: 2,
+                                        children: todo.tagUuids.map((uuid) {
+                                          final tag = _tagsByUuid[uuid];
+                                          if (tag == null) {
+                                            return const SizedBox.shrink();
+                                          }
+
+                                          return Icon(
+                                            Icons.label,
+                                            size: 14,
+                                            color: Color(
+                                              _tagsByUuid[uuid]!.color,
+                                            ).withValues(alpha: 0.8),
+                                          );
+                                        }).toList(),
+                                      ),
+                                      trailing: IconButton(
+                                        onPressed: () async {
+                                          final delete =
+                                              await showDialogWithScaleTransition<
+                                                bool
+                                              >(
+                                                context: context,
+                                                child: DeleteDialog(
+                                                  title: '${loc.deleteTodo}?',
+                                                  text: loc.deleteTodoQuestion,
+                                                ),
+                                              );
+                                          if (delete != null && delete) {
+                                            todoState
+                                                .performAcitionOnList<bool>(
+                                                  () => list.deleteTodo(todo),
+                                                );
+                                          }
+                                        },
+                                        icon: const Icon(Icons.delete_forever),
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.tertiary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-
+              ),
               SliverToBoxAdapter(
                 child: Column(
                   children: [

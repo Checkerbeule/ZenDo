@@ -41,6 +41,7 @@ void main() {
     expect(original.creationDate, copy.creationDate);
     expect(original.completionDate, copy.completionDate);
     expect(original.expirationDate, copy.expirationDate);
+    expect(original.tagUuids, copy.tagUuids);
   });
 
   test(
@@ -56,6 +57,7 @@ void main() {
       expect(original.creationDate, copy.creationDate);
       expect(original.completionDate, copy.completionDate);
       expect(original.expirationDate, copy.expirationDate);
+      expect(original.tagUuids, copy.tagUuids);
     },
   );
   test(
@@ -67,6 +69,7 @@ void main() {
       final description = 'description';
       final expirationDate = DateTime.now();
       final title = 'title';
+      final Set<String> tagUuids = {"abc", "xyz"};
 
       final copy = original.copyWith(
         completionDate: completionDate,
@@ -75,6 +78,7 @@ void main() {
         expirationDate: expirationDate,
         listScope: ListScope.daily,
         title: title,
+        tagUuids: tagUuids,
       );
 
       expect(copy.title, title);
@@ -82,6 +86,7 @@ void main() {
       expect(copy.creationDate, creationDate);
       expect(copy.completionDate, completionDate);
       expect(copy.expirationDate, expirationDate);
+      expect(copy.tagUuids, tagUuids);
     },
   );
 

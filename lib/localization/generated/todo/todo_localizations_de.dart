@@ -18,6 +18,9 @@ class TodoLocalizationsDe extends TodoLocalizations {
   String get changeToFittingList => 'Soll die folgende passende Liste ausgewählt werden?';
 
   @override
+  String get checkTodoFilters => 'Prüfe deine Filtereinstellungen';
+
+  @override
   String get completed => 'erledigt';
 
   @override
@@ -69,6 +72,9 @@ class TodoLocalizationsDe extends TodoLocalizations {
   String get errorTodoAllreadyExistsInDestinationList => 'Aufgabe bereits vohanden in Zielliste';
 
   @override
+  String get everythingDone => 'Super, du hast alles erledigt!';
+
+  @override
   String get expirationDate => 'Fälligkeitsdatum';
 
   @override
@@ -96,7 +102,7 @@ class TodoLocalizationsDe extends TodoLocalizations {
   String get noDateelectedError => 'Kein Datum ausgewählt';
 
   @override
-  String get noOpenTodosLeft => 'Keine offenen Aufgaben vorhanden';
+  String get noTodosFound => 'Keine Aufgaben gefunden';
 
   @override
   String get previous => 'vorherige';

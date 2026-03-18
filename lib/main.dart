@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/core/theme/theme.dart';
+import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/localization/generated/app/app_localizations.dart';
 import 'package:zen_do/localization/localizations_config.dart';
 import 'package:zen_do/persistence/hive_initializer.dart';
@@ -33,6 +36,13 @@ class ZenDoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<AppDatabase>(
+          create: (_) => AppDatabase(),
+          dispose: (_, db) => db.close(),
+        ),
+        ProxyProvider<AppDatabase, TagRepository>(
+          update: (_, db, __) => DriftTagRepository(db),
+        ),
         ChangeNotifierProvider<ProviderL10n>(create: (_) => ProviderL10n()),
         ChangeNotifierProvider<ZenDoAppState>(create: (_) => ZenDoAppState()),
         ChangeNotifierProxyProvider<ZenDoAppState, TodoState>(
@@ -44,10 +54,7 @@ class ZenDoApp extends StatelessWidget {
         builder: (context, l10n, child) {
           return MaterialApp(
             title: 'ZenDo',
-            theme: ThemeData(
-              useMaterial3: true,
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
-            ),
+            theme: AppTheme.lightTheme,
             locale: l10n.locale,
             localizationsDelegates: localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
@@ -96,6 +103,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             actions: [
               IconButton(
+                padding: const EdgeInsets.all(5),
                 icon: const Icon(Icons.settings),
                 onPressed: () async {
                   final hasChanged = await Navigator.push<bool>(
@@ -122,24 +130,6 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             ],
           ),
           bottomNavigationBar: NavigationBar(
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-            indicatorColor: Theme.of(context).colorScheme.inversePrimary,
-            labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-            labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((
-              Set<WidgetState> states,
-            ) {
-              if (states.contains(WidgetState.selected)) {
-                return TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  overflow: TextOverflow.ellipsis,
-                );
-              }
-              return TextStyle(
-                color: Theme.of(context).colorScheme.onSecondaryContainer,
-                overflow: TextOverflow.ellipsis,
-              );
-            }),
             selectedIndex: pageIndex,
             onDestinationSelected: (int index) {
               setState(() {
@@ -149,27 +139,22 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             destinations: <Widget>[
               for (var page in appState.pageMessages.entries)
                 NavigationDestination(
-                  icon: page.value > 0
-                      ? Badge(
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                          label: Text('${page.value}'),
-                          child: Icon(page.key.icon),
-                        )
-                      : Icon(page.key.icon),
+                  icon: Badge(
+                    isLabelVisible: page.value > 0,
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    label: Text('${page.value}'),
+                    child: Icon(page.key.icon),
+                  ),
                   label: page.key.label(context),
-                  selectedIcon: page.value > 0
-                      ? Badge(
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                          label: Text('${page.value}'),
-                          child: Icon(
-                            page.key.icon,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        )
-                      : Icon(
-                          page.key.icon,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                  selectedIcon: Badge(
+                    isLabelVisible: page.value > 0,
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    label: Text('${page.value}'),
+                    child: Icon(
+                      page.key.icon,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
                 ),
             ],
           ),

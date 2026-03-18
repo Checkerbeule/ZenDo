@@ -1,0 +1,29 @@
+{
+  "@@locale": "de",
+  "addNewTag": "Neues Tag hinzufügen",
+  "addSomeTags": "Füge einige hinzu!",
+  "addTag": "Tag hinzufügen",
+  "colorPickerPrimaryLable": "Primärfarben",
+  "colorPickerWheelLable": "Farbpalette",
+  "connectedTags": "Verknüpfte Tags",
+  "deleteTagMessage": "Tag '{tagName}' wirklich löschen? Objekte mit diesem Tag bleiben erhalten, verlieren aber den Tag.",
+  "@deleteTagMessage": {
+    "placeholders": {
+      "tagName": {
+        "type": "String",
+        "example": "Urgent"
+      }
+    }
+  },
+  "deleteTagTitle": "Tag löschen?",
+  "editTag": "Tag bearbeiten",
+  "errorLoadingTags": "Beim Laden der Tags ist ein Fehler aufgetreten.",
+  "loadingTags": "Lade Tags...",
+  "manageTagsScreenHeader": "Verwalte deine Tags, um Inhalte zu organisieren",
+  "noTagsAvailable": "Keine Tags vorhanden",
+  "noTagsForFiltering": "Keine Tags zum Filtern vorhanden",
+  "tagColorHeading": "Wähle eine Farbe",
+  "tagColorSubheading": "Farbabstufungen",
+  "tagNameDecoration": "Name des Tags",
+  "tagNameLabel": "Tag Name"
+}

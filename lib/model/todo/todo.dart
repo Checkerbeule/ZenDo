@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zen_do/model/todo/list_scope.dart';
@@ -41,13 +42,18 @@ class Todo {
   @HiveField(6)
   int? order;
 
+  @HiveField(8)
+  Set<String> tagUuids;
+
   Todo({
     required String title,
     String? description,
     this.expirationDate,
     this.listScope,
+    Set<String>? tagUuids,
   }) : id = Uuid().v4(),
-       creationDate = DateTime.now() {
+       creationDate = DateTime.now(),
+       tagUuids = tagUuids != null ? Set.from(tagUuids) : {} {
     this.title = title;
     this.description = description;
   }
@@ -61,7 +67,8 @@ class Todo {
     this.completionDate,
     this.listScope,
     this.order,
-  }) {
+    Set<String>? tagUuids,
+  }) : tagUuids = tagUuids != null ? Set.from(tagUuids) : {} {
     this.title = title;
     this.description = description;
   }
@@ -74,6 +81,7 @@ class Todo {
     DateTime? completionDate,
     ListScope? listScope,
     int? order,
+    Set<String>? tagUuids,
   }) {
     return Todo._internal(
       id: id,
@@ -84,6 +92,7 @@ class Todo {
       completionDate: completionDate ?? this.completionDate,
       listScope: listScope ?? this.listScope,
       order: order ?? this.order,
+      tagUuids: tagUuids ?? Set.from(this.tagUuids),
     );
   }
 
@@ -93,7 +102,8 @@ class Todo {
       expirationDate = other.expirationDate,
       completionDate = other.completionDate,
       listScope = other.listScope,
-      order = other.order {
+      order = other.order,
+      tagUuids = Set.from(other.tagUuids) {
     title = other.title;
     description = other.description;
   }
@@ -115,7 +125,8 @@ class Todo {
         other.creationDate == creationDate &&
         other.expirationDate == expirationDate &&
         other.completionDate == completionDate &&
-        other.listScope == listScope;
+        other.listScope == listScope &&
+        setEquals(other.tagUuids, tagUuids);
   }
 
   @override
@@ -126,5 +137,6 @@ class Todo {
     expirationDate,
     completionDate,
     listScope,
+    tagUuids,
   );
 }

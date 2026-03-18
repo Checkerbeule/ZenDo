@@ -16,18 +16,22 @@ class TodoAdapter extends TypeAdapter<Todo> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Todo(title: fields[0] as String)
+    return Todo(
+        title: fields[0] as String,
+        expirationDate: fields[3] as DateTime?,
+        listScope: fields[5] as ListScope?,
+        tagUuids: (fields[8] as List?)?.cast<String>().toSet(),
+      )
+      .._title = fields[0] as String
       .._description = fields[1] as String?
-      ..expirationDate = fields[3] as DateTime?
       ..completionDate = fields[4] as DateTime?
-      ..listScope = fields[5] as ListScope?
       ..order = fields[6] as int?;
   }
 
   @override
   void write(BinaryWriter writer, Todo obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(7)
       ..write(obj.id)
       ..writeByte(0)
@@ -43,7 +47,9 @@ class TodoAdapter extends TypeAdapter<Todo> {
       ..writeByte(5)
       ..write(obj.listScope)
       ..writeByte(6)
-      ..write(obj.order);
+      ..write(obj.order)
+      ..writeByte(8)
+      ..write(obj.tagUuids.toList());
   }
 
   @override

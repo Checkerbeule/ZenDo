@@ -27,6 +27,7 @@ class TodoState extends ChangeNotifier {
   bool isLoadingDataFailed = false;
   String? errorMessage;
   Map<ListScope, bool> doneTodosExpanded = {};
+  Map<ListScope, Set<String>> tagFilters = {};
 
   TodoState() {
     _initData();
@@ -67,12 +68,13 @@ class TodoState extends ChangeNotifier {
       var prefs = await SharedPreferences.getInstance();
       var lastTransferDateString = prefs.getString('lastTodoTransferDate');
       var now = DateTime.now().toIso8601String().substring(0, 10);
-      if(lastTransferDateString == null
-        || lastTransferDateString != now) {
-          logger.d('Transfering todos on app start. Last run: $lastTransferDateString');
-          listManager!.transferTodos();
-          await prefs.setString('lastTodoTransferDate', now);
-        }
+      if (lastTransferDateString == null || lastTransferDateString != now) {
+        logger.d(
+          'Transfering todos on app start. Last run: $lastTransferDateString',
+        );
+        listManager!.transferTodos();
+        await prefs.setString('lastTodoTransferDate', now);
+      }
 
       isLoading = false;
 
@@ -96,6 +98,15 @@ class TodoState extends ChangeNotifier {
 
   void toggleExpansion(ListScope key) {
     doneTodosExpanded[key] = !(doneTodosExpanded[key] ?? true);
+  }
+
+  Set<String> getTagFilter(ListScope list) {
+    return tagFilters[list] ?? {};
+  }
+
+  void updateTagFilter(ListScope list, Set<String> updatedTagFilter) {
+    tagFilters[list] = updatedTagFilter;
+    notifyListeners();
   }
 
   Future<T> performAcitionOnList<T>(FutureOr<T> Function() action) async {
@@ -157,21 +168,21 @@ class TodoPage extends StatelessWidget {
                       tabs: [
                         for (var list in listManager.lists)
                           Tab(
-                            icon:
-                                listManager.toBeTransferredOrExpiredCount(
-                                      list,
-                                    ) >
-                                    0
-                                ? Badge(
-                                    backgroundColor: Theme.of(
-                                      context,
-                                    ).colorScheme.tertiary,
-                                    label: Text(
-                                      '${listManager.toBeTransferredOrExpiredCount(list)}',
-                                    ),
-                                    child: Icon(list.scope.icon),
-                                  )
-                                : Icon(list.scope.icon),
+                            height: 60,
+                            icon: Badge(
+                              isLabelVisible:
+                                  listManager.toBeTransferredOrExpiredCount(
+                                    list,
+                                  ) >
+                                  0,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.tertiary,
+                              label: Text(
+                                '${listManager.toBeTransferredOrExpiredCount(list)}',
+                              ),
+                              child: Icon(list.scope.icon),
+                            ),
                             text: list.scope.listName(context),
                           ),
                       ],

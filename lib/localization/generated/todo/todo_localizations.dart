@@ -113,6 +113,12 @@ abstract class TodoLocalizations {
   /// **'Should the following fitting list be selected?'**
   String get changeToFittingList;
 
+  /// No description provided for @checkTodoFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your filter settings'**
+  String get checkTodoFilters;
+
   /// No description provided for @completed.
   ///
   /// In en, this message translates to:
@@ -215,6 +221,12 @@ abstract class TodoLocalizations {
   /// **'Todo allready exists in destination list'**
   String get errorTodoAllreadyExistsInDestinationList;
 
+  /// No description provided for @everythingDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Great, there is nothing left to do!'**
+  String get everythingDone;
+
   /// No description provided for @expirationDate.
   ///
   /// In en, this message translates to:
@@ -269,11 +281,11 @@ abstract class TodoLocalizations {
   /// **'Not date selected'**
   String get noDateelectedError;
 
-  /// No description provided for @noOpenTodosLeft.
+  /// No description provided for @noTodosFound.
   ///
   /// In en, this message translates to:
-  /// **'No open todos left'**
-  String get noOpenTodosLeft;
+  /// **'No todos found'**
+  String get noTodosFound;
 
   /// No description provided for @previous.
   ///
