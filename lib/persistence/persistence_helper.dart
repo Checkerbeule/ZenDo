@@ -166,6 +166,12 @@ class PersistenceHelper {
             changed = true;
           }
         }
+        for (final todo in list.doneTodos) {
+          if (todo.tagUuids.contains(tagUuid)) {
+            todo.tagUuids.remove(tagUuid);
+            changed = true;
+          }
+        }
         if (changed) {
           await box.put(list.scope.name, list);
         }

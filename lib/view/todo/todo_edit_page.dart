@@ -375,7 +375,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                                   },
                                 ),
                               ),
-                              SizedBox(width: 5),
+                              const SizedBox(width: 5),
                               Expanded(
                                 child: TextFormField(
                                   key: expirationDateKey,
@@ -469,7 +469,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -477,7 +477,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ),
-                          SizedBox(height: 5),
+                          const SizedBox(height: 5),
                           StreamBuilder<List<Tag>>(
                             stream: tagRepository.watchTags(),
                             builder: (context, snapshot) {

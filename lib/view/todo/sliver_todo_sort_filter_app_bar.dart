@@ -101,7 +101,7 @@ class _SliverTodoSortFilterAppBarState
               return LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: [
+                colors: const [
                   Colors.transparent,
                   Colors.black,
                   Colors.black,
@@ -112,14 +112,22 @@ class _SliverTodoSortFilterAppBarState
             },
             blendMode: BlendMode.dstIn,
             child: Padding(
-              padding: EdgeInsetsGeometry.only(left: 5),
+              padding: const EdgeInsetsGeometry.only(left: 5),
               child: StreamBuilder<List<Tag>>(
                 stream: tagRepository.watchTags(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     final tags = snapshot.data!;
                     if (tags.isEmpty) {
-                      return Center(child: Text(loc.noTagsAvailable));
+                      return Padding(
+                        padding: EdgeInsetsGeometry.symmetric(horizontal: 10),
+                        child: Text(
+                          loc.noTagsForFiltering,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontStyle: FontStyle.italic),
+                        ),
+                      );
                     }
 
                     WidgetsBinding.instance.addPostFrameCallback(
@@ -180,7 +188,7 @@ class _SliverTodoSortFilterAppBarState
       ),
       actions: [
         AnimatedContainer(
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           width: widget.selectedTagUuids.isNotEmpty ? 32.0 : 0.0,
           child: AnimatedSwitcher(
@@ -201,25 +209,25 @@ class _SliverTodoSortFilterAppBarState
             child: widget.selectedTagUuids.isNotEmpty
                 ? InkWell(
                     radius: 20,
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
                     onTap: () => _clearTagFilters(),
                     child: Badge(
-                      key: ValueKey('clear_button'),
-                      alignment: Alignment(1.5, 0),
-                      padding: EdgeInsets.all(0),
+                      key: const ValueKey('clear_button'),
+                      alignment: const Alignment(1.5, 0),
+                      padding: const EdgeInsets.all(0),
                       backgroundColor: Theme.of(context).colorScheme.secondary,
                       label: Text(
                         widget.selectedTagUuids.length.toString(),
-                        style: TextStyle(fontSize: 10),
+                        style: const TextStyle(fontSize: 10),
                       ),
                       child: IconButton(
                         onPressed: () => _clearTagFilters(),
-                        icon: Icon(Icons.close, size: 22),
-                        padding: EdgeInsets.all(5),
+                        icon: const Icon(Icons.close, size: 22),
+                        padding: const EdgeInsets.all(5),
                       ),
                     ),
                   )
-                : SizedBox(key: ValueKey('empty_space')),
+                : const SizedBox(key: ValueKey('empty_space')),
           ),
         ),
         MenuAnchor(
@@ -271,10 +279,10 @@ class _SliverTodoSortFilterAppBarState
           builder: (context, controller, child) {
             return InkWell(
               radius: 20,
-              borderRadius: BorderRadius.all(Radius.circular(20)),
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
               onTap: () => _toggleSortMenu(controller),
               child: Badge(
-                alignment: Alignment(1, 0),
+                alignment: const Alignment(1, 0),
                 backgroundColor: Theme.of(context).colorScheme.secondary,
                 label: widget.sortOption == SortOption.custom
                     ? const Icon(
@@ -302,7 +310,7 @@ class _SliverTodoSortFilterAppBarState
                       ),
                 child: IconButton(
                   icon: const Icon(Icons.sort, size: 22),
-                  padding: EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(5),
                   onPressed: () => _toggleSortMenu(controller),
                 ),
               ),

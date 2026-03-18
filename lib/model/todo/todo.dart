@@ -53,7 +53,7 @@ class Todo {
     Set<String>? tagUuids,
   }) : id = Uuid().v4(),
        creationDate = DateTime.now(),
-       tagUuids = tagUuids ?? {} {
+       tagUuids = tagUuids != null ? Set.from(tagUuids) : {} {
     this.title = title;
     this.description = description;
   }
@@ -68,7 +68,7 @@ class Todo {
     this.listScope,
     this.order,
     Set<String>? tagUuids,
-  }) : tagUuids = tagUuids ?? {} {
+  }) : tagUuids = tagUuids != null ? Set.from(tagUuids) : {} {
     this.title = title;
     this.description = description;
   }

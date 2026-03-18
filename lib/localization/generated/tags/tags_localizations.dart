@@ -101,11 +101,29 @@ abstract class TagsLocalizations {
   /// **'Add new Tag'**
   String get addNewTag;
 
+  /// No description provided for @addSomeTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Add some!'**
+  String get addSomeTags;
+
   /// No description provided for @addTag.
   ///
   /// In en, this message translates to:
   /// **'Add Tag'**
   String get addTag;
+
+  /// No description provided for @colorPickerPrimaryLable.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary colors'**
+  String get colorPickerPrimaryLable;
+
+  /// No description provided for @colorPickerWheelLable.
+  ///
+  /// In en, this message translates to:
+  /// **'Color palette'**
+  String get colorPickerWheelLable;
 
   /// No description provided for @connectedTags.
   ///
@@ -149,17 +167,17 @@ abstract class TagsLocalizations {
   /// **'Manage your tags to organize content'**
   String get manageTagsScreenHeader;
 
-  /// No description provided for @noTagsAddSome.
-  ///
-  /// In en, this message translates to:
-  /// **'There are no tags yet.\nAdd some!'**
-  String get noTagsAddSome;
-
   /// No description provided for @noTagsAvailable.
   ///
   /// In en, this message translates to:
-  /// **'No tags available for filtering'**
+  /// **'Keine Tags vorhanden'**
   String get noTagsAvailable;
+
+  /// No description provided for @noTagsForFiltering.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags available for filtering'**
+  String get noTagsForFiltering;
 
   /// No description provided for @tagColorHeading.
   ///

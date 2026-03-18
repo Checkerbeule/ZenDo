@@ -245,7 +245,7 @@ class _TodoListPageState extends State<TodoListPage> {
                             child: Dismissible(
                               key: ValueKey(todo.id),
                               background: Container(
-                                padding: EdgeInsetsGeometry.symmetric(
+                                padding: const EdgeInsetsGeometry.symmetric(
                                   horizontal: 10,
                                   vertical: 5,
                                 ),
@@ -424,7 +424,7 @@ class _TodoListPageState extends State<TodoListPage> {
                               },
                               child: Card(
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadiusGeometry.all(
+                                  borderRadius: const BorderRadiusGeometry.all(
                                     Radius.circular(5),
                                   ),
                                   side: BorderSide(
@@ -441,7 +441,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                   },
                                   child: Badge(
                                     offset: const Offset(2, 2),
-                                    padding: EdgeInsets.all(0),
+                                    padding: const EdgeInsets.all(0),
                                     alignment: Alignment.topLeft,
                                     backgroundColor: Colors.transparent,
                                     isLabelVisible: isExpiredOrToBeTransferred,

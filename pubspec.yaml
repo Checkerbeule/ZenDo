@@ -27,7 +27,6 @@ environment:
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
-isar_version: &isar_version ^3.1.0+1
 dependencies:
   flutter:
     sdk: flutter
@@ -38,7 +37,6 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   path_provider: ^2.1.5
-  #build_runner: ^2.4.13 # remove
   workmanager: ^0.9.0+3
   synchronized: ^3.4.0
   intl: any

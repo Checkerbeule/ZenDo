@@ -179,7 +179,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
       const EnumNameConverter(SyncStatus.values);
 }
 
-class Tag extends DataClass implements Insertable<Tag> {
+class Tag extends SyncableEntity implements Insertable<Tag> {
   final String uuid;
   final DateTime updatedAt;
   final SyncStatus syncStatus;

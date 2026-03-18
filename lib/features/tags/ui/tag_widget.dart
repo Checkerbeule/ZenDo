@@ -24,6 +24,7 @@ class TagWidget extends StatelessWidget {
     bool isCompact = false,
     bool isSelected = false,
     void Function(String uuid)? onTap,
+    Key? key,
   }) {
     return TagWidget(
       name: tag.name,
@@ -32,6 +33,7 @@ class TagWidget extends StatelessWidget {
       isCompact: isCompact,
       isSelected: isSelected,
       onTap: onTap,
+      key: key,
     );
   }
 
@@ -39,12 +41,14 @@ class TagWidget extends StatelessWidget {
     required String name,
     required int colorValue,
     isCompact = true,
+    Key? key,
   }) {
     return TagWidget(
       name: name,
       color: colorValue,
       uuid: 'TEMP_PREVIEW',
       isCompact: isCompact,
+      key: key,
     );
   }
 

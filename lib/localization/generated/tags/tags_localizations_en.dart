@@ -12,7 +12,16 @@ class TagsLocalizationsEn extends TagsLocalizations {
   String get addNewTag => 'Add new Tag';
 
   @override
+  String get addSomeTags => 'Add some!';
+
+  @override
   String get addTag => 'Add Tag';
+
+  @override
+  String get colorPickerPrimaryLable => 'Primary colors';
+
+  @override
+  String get colorPickerWheelLable => 'Color palette';
 
   @override
   String get connectedTags => 'Connected tags';
@@ -38,10 +47,10 @@ class TagsLocalizationsEn extends TagsLocalizations {
   String get manageTagsScreenHeader => 'Manage your tags to organize content';
 
   @override
-  String get noTagsAddSome => 'There are no tags yet.\nAdd some!';
+  String get noTagsAvailable => 'Keine Tags vorhanden';
 
   @override
-  String get noTagsAvailable => 'No tags available for filtering';
+  String get noTagsForFiltering => 'No tags available for filtering';
 
   @override
   String get tagColorHeading => 'Choose a color';

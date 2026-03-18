@@ -1,7 +1,10 @@
 {
   "@@locale": "en",
   "addNewTag": "Add new Tag",
+  "addSomeTags": "Add some!",
   "addTag": "Add Tag",
+  "colorPickerPrimaryLable": "Primary colors",
+  "colorPickerWheelLable": "Color palette",
   "connectedTags": "Connected tags",
   "deleteTagMessage": "Delete the tag '{tagName}'?\nObjects with this tag will remain but lose the tag.",
   "@deleteTagMessage": {
@@ -17,8 +20,8 @@
   "errorLoadingTags": "An error occurred while loading tags.",
   "loadingTags": "Loading tags...",
   "manageTagsScreenHeader": "Manage your tags to organize content",
-  "noTagsAddSome": "There are no tags yet.\nAdd some!",
-  "noTagsAvailable": "No tags available for filtering",
+  "noTagsAvailable": "Keine Tags vorhanden",
+  "noTagsForFiltering": "No tags available for filtering",
   "tagColorHeading": "Choose a color",
   "tagColorSubheading": "Color gradations",
   "tagNameDecoration": "Tag name",

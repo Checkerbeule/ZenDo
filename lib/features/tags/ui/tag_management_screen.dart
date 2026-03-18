@@ -62,7 +62,30 @@ class TagManagementScreen extends StatelessWidget {
 
                 final tags = snapshot.data ?? [];
                 if (tags.isEmpty) {
-                  return Center(child: Text(loc.noTagsAddSome));
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 100),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.new_label_outlined,
+                            size: 48,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.6),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            loc.noTagsAvailable,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(loc.addSomeTags, textAlign: TextAlign.center),
+                        ],
+                      ),
+                    ),
+                  );
                 }
 
                 return ListView.builder(

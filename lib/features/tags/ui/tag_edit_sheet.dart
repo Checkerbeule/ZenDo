@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
@@ -18,6 +20,18 @@ class TagEditSheet extends StatefulWidget {
 class _TagEditSheetState extends State<TagEditSheet> {
   late TextEditingController _nameController;
   late Color _selectedColor;
+  final Set<Color> _colorPreset = {
+    Colors.blue,
+    Colors.blueGrey,
+    Colors.indigo,
+    Colors.teal,
+    Colors.green,
+    Colors.red,
+    Colors.orange,
+    Colors.purple,
+    Colors.pink,
+    Colors.brown,
+  };
 
   @override
   void initState() {
@@ -27,7 +41,10 @@ class _TagEditSheetState extends State<TagEditSheet> {
       text: widget.initialTag?.name ?? '',
     );
     _selectedColor = Color(
-      widget.initialTag?.color ?? Colors.orange.toARGB32(),
+      widget.initialTag?.color ??
+          _colorPreset
+              .elementAt(Random().nextInt(_colorPreset.length))
+              .toARGB32(),
     );
   }
 
@@ -78,43 +95,47 @@ class _TagEditSheetState extends State<TagEditSheet> {
             widget.initialTag == null ? loc.addNewTag : loc.editTag,
             style: TextTheme.of(context).headlineSmall,
           ),
-          SizedBox(height: 2),
+          const SizedBox(height: 2),
           TagWidget.preview(
             name: _nameController.text,
             colorValue: _selectedColor.toARGB32(),
           ),
-          SizedBox(height: 2),
+          const SizedBox(height: 2),
           TextField(
             controller: _nameController,
             decoration: InputDecoration(labelText: loc.tagNameLabel),
             autofocus: true,
-            onChanged: (_) => setState(() {}),
             maxLength: 25,
+            textCapitalization: TextCapitalization.sentences,
+            onChanged: (_) => setState(() {}),
           ),
-          Center(
-            child: Container(
-              constraints: BoxConstraints(
-                minHeight: 450,
-                minWidth: 300,
-                maxWidth: 380,
-              ),
-              child: ColorPicker(
-                color: _selectedColor,
-                onColorChanged: (Color color) => setState(() {
-                  _selectedColor = color;
-                }),
-                pickersEnabled: const <ColorPickerType, bool>{
-                  ColorPickerType.primary: true,
-                  ColorPickerType.accent: false,
-                  ColorPickerType.wheel: true,
-                },
-                heading: Text(loc.tagColorHeading),
-                subheading: Text(loc.tagColorSubheading),
-                wheelSubheading: Text(loc.tagColorSubheading),
-                showColorName: true,
-              ),
+          Container(
+            constraints: const BoxConstraints(
+              minHeight: 450,
+              minWidth: 300,
+              maxWidth: 380,
+            ),
+            child: ColorPicker(
+              color: _selectedColor,
+              onColorChanged: (Color color) => setState(() {
+                _selectedColor = color;
+              }),
+              pickersEnabled: const <ColorPickerType, bool>{
+                ColorPickerType.primary: true,
+                ColorPickerType.accent: false,
+                ColorPickerType.wheel: true,
+              },
+              pickerTypeLabels: {
+                ColorPickerType.primary: loc.colorPickerPrimaryLable,
+                ColorPickerType.wheel: loc.colorPickerWheelLable,
+              },
+              heading: Text(loc.tagColorHeading),
+              subheading: Text(loc.tagColorSubheading),
+              wheelSubheading: Text(loc.tagColorSubheading),
+              showColorName: true,
             ),
           ),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
