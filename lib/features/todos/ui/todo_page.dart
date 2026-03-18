@@ -1,0 +1,246 @@
+import 'dart:async';
+
+import 'package:app_settings/app_settings.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:zen_do/core/app/app_settings_service.dart';
+import 'package:zen_do/core/app/page_type.dart';
+import 'package:zen_do/core/l10n/app_localizations.dart';
+import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
+import 'package:zen_do/core/ui/loading_screen.dart';
+import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/data/todo_list.dart';
+import 'package:zen_do/features/todos/domain/list_manager.dart';
+import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
+import 'package:zen_do/features/todos/ui/todo_list_page.dart';
+import 'package:zen_do/main.dart';
+
+Logger logger = Logger(level: Level.debug);
+
+class TodoState extends ChangeNotifier {
+  ZenDoAppState? appState;
+  ListManager? listManager;
+  bool isLoading = true;
+  bool isLoadingDataFailed = false;
+  String? errorMessage;
+  Map<ListScope, bool> doneTodosExpanded = {};
+  Map<ListScope, Set<String>> tagFilters = {};
+
+  TodoState() {
+    _initData();
+  }
+
+  void setAppState(ZenDoAppState appState) {
+    this.appState = appState;
+  }
+
+  Future<void> reload() async {
+    isLoading = true;
+    notifyListeners();
+    await _initData();
+    notifyListeners();
+  }
+
+  Future<void> _initData() async {
+    final AppSettingsService settings =
+        await SharedPrefsAppSettingsService.getInstance();
+    final loadedScopes = settings.getActiveListScopes();
+    final Set<ListScope> activeScopes;
+    if (loadedScopes != null) {
+      activeScopes = loadedScopes;
+    } else {
+      activeScopes = {
+        ListScope.daily,
+        ListScope.weekly,
+        ListScope.yearly,
+        ListScope.backlog,
+      };
+      settings.saveActiveListScopes(activeScopes);
+    }
+
+    try {
+      List<TodoList> loadedLists = await PersistenceHelper.loadAll();
+      listManager = ListManager(loadedLists, activeScopes: activeScopes);
+
+      var prefs = await SharedPreferences.getInstance();
+      var lastTransferDateString = prefs.getString('lastTodoTransferDate');
+      var now = DateTime.now().toIso8601String().substring(0, 10);
+      if (lastTransferDateString == null || lastTransferDateString != now) {
+        logger.d(
+          'Transfering todos on app start. Last run: $lastTransferDateString',
+        );
+        listManager!.transferTodos();
+        await prefs.setString('lastTodoTransferDate', now);
+      }
+
+      isLoading = false;
+
+      appState?.updateMessageCount(
+        PageType.todos,
+        listManager!.expiredTodosCount,
+      );
+
+      for (var l in listManager!.lists) {
+        doneTodosExpanded[l.scope] = false;
+      }
+    } catch (e, s) {
+      logger.e('Loading todo lists failed: : $e\n$s');
+      isLoadingDataFailed = true;
+      errorMessage = e.toString();
+      listManager = ListManager([], activeScopes: activeScopes);
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  void toggleExpansion(ListScope key) {
+    doneTodosExpanded[key] = !(doneTodosExpanded[key] ?? true);
+  }
+
+  Set<String> getTagFilter(ListScope list) {
+    return tagFilters[list] ?? {};
+  }
+
+  void updateTagFilter(ListScope list, Set<String> updatedTagFilter) {
+    tagFilters[list] = updatedTagFilter;
+    notifyListeners();
+  }
+
+  Future<T> performAcitionOnList<T>(FutureOr<T> Function() action) async {
+    T result;
+    if (listManager != null) {
+      result = await action();
+      appState!.updateMessageCount(
+        PageType.todos,
+        listManager!.expiredTodosCount,
+      );
+      if (T is bool && result == false) {
+        return false as T;
+      }
+      notifyListeners();
+    } else if (T is bool) {
+      result = false as T;
+    } else if (T == Null) {
+      result = null as T;
+    } else {
+      throw Exception(
+        '[TodoState] Cannot perform action on list because ListManager is not initialized!',
+      );
+    }
+    return result;
+  }
+}
+
+class TodoPage extends StatelessWidget {
+  const TodoPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = TodosLocalizations.of(context);
+    return Consumer<TodoState>(
+      builder: (context, todoState, child) {
+        final listManager = todoState.listManager;
+        if (todoState.isLoadingDataFailed) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showLoadingErrorDialog(context, todoState.errorMessage!);
+          });
+        }
+
+        return todoState.isLoading
+            ? LoadingScreen(message: loc.loadingTodosIndicator)
+            : DefaultTabController(
+                initialIndex: 0,
+                length: listManager!.listCount,
+                child: Scaffold(
+                  appBar: AppBar(
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
+                    toolbarHeight: 0,
+                    bottom: TabBar(
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 15),
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.center,
+                      dividerColor: Theme.of(context).primaryColor,
+                      tabs: [
+                        for (var list in listManager.lists)
+                          Tab(
+                            height: 60,
+                            icon: Badge(
+                              isLabelVisible:
+                                  listManager.toBeTransferredOrExpiredCount(
+                                    list,
+                                  ) >
+                                  0,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.tertiary,
+                              label: Text(
+                                '${listManager.toBeTransferredOrExpiredCount(list)}',
+                              ),
+                              child: Icon(list.scope.icon),
+                            ),
+                            text: list.scope.listName(context),
+                          ),
+                      ],
+                    ),
+                  ),
+                  body: TabBarView(
+                    children: <Widget>[
+                      for (var list in listManager.lists)
+                        TodoListPage(list: list),
+                    ],
+                  ),
+                ),
+              );
+      },
+    );
+  }
+}
+
+void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
+  await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      final loc = AppLocalizations.of(context);
+      return AlertDialog(
+        title: Text(loc.dataLoadErrorHeadline),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(errorMessage),
+            const SizedBox(height: 16),
+            Text(loc.dataLoadErrorMessage),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: Text(loc.openAppSettings),
+            onPressed: () {
+              AppSettings.openAppSettings(
+                type: AppSettingsType.settings,
+                asAnotherTask: false,
+              );
+            },
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+            child: Text(loc.closeApp),
+            onPressed: () {
+              SystemNavigator.pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}

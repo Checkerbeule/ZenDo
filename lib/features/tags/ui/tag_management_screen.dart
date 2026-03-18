@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/core/ui/dialog_helper.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/tags/domain/tag_delete_service.dart';
+import 'package:zen_do/features/tags/l10n/tags_localizations.dart';
 import 'package:zen_do/features/tags/ui/tag_edit_sheet.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
-import 'package:zen_do/localization/generated/tags/tags_localizations.dart';
-import 'package:zen_do/view/dialog_helper.dart';
 
 class TagManagementScreen extends StatelessWidget {
   final TagRepository repository;

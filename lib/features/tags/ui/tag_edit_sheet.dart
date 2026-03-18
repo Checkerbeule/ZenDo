@@ -4,8 +4,8 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/l10n/tags_localizations.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
-import 'package:zen_do/localization/generated/tags/tags_localizations.dart';
 
 class TagEditSheet extends StatefulWidget {
   final Tag? initialTag;
