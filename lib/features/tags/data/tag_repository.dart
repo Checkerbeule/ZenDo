@@ -21,7 +21,7 @@ class DriftTagRepository with SmartDeleteMixin implements TagRepository {
   Stream<List<Tag>> watchTags() {
     return (db.select(
       db.tags,
-    )..where((t) => t.syncStatus.isNotValue(SyncStatus.deleted.index))).watch();
+    )..where((t) => t.syncStatus.isNotValue(SyncStatus.deleted.name))).watch();
   }
 
   @override

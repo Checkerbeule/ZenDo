@@ -36,14 +36,14 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     defaultValue: currentDateAndTime,
   );
   @override
-  late final GeneratedColumnWithTypeConverter<SyncStatus, int> syncStatus =
-      GeneratedColumn<int>(
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
         'sync_status',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: DriftSqlType.string,
         requiredDuringInsert: false,
-        defaultValue: Constant(SyncStatus.localOnly.index),
+        defaultValue: Constant(SyncStatus.localOnly.name),
       ).withConverter<SyncStatus>($TagsTable.$convertersyncStatus);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
@@ -151,7 +151,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
       )!,
       syncStatus: $TagsTable.$convertersyncStatus.fromSql(
         attachedDatabase.typeMapping.read(
-          DriftSqlType.int,
+          DriftSqlType.string,
           data['${effectivePrefix}sync_status'],
         )!,
       ),
@@ -175,8 +175,8 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     return $TagsTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<SyncStatus, int> $convertersyncStatus =
-      const SyncStatusConverter();
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter(SyncStatus.values);
 }
 
 class Tag extends DataClass implements Insertable<Tag> {
@@ -200,7 +200,7 @@ class Tag extends DataClass implements Insertable<Tag> {
     map['uuid'] = Variable<String>(uuid);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     {
-      map['sync_status'] = Variable<int>(
+      map['sync_status'] = Variable<String>(
         $TagsTable.$convertersyncStatus.toSql(syncStatus),
       );
     }
@@ -229,7 +229,9 @@ class Tag extends DataClass implements Insertable<Tag> {
     return Tag(
       uuid: serializer.fromJson<String>(json['uuid']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      syncStatus: serializer.fromJson<SyncStatus>(json['syncStatus']),
+      syncStatus: $TagsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<int>(json['color']),
@@ -241,7 +243,9 @@ class Tag extends DataClass implements Insertable<Tag> {
     return <String, dynamic>{
       'uuid': serializer.toJson<String>(uuid),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'syncStatus': serializer.toJson<SyncStatus>(syncStatus),
+      'syncStatus': serializer.toJson<String>(
+        $TagsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<int>(color),
@@ -330,7 +334,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   static Insertable<Tag> custom({
     Expression<String>? uuid,
     Expression<DateTime>? updatedAt,
-    Expression<int>? syncStatus,
+    Expression<String>? syncStatus,
     Expression<int>? id,
     Expression<String>? name,
     Expression<int>? color,
@@ -373,7 +377,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
     if (syncStatus.present) {
-      map['sync_status'] = Variable<int>(
+      map['sync_status'] = Variable<String>(
         $TagsTable.$convertersyncStatus.toSql(syncStatus.value),
       );
     }
@@ -451,11 +455,11 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, int> get syncStatus =>
-      $composableBuilder(
-        column: $table.syncStatus,
-        builder: (column) => ColumnWithTypeConverterFilters(column),
-      );
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
@@ -491,7 +495,7 @@ class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get syncStatus => $composableBuilder(
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
     column: $table.syncStatus,
     builder: (column) => ColumnOrderings(column),
   );
@@ -527,7 +531,7 @@ class $$TagsTableAnnotationComposer
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<SyncStatus, int> get syncStatus =>
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
       $composableBuilder(
         column: $table.syncStatus,
         builder: (column) => column,

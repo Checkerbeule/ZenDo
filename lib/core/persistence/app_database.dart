@@ -13,7 +13,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
@@ -51,6 +51,28 @@ class AppDatabase extends _$AppDatabase {
               ),
             ]);
           });
+        }
+      },
+
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          await m.alterTable(
+            TableMigration(
+              tags,
+              columnTransformer: {
+                tags.syncStatus: CustomExpression<int>('sync_status')
+                    .caseMatch<String>(
+                      when: {
+                        Constant(0): Constant(SyncStatus.localOnly.name),
+                        Constant(1): Constant(SyncStatus.synced.name),
+                        Constant(2): Constant(SyncStatus.pending.name),
+                        Constant(3): Constant(SyncStatus.deleted.name),
+                      },
+                      orElse: Constant(SyncStatus.localOnly.name),
+                    ),
+              },
+            ),
+          );
         }
       },
     );
