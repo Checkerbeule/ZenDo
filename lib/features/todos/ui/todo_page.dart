@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zen_do/core/app/app_settings_service.dart';
 import 'package:zen_do/core/app/page_type.dart';
-import 'package:zen_do/core/l10n/app_localizations.dart';
+import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 import 'package:zen_do/core/ui/loading_screen.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
@@ -206,15 +206,14 @@ void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
-      final loc = AppLocalizations.of(context);
       return AlertDialog(
-        title: Text(loc.dataLoadErrorHeadline),
+        title: Text(context.appL10n.dataLoadErrorHeadline),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(errorMessage),
             const SizedBox(height: 16),
-            Text(loc.dataLoadErrorMessage),
+            Text(context.appL10n.dataLoadErrorMessage),
           ],
         ),
         actions: <Widget>[
@@ -222,7 +221,7 @@ void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.primary,
             ),
-            child: Text(loc.openAppSettings),
+            child: Text(context.appL10n.openAppSettings),
             onPressed: () {
               AppSettings.openAppSettings(
                 type: AppSettingsType.settings,
@@ -234,7 +233,7 @@ void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.primary,
             ),
-            child: Text(loc.closeApp),
+            child: Text(context.appL10n.closeApp),
             onPressed: () {
               SystemNavigator.pop();
             },

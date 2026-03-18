@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:zen_do/core/l10n/app_localizations.dart';
+import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 
 class ComingSoonPage extends StatelessWidget {
   const ComingSoonPage({super.key, required this.feature});
@@ -8,8 +8,6 @@ class ComingSoonPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context);
-
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -30,7 +28,7 @@ class ComingSoonPage extends StatelessWidget {
             const Text("Coming soon!", style: TextStyle(fontSize: 16)),
             const SizedBox(height: 12),
             Text(
-              "${loc.comingSoonMessage} 🚀",
+              "${context.appL10n.comingSoonMessage} 🚀",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14),
             ),

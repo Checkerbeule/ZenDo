@@ -7,7 +7,7 @@ import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/ui/dialog_helper.dart';
 import 'package:zen_do/core/utils/time_util.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
-import 'package:zen_do/features/tags/l10n/tags_localizations.dart';
+import 'package:zen_do/features/tags/l10n/tags_l10n_extension.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo.dart';
@@ -135,7 +135,6 @@ class _TodoEditPageState extends State<TodoEditPage> {
   @override
   Widget build(BuildContext context) {
     final loc = TodosLocalizations.of(context);
-    final tagLoc = TagsLocalizations.of(context);
     final locale = Localizations.localeOf(context);
     final backgroundColor = Theme.of(context).colorScheme.surfaceContainerLow;
     final TagRepository tagRepository = context.read<TagRepository>();
@@ -473,7 +472,7 @@ class _TodoEditPageState extends State<TodoEditPage> {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              '${tagLoc.connectedTags}:',
+                              '${context.tagsL10n.connectedTags}:',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ),
@@ -481,12 +480,13 @@ class _TodoEditPageState extends State<TodoEditPage> {
                           StreamBuilder<List<Tag>>(
                             stream: tagRepository.watchTags(),
                             builder: (context, snapshot) {
-                              final tagLoc = TagsLocalizations.of(context);
                               if (snapshot.hasData) {
                                 final tags = snapshot.data!;
                                 if (tags.isEmpty) {
                                   return Center(
-                                    child: Text(tagLoc.noTagsAvailable),
+                                    child: Text(
+                                      context.tagsL10n.noTagsAvailable,
+                                    ),
                                   );
                                 }
                                 return Wrap(
@@ -513,13 +513,13 @@ class _TodoEditPageState extends State<TodoEditPage> {
                               } else {
                                 if (snapshot.hasError) {
                                   return Text(
-                                    tagLoc.errorLoadingTags,
+                                    context.tagsL10n.errorLoadingTags,
                                     style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(fontStyle: FontStyle.italic),
                                   );
                                 }
                                 return Text(
-                                  tagLoc.loadingTags,
+                                  context.tagsL10n.loadingTags,
                                   style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(fontStyle: FontStyle.italic),
                                 );

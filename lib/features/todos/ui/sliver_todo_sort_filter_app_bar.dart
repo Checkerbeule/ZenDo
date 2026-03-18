@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/core/l10n/app_localizations.dart';
+import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
-import 'package:zen_do/features/tags/l10n/tags_localizations.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
+
+import '../../tags/l10n/tags_l10n_extension.dart';
 
 enum SortOption { custom, title, expirationDate, creationDate }
 
@@ -83,7 +84,6 @@ class _SliverTodoSortFilterAppBarState
 
   @override
   Widget build(BuildContext context) {
-    final loc = TagsLocalizations.of(context);
     final TagRepository tagRepository = context.read<TagRepository>();
     return SliverAppBar(
       pinned: false,
@@ -122,7 +122,7 @@ class _SliverTodoSortFilterAppBarState
                       return Padding(
                         padding: EdgeInsetsGeometry.symmetric(horizontal: 10),
                         child: Text(
-                          loc.noTagsForFiltering,
+                          context.tagsL10n.noTagsForFiltering,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(fontStyle: FontStyle.italic),
@@ -167,14 +167,14 @@ class _SliverTodoSortFilterAppBarState
                   } else {
                     if (snapshot.hasError) {
                       return Text(
-                        loc.errorLoadingTags,
+                        context.tagsL10n.errorLoadingTags,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontStyle: FontStyle.italic,
                         ),
                       );
                     }
                     return Text(
-                      loc.loadingTags,
+                      context.tagsL10n.loadingTags,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontStyle: FontStyle.italic,
                       ),
@@ -340,7 +340,7 @@ extension SortOptionX on SortOption {
     final loc = TodosLocalizations.of(context);
     switch (this) {
       case SortOption.custom:
-        return AppLocalizations.of(context).custom;
+        return context.appL10n.custom;
       case SortOption.title:
         return loc.todoTitle;
       case SortOption.expirationDate:

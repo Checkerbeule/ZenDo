@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:zen_do/features/settings/l10n/settings_l10n_extension.dart';
 import 'package:zen_do/features/settings/l10n/settings_localizations.dart';
 import 'package:zen_do/features/settings/utils/locale_helper.dart';
 
@@ -18,7 +19,6 @@ class LanguageSettingsPage extends StatefulWidget {
 class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
   @override
   Widget build(BuildContext context) {
-    final loc = SettingsLocalizations.of(context);
     final l10n = context.watch<ProviderL10n>();
     final locale = l10n.locale ?? Localizations.localeOf(context);
     final useSystemLanguage = l10n.locale == null;
@@ -30,7 +30,7 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(loc.languageSettingsHeadline),
+        title: Text(context.settingsL10n.languageSettingsHeadline),
       ),
       body: RadioGroup<Locale>(
         groupValue: locale,
@@ -46,13 +46,13 @@ class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
           sections: [
             SettingsSection(
               title: Text(
-                loc.chooseLanguage,
+                context.settingsL10n.chooseLanguage,
                 style: TextStyle(color: Theme.of(context).primaryColorDark),
               ),
               tiles: [
                 SettingsTile.switchTile(
                   initialValue: useSystemLanguage,
-                  title: Text(loc.useSystemLanguageLabel),
+                  title: Text(context.settingsL10n.useSystemLanguageLabel),
                   onToggle: (useSystemDefault) async {
                     if (useSystemDefault) {
                       l10n.locale = null;

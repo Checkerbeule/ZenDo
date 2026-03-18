@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:zen_do/features/settings/l10n/settings_localizations.dart';
+import 'package:zen_do/features/settings/l10n/settings_l10n_extension.dart';
 
 String getLanguageLabel(BuildContext context, Locale? locale) {
-  final loc = SettingsLocalizations.of(context);
   if (locale == null) return '';
   switch (locale.languageCode) {
     case 'en':
-      return loc.languageEnglish;
+      return context.settingsL10n.languageEnglish;
     case 'de':
-      return loc.languageGerman;
+      return context.settingsL10n.languageGerman;
     default:
       return locale.languageCode;
   }

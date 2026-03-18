@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:zen_do/core/app/app_settings_service.dart';
 import 'package:zen_do/core/ui/loading_screen.dart';
-import 'package:zen_do/features/settings/l10n/settings_localizations.dart';
+import 'package:zen_do/features/settings/l10n/settings_l10n_extension.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 
 class ListsSettingsPage extends StatefulWidget {
@@ -49,10 +49,9 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
       if (value) activeScopesCount++;
     }
     if (activeScopesCount < 1) {
-      final loc = SettingsLocalizations.of(context);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(loc.minOneListErrorMessage)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.settingsL10n.minOneListErrorMessage)),
+      );
     } else {
       final hasChanged = !mapEquals(initialLists, activeLists);
       Navigator.pop(context, hasChanged);
@@ -74,7 +73,6 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = SettingsLocalizations.of(context);
     return PopScope<bool>(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -88,16 +86,18 @@ class _ListsSettingsPageState extends State<ListsSettingsPage> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => _close(),
           ),
-          title: Text(loc.lists),
+          title: Text(context.settingsL10n.lists),
         ),
         body: isLoading
-            ? LoadingScreen(message: loc.loadingSettingsMessage)
+            ? LoadingScreen(
+                message: context.settingsL10n.loadingSettingsMessage,
+              )
             : SettingsList(
                 contentPadding: const EdgeInsets.only(right: 10),
                 sections: [
                   SettingsSection(
                     title: Text(
-                      loc.choosePreferredListsSettingsLabel,
+                      context.settingsL10n.choosePreferredListsSettingsLabel,
                       style: TextStyle(
                         color: Theme.of(context).primaryColorDark,
                       ),
