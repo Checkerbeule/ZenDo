@@ -15,21 +15,21 @@ import 'package:zen_do/features/todos/data/todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
-import 'package:zen_do/features/todos/ui/todo_edit_page.dart';
-import 'package:zen_do/features/todos/ui/todo_page.dart';
+import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
+import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
 Logger logger = Logger(level: Level.debug);
 
-class TodoListPage extends StatefulWidget {
-  const TodoListPage({super.key, required this.list});
+class TodoListScreen extends StatefulWidget {
+  const TodoListScreen({super.key, required this.list});
 
   final TodoList list;
 
   @override
-  State<TodoListPage> createState() => _TodoListPageState();
+  State<TodoListScreen> createState() => _TodoListScreenState();
 }
 
-class _TodoListPageState extends State<TodoListPage> {
+class _TodoListScreenState extends State<TodoListScreen> {
   late final AppSettingsService settings;
   SortOption sortOption = SortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
@@ -465,7 +465,7 @@ class _TodoListPageState extends State<TodoListPage> {
                                               context: context,
                                               isScrollControlled: true,
                                               builder: (context) =>
-                                                  TodoEditPage.editTodo(
+                                                  TodoEditSheet.editTodo(
                                                     todo: todo,
                                                     todoState: todoState,
                                                   ),
@@ -634,7 +634,7 @@ class _TodoListPageState extends State<TodoListPage> {
               Todo? newTodo = await showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
-                builder: (context) => TodoEditPage.newTodo(
+                builder: (context) => TodoEditSheet.newTodo(
                   todoState: todoState,
                   listScope: listScope,
                 ),

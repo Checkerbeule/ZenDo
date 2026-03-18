@@ -9,14 +9,14 @@ import 'package:zen_do/features/settings/utils/locale_helper.dart';
 
 Logger logger = Logger(level: Level.debug);
 
-class LanguageSettingsPage extends StatefulWidget {
-  const LanguageSettingsPage({super.key});
+class LanguageSettingsScreen extends StatefulWidget {
+  const LanguageSettingsScreen({super.key});
 
   @override
-  State<LanguageSettingsPage> createState() => _LanguageSettingsPageState();
+  State<LanguageSettingsScreen> createState() => _LanguageSettingsScreenState();
 }
 
-class _LanguageSettingsPageState extends State<LanguageSettingsPage> {
+class _LanguageSettingsScreenState extends State<LanguageSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.watch<ProviderL10n>();

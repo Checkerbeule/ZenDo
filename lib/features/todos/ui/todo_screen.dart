@@ -15,7 +15,7 @@ import 'package:zen_do/features/todos/data/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_manager.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
-import 'package:zen_do/features/todos/ui/todo_list_page.dart';
+import 'package:zen_do/features/todos/ui/todo_list_screen.dart';
 import 'package:zen_do/main.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -134,8 +134,8 @@ class TodoState extends ChangeNotifier {
   }
 }
 
-class TodoPage extends StatelessWidget {
-  const TodoPage({super.key});
+class TodoScreen extends StatelessWidget {
+  const TodoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +191,7 @@ class TodoPage extends StatelessWidget {
                   body: TabBarView(
                     children: <Widget>[
                       for (var list in listManager.lists)
-                        TodoListPage(list: list),
+                        TodoListScreen(list: list),
                     ],
                   ),
                 ),

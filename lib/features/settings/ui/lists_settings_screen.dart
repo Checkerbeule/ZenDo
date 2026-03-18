@@ -6,14 +6,14 @@ import 'package:zen_do/core/ui/loading_screen.dart';
 import 'package:zen_do/features/settings/l10n/settings_l10n_extension.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 
-class ListsSettingsPage extends StatefulWidget {
-  const ListsSettingsPage({super.key});
+class ListsSettingsScreen extends StatefulWidget {
+  const ListsSettingsScreen({super.key});
 
   @override
-  State<ListsSettingsPage> createState() => _ListsSettingsPageState();
+  State<ListsSettingsScreen> createState() => _ListsSettingsScreenState();
 }
 
-class _ListsSettingsPageState extends State<ListsSettingsPage> {
+class _ListsSettingsScreenState extends State<ListsSettingsScreen> {
   bool isLoading = true;
   late final Map<ListScope, bool> initialLists;
   Map<ListScope, bool> activeLists = {

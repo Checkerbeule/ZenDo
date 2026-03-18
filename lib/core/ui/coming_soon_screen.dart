@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 
-class ComingSoonPage extends StatelessWidget {
-  const ComingSoonPage({super.key, required this.feature});
+class ComingSoonScreen extends StatelessWidget {
+  const ComingSoonScreen({super.key, required this.feature});
 
   final String feature;
 

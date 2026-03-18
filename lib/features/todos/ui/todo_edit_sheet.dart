@@ -14,18 +14,18 @@ import 'package:zen_do/features/todos/data/todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_manager.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
-import 'package:zen_do/features/todos/ui/todo_page.dart';
+import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
 Logger logger = Logger(level: Level.debug);
 
-class TodoEditPage extends StatefulWidget {
-  const TodoEditPage.editTodo({
+class TodoEditSheet extends StatefulWidget {
+  const TodoEditSheet.editTodo({
     super.key,
     required this.todoState,
     required this.todo,
   }) : listScope = null;
 
-  const TodoEditPage.newTodo({
+  const TodoEditSheet.newTodo({
     super.key,
     required this.todoState,
     required this.listScope,
@@ -36,10 +36,10 @@ class TodoEditPage extends StatefulWidget {
   final ListScope? listScope;
 
   @override
-  State<TodoEditPage> createState() => _TodoEditPageState();
+  State<TodoEditSheet> createState() => _TodoEditSheetState();
 }
 
-class _TodoEditPageState extends State<TodoEditPage> {
+class _TodoEditSheetState extends State<TodoEditSheet> {
   late final Todo? todo;
   late final ListManager manager;
   late final bool isNewTodo;

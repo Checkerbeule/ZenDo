@@ -4,20 +4,20 @@ import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/features/settings/l10n/settings_l10n_extension.dart';
-import 'package:zen_do/features/settings/ui/language_settings_page.dart';
-import 'package:zen_do/features/settings/ui/lists_settings_page.dart';
+import 'package:zen_do/features/settings/ui/language_settings_screen.dart';
+import 'package:zen_do/features/settings/ui/lists_settings_screen.dart';
 import 'package:zen_do/features/settings/utils/locale_helper.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/tags/ui/tag_management_screen.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsScreenState extends State<SettingsScreen> {
   // TODO implement hasChanged properly for multiple settings changes
   bool hasChanged = false;
   String? appVersion = '';
@@ -90,7 +90,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   onPressed: (context) => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const LanguageSettingsPage(),
+                      builder: (context) => const LanguageSettingsScreen(),
                     ),
                   ),
                 ),
@@ -112,7 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     final changed = await Navigator.push<bool>(
                       context,
                       MaterialPageRoute<bool>(
-                        builder: (context) => const ListsSettingsPage(),
+                        builder: (context) => const ListsSettingsScreen(),
                       ),
                     );
                     hasChanged = changed ?? false;
