@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/core/ui/dialog_helper.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/tags/domain/tag_delete_service.dart';
 import 'package:zen_do/features/tags/ui/tag_edit_sheet.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
-import 'package:zen_do/localization/generated/tags/tags_localizations.dart';
-import 'package:zen_do/view/dialog_helper.dart';
+
+import '../l10n/tags_l10n_extension.dart';
 
 class TagManagementScreen extends StatelessWidget {
   final TagRepository repository;
@@ -25,8 +26,6 @@ class TagManagementScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = TagsLocalizations.of(context);
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -45,7 +44,7 @@ class TagManagementScreen extends StatelessWidget {
               vertical: 12,
             ),
             child: Text(
-              loc.manageTagsScreenHeader,
+              context.tagsL10n.manageTagsScreenHeader,
               style: TextStyle(color: Theme.of(context).primaryColorDark),
             ),
           ),
@@ -57,7 +56,7 @@ class TagManagementScreen extends StatelessWidget {
                   return Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
-                  return Center(child: Text(loc.errorLoadingTags));
+                  return Center(child: Text(context.tagsL10n.errorLoadingTags));
                 }
 
                 final tags = snapshot.data ?? [];
@@ -77,11 +76,14 @@ class TagManagementScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            loc.noTagsAvailable,
+                            context.tagsL10n.noTagsAvailable,
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
-                          Text(loc.addSomeTags, textAlign: TextAlign.center),
+                          Text(
+                            context.tagsL10n.addSomeTags,
+                            textAlign: TextAlign.center,
+                          ),
                         ],
                       ),
                     ),
@@ -109,8 +111,8 @@ class TagManagementScreen extends StatelessWidget {
                                     await showDialogWithScaleTransition<bool>(
                                       context: context,
                                       child: DeleteDialog(
-                                        title: loc.deleteTagTitle,
-                                        text: loc.deleteTagMessage(
+                                        title: context.tagsL10n.deleteTagTitle,
+                                        text: context.tagsL10n.deleteTagMessage(
                                           tags[index].name,
                                         ),
                                       ),
@@ -140,7 +142,7 @@ class TagManagementScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openEditor(context, null),
-        label: Text(loc.addTag),
+        label: Text(context.tagsL10n.addTag),
         icon: const Icon(Icons.add),
       ),
     );

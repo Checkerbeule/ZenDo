@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:zen_do/utils/time_util.dart';
+import 'package:zen_do/core/utils/time_util.dart';
 
 void main() {
   const className = 'TimeUtil';

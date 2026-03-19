@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
-import 'package:zen_do/localization/generated/tags/tags_localizations.dart';
+
+import '../l10n/tags_l10n_extension.dart';
 
 class TagEditSheet extends StatefulWidget {
   final Tag? initialTag;
@@ -69,7 +70,6 @@ class _TagEditSheetState extends State<TagEditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = TagsLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewPadding.bottom,
@@ -92,7 +92,9 @@ class _TagEditSheetState extends State<TagEditSheet> {
             ),
           ),
           Text(
-            widget.initialTag == null ? loc.addNewTag : loc.editTag,
+            widget.initialTag == null
+                ? context.tagsL10n.addNewTag
+                : context.tagsL10n.editTag,
             style: TextTheme.of(context).headlineSmall,
           ),
           const SizedBox(height: 2),
@@ -103,7 +105,9 @@ class _TagEditSheetState extends State<TagEditSheet> {
           const SizedBox(height: 2),
           TextField(
             controller: _nameController,
-            decoration: InputDecoration(labelText: loc.tagNameLabel),
+            decoration: InputDecoration(
+              labelText: context.tagsL10n.tagNameLabel,
+            ),
             autofocus: true,
             maxLength: 25,
             textCapitalization: TextCapitalization.sentences,
@@ -126,12 +130,13 @@ class _TagEditSheetState extends State<TagEditSheet> {
                 ColorPickerType.wheel: true,
               },
               pickerTypeLabels: {
-                ColorPickerType.primary: loc.colorPickerPrimaryLable,
-                ColorPickerType.wheel: loc.colorPickerWheelLable,
+                ColorPickerType.primary:
+                    context.tagsL10n.colorPickerPrimaryLable,
+                ColorPickerType.wheel: context.tagsL10n.colorPickerWheelLable,
               },
-              heading: Text(loc.tagColorHeading),
-              subheading: Text(loc.tagColorSubheading),
-              wheelSubheading: Text(loc.tagColorSubheading),
+              heading: Text(context.tagsL10n.tagColorHeading),
+              subheading: Text(context.tagsL10n.tagColorSubheading),
+              wheelSubheading: Text(context.tagsL10n.tagColorSubheading),
               showColorName: true,
             ),
           ),

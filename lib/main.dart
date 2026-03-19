@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:zen_do/core/app/page_type.dart';
+import 'package:zen_do/core/app/zen_do_lifecycle_listener.dart';
+import 'package:zen_do/core/l10n/app_localizations.dart';
+import 'package:zen_do/core/l10n/localizations_delegates.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/core/persistence/hive/hive_initializer.dart';
 import 'package:zen_do/core/theme/theme.dart';
+import 'package:zen_do/core/ui/coming_soon_screen.dart';
+import 'package:zen_do/features/settings/ui/settings_screen.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
-import 'package:zen_do/localization/generated/app/app_localizations.dart';
-import 'package:zen_do/localization/localizations_config.dart';
-import 'package:zen_do/persistence/hive_initializer.dart';
-import 'package:zen_do/view/coming_soon_page.dart';
-import 'package:zen_do/view/page_type.dart';
-import 'package:zen_do/view/settings/settings_page.dart';
-import 'package:zen_do/view/todo/todo_page.dart';
-import 'package:zen_do/zen_do_lifecycle_listener.dart';
+import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -109,7 +109,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
                   final hasChanged = await Navigator.push<bool>(
                     context,
                     MaterialPageRoute<bool>(
-                      builder: (context) => const SettingsPage(),
+                      builder: (context) => const SettingsScreen(),
                     ),
                   );
                   if (!context.mounted) return;
@@ -123,10 +123,10 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
           body: IndexedStack(
             index: pageIndex,
             children: [
-              const TodoPage(),
-              const ComingSoonPage(feature: 'Habit tracking'),
-              const ComingSoonPage(feature: 'Pomodoro timer'),
-              const ComingSoonPage(feature: 'Notes'),
+              const TodoScreen(),
+              const ComingSoonScreen(feature: 'Habit tracking'),
+              const ComingSoonScreen(feature: 'Pomodoro timer'),
+              const ComingSoonScreen(feature: 'Notes'),
             ],
           ),
           bottomNavigationBar: NavigationBar(

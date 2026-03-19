@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:zen_do/model/todo/list_scope.dart';
-import 'package:zen_do/model/todo/todo.dart';
-import 'package:zen_do/model/todo/todo_list.dart';
-import 'package:zen_do/persistence/file_lock_helper.dart';
-import 'package:zen_do/persistence/persistence_helper.dart';
-import 'package:zen_do/utils/time_util.dart';
+import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/data/todo_list.dart';
+import 'package:zen_do/core/persistence/hive/file_lock_helper.dart';
+import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
+import 'package:zen_do/core/utils/time_util.dart';
 
 import '../mocks/mocks.mocks.dart';
 

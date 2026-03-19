@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zen_do/model/todo/list_scope.dart';
-import 'package:zen_do/model/todo/todo.dart';
+import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/data/todo.dart';
 
 void main() {
   final className = 'Todo';
