@@ -10,7 +10,7 @@
             "type": "dart"
         },
         {
-            "name": "Debug (no imeller)",
+            "name": "Debug (no impeller)",
             "request": "launch",
             "type": "dart",
             "toolArgs": [

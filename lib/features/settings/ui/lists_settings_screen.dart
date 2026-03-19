@@ -116,7 +116,25 @@ class _ListsSettingsScreenState extends State<ListsSettingsScreen> {
                               }
                             });
                           },
-                          title: Text(scope.label(context)),
+                          title: Row(
+                            children: [
+                              Icon(
+                                scope.icon,
+                                color: !activeLists[scope]!
+                                    ? Theme.of(context).disabledColor
+                                    : Theme.of(context).primaryColor,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                scope.listName(context),
+                                style: TextStyle(
+                                  color: !activeLists[scope]!
+                                      ? Theme.of(context).disabledColor
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                     ],
                   ),

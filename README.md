@@ -10,32 +10,35 @@ A minimalist **Flutter** productivity app, combining **tasks, notes, routines** 
 > Not released yet. **Currently not published in Play Store**.
 
 ## Screenshots
-**Home / Todo Page**  
-<img src="assets/screenshots/Screenshot_main_todo_page.png?raw=true" width="300"/>
+**Manage todos**  
+<img src="assets/recordings/recoring_todos.gif?raw=true" width="300"/>
 
-**Todo BottomSheet**  
-<img src="assets/screenshots/Screenshot_todo_bottomsheet.png?raw=true" width="300"/>
+**Tags for organization and filtering**  
+<img src="assets/recordings/recoring_tags.gif?raw=true" width="300"/>
 
-**Settings**  
-<img src="assets/screenshots/Screenshot_settings_full.png?raw=true" width="300"/>
+**List settings**  
+<img src="assets/recordings/recoring_settings_lists.gif?raw=true" width="300"/>
+
+**Language settings**  
+<img src="assets/recordings/recoring_settings_language.gif?raw=true" width="300"/>
 
 ## Tech Stack
 - **Flutter** (Material 3)
 - **Dart**
 - **Provider** (State Management)
-- **Hive** (Local Storage)
+- **Hive, Drift** (Local Storage)
 
 ## Features in progress
 - Task management
-- Cloud backup
-- Task & list labels
+- Tags to organize tasks and other content
 
 ## Features planned
 - Pomodoro timer
 - Daily routines & habit tracking
 - Statistics & insights
 - Notes
-- Shared tasks and lists
+- Shared tasks and lists via cloud sync
+- Web App
 
 ## Supported languages
 - English
@@ -47,9 +50,6 @@ A minimalist **Flutter** productivity app, combining **tasks, notes, routines** 
 - Clean architecture
 - Offline-first
 - Designed to help users stay organized without feeling overwhelmed.
-
-## Project Status
-Early development, rapid iteration, not optimized for production yet.
 
 ---
 
