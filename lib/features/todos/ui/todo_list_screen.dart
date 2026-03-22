@@ -118,7 +118,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
     final Set<SortOption> excludedSortOptions = listScope == ListScope.backlog
         ? {SortOption.expirationDate}
         : {};
-    final tagFilter = context.watch<TodoState>().getTagFilter(listScope);
+    final tagFilter = context.watch<TodoState>().tagFilter;
 
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
@@ -149,10 +149,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 },
                 selectedTagUuids: tagFilter,
                 onFilterChanged: (updatedTagFilter) {
-                  context.read<TodoState>().updateTagFilter(
-                    listScope,
-                    updatedTagFilter,
-                  );
+                  context.read<TodoState>().updateTagFilter(updatedTagFilter);
                 },
               ),
 

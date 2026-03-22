@@ -18,8 +18,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // TODO implement hasChanged properly for multiple settings changes
-  bool hasChanged = false;
+  bool _hasChanged = false;
   String? appVersion = '';
   String? appBuildNumber = '';
 
@@ -35,7 +34,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _close() {
-    Navigator.pop(context, hasChanged);
+    Navigator.pop(context, _hasChanged);
+  }
+
+  void _handleChangedSettings(bool hasChanged) {
+    if (hasChanged) {
+      _hasChanged = true;
+    }
   }
 
   @override
@@ -109,13 +114,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   leading: const Icon(Icons.view_column),
                   onPressed: (context) async {
-                    final changed = await Navigator.push<bool>(
+                    final hasChanged = await Navigator.push<bool>(
                       context,
                       MaterialPageRoute<bool>(
                         builder: (context) => const ListsSettingsScreen(),
                       ),
                     );
-                    hasChanged = changed ?? false;
+                    _handleChangedSettings(hasChanged ?? false);
                   },
                 ),
                 SettingsTile.navigation(

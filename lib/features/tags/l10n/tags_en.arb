@@ -20,7 +20,7 @@
   "errorLoadingTags": "An error occurred while loading tags.",
   "loadingTags": "Loading tags...",
   "manageTagsScreenHeader": "Manage your tags to organize content",
-  "noTagsAvailable": "Keine Tags vorhanden",
+  "noTagsAvailable": "No tags available",
   "noTagsForFiltering": "No tags available for filtering",
   "tagColorHeading": "Choose a color",
   "tagColorSubheading": "Color gradations",

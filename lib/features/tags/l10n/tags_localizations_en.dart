@@ -47,7 +47,7 @@ class TagsLocalizationsEn extends TagsLocalizations {
   String get manageTagsScreenHeader => 'Manage your tags to organize content';
 
   @override
-  String get noTagsAvailable => 'Keine Tags vorhanden';
+  String get noTagsAvailable => 'No tags available';
 
   @override
   String get noTagsForFiltering => 'No tags available for filtering';
