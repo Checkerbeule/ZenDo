@@ -170,7 +170,7 @@ abstract class TagsLocalizations {
   /// No description provided for @noTagsAvailable.
   ///
   /// In en, this message translates to:
-  /// **'Keine Tags vorhanden'**
+  /// **'No tags available'**
   String get noTagsAvailable;
 
   /// No description provided for @noTagsForFiltering.

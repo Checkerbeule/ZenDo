@@ -27,7 +27,7 @@ class TodoState extends ChangeNotifier {
   bool isLoadingDataFailed = false;
   String? errorMessage;
   Map<ListScope, bool> doneTodosExpanded = {};
-  Map<ListScope, Set<String>> tagFilters = {};
+  Set<String> tagFilters = {};
 
   TodoState() {
     _initData();
@@ -41,6 +41,11 @@ class TodoState extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
     await _initData();
+    notifyListeners();
+  }
+
+  void removeTagsFromFilter(List<String> tagUuidsToRemove) {
+    tagFilters.removeAll(tagUuidsToRemove);
     notifyListeners();
   }
 
@@ -100,12 +105,12 @@ class TodoState extends ChangeNotifier {
     doneTodosExpanded[key] = !(doneTodosExpanded[key] ?? true);
   }
 
-  Set<String> getTagFilter(ListScope list) {
-    return tagFilters[list] ?? {};
+  Set<String> get tagFilter {
+    return tagFilters;
   }
 
-  void updateTagFilter(ListScope list, Set<String> updatedTagFilter) {
-    tagFilters[list] = updatedTagFilter;
+  void updateTagFilter(Set<String> updatedTagFilter) {
+    tagFilters = updatedTagFilter;
     notifyListeners();
   }
 

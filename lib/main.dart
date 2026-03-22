@@ -2,7 +2,6 @@ import 'package:arb_utils/state_managers/l10n_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:workmanager/workmanager.dart';
 import 'package:zen_do/core/app/page_type.dart';
 import 'package:zen_do/core/app/zen_do_lifecycle_listener.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
@@ -21,8 +20,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await HiveInitializer.initFlutter();
-
-  await Workmanager().cancelAll(); //TODO remove for next build
 
   WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
 
@@ -113,7 +110,7 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
                     ),
                   );
                   if (!context.mounted) return;
-                  if (hasChanged ?? false) {
+                  if (hasChanged == true) {
                     context.read<TodoState>().reload();
                   }
                 },
