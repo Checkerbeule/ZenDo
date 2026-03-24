@@ -8,11 +8,10 @@ import 'package:zen_do/core/persistence/hive/file_lock_helper.dart';
 import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 import 'package:zen_do/core/utils/time_util.dart';
 
-import '../mocks/mocks.mocks.dart';
+import '../../core/persistence/mocks/mocks.mocks.dart';
 
 void main() {
-  final className = 'ListManager';
-  test('$className get allLists, returns sorted lists', () {
+  test('ListManager get allLists, returns sorted lists', () {
     final dailyList = TodoList(ListScope.daily);
     final weeklyList = TodoList(ListScope.weekly);
     final monthlyList = TodoList(ListScope.monthly);
@@ -35,7 +34,7 @@ void main() {
     expect(lists.last, backlog);
   });
 
-  test('$className initialize with no list, returns all empty lists', () {
+  test('ListManager initialize with no list, returns all empty lists', () {
     final manager = ListManager([]);
     final lists = manager.lists;
 
@@ -53,7 +52,7 @@ void main() {
   });
 
   test(
-    '$className initialize wit no list and a set of ListTypes, returns all empty lists with the given ListType set',
+    'ListManager initialize wit no list and a set of ListTypes, returns all empty lists with the given ListType set',
     () {
       final activeScopes = <ListScope>{
         ListScope.daily,
@@ -72,7 +71,7 @@ void main() {
     },
   );
 
-  test('$className addList successfully', () {
+  test('ListManager addList successfully', () {
     final dailyList = TodoList(ListScope.daily);
     final backlog = TodoList(ListScope.backlog);
 
@@ -91,7 +90,7 @@ void main() {
     expect(lists.last, backlog);
   });
 
-  test('$className addList with dublicate scope returns false ', () {
+  test('ListManager addList with dublicate scope returns false ', () {
     final dailyList_1 = TodoList(ListScope.daily);
     final backlog = TodoList(ListScope.backlog);
 
@@ -109,7 +108,7 @@ void main() {
     expect(lists.last, backlog);
   });
 
-  test('$className getListByScope returns correct list', () {
+  test('ListManager getListByScope returns correct list', () {
     final manager = ListManager([]);
 
     final list = manager.getListByScope(ListScope.monthly);
@@ -118,7 +117,7 @@ void main() {
     expect(list!.scope, ListScope.monthly);
   });
 
-  test('$className getListByScope returns null on nonexisting list', () {
+  test('ListManager getListByScope returns null on nonexisting list', () {
     final manager = ListManager(
       [],
       activeScopes: {ListScope.daily, ListScope.backlog},
@@ -129,8 +128,8 @@ void main() {
     expect(list, isNull);
   });
 
-  group('$className getPreviousList getNextList tests', () {
-    test('$className getPrevieousList returns correct list', () {
+  group('ListManager getPreviousList getNextList tests', () {
+    test('ListManager getPrevieousList returns correct list', () {
       final dailyList = TodoList(ListScope.daily);
       final weeklyList = TodoList(ListScope.weekly);
       final backlog = TodoList(ListScope.backlog);
@@ -151,7 +150,7 @@ void main() {
     });
 
     test(
-      '$className getPrevieousList returns null if current list is last list',
+      'ListManager getPrevieousList returns null if current list is last list',
       () {
         final dailyList = TodoList(ListScope.daily);
         final weeklyList = TodoList(ListScope.weekly);
@@ -173,7 +172,7 @@ void main() {
       },
     );
 
-    test('$className getNextList returns correct list', () {
+    test('ListManager getNextList returns correct list', () {
       final dailyList = TodoList(ListScope.daily);
       final weeklyList = TodoList(ListScope.weekly);
       final backlog = TodoList(ListScope.backlog);
@@ -194,7 +193,7 @@ void main() {
     });
 
     test(
-      '$className getNextList returns null if current list is first list',
+      'ListManager getNextList returns null if current list is first list',
       () {
         final dailyList = TodoList(ListScope.daily);
         final weeklyList = TodoList(ListScope.weekly);
@@ -217,8 +216,8 @@ void main() {
     );
   });
 
-  group('$className getScopeForExpirationDate tests', () {
-    test('$className getScopeForExpirationDate today fits daily list', () {
+  group('ListManager getScopeForExpirationDate tests', () {
+    test('ListManager getScopeForExpirationDate today fits daily list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
@@ -228,7 +227,7 @@ void main() {
       expect(scope, ListScope.daily);
     });
 
-    test('$className getScopeForExpirationDate tomorrow fits daily list', () {
+    test('ListManager getScopeForExpirationDate tomorrow fits daily list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
@@ -238,7 +237,7 @@ void main() {
       expect(scope, ListScope.daily);
     });
 
-    test('$className getScopeForExpirationDate date fits weekly list', () {
+    test('ListManager getScopeForExpirationDate date fits weekly list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
@@ -248,7 +247,7 @@ void main() {
       expect(scope, ListScope.weekly);
     });
 
-    test('$className getScopeForExpirationDate date fits monthly list', () {
+    test('ListManager getScopeForExpirationDate date fits monthly list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
@@ -261,7 +260,7 @@ void main() {
       expect(scope, ListScope.monthly);
     });
 
-    test('$className getScopeForExpirationDate date fits monthly list', () {
+    test('ListManager getScopeForExpirationDate date fits monthly list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
@@ -271,7 +270,7 @@ void main() {
       expect(scope, ListScope.monthly);
     });
 
-    test('$className getScopeForExpirationDate date fits yearly list', () {
+    test('ListManager getScopeForExpirationDate date fits yearly list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
@@ -284,7 +283,7 @@ void main() {
       expect(scope, ListScope.yearly);
     });
 
-    test('$className getScopeForExpirationDate date fits yearly list', () {
+    test('ListManager getScopeForExpirationDate date fits yearly list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
@@ -294,53 +293,50 @@ void main() {
       expect(scope, ListScope.yearly);
     });
 
-    test('$className getScopeForExpirationDate date fits backlog', () {
+    test('ListManager getScopeForExpirationDate date fits backlog', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now()
-            .add(Duration(days: 366))
-            .normalized,
+        DateTime.now().add(Duration(days: 366)).normalized,
       );
 
       expect(scope, ListScope.backlog);
     });
 
-    test('$className getScopeForExpirationDate skips none active scope', () {
+    test('ListManager getScopeForExpirationDate skips none active scope', () {
       final activeScopes = {
         ListScope.daily,
         ListScope.monthly,
         ListScope.yearly,
         ListScope.backlog,
-      }; 
+      };
       final manager = ListManager([], activeScopes: activeScopes);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now()
-            .add(Duration(days: 3))
-            .normalized,
+        DateTime.now().add(Duration(days: 3)).normalized,
       );
 
       expect(scope, ListScope.monthly);
     });
 
-    test('$className getScopeForExpirationDate returns null if no fitting scope exists', () {
-      final activeScopes = {
-        ListScope.daily,
-        ListScope.weekly,
-        ListScope.monthly,
-        ListScope.yearly,
-      }; 
-      final manager = ListManager([], activeScopes: activeScopes);
+    test(
+      'ListManager getScopeForExpirationDate returns null if no fitting scope exists',
+      () {
+        final activeScopes = {
+          ListScope.daily,
+          ListScope.weekly,
+          ListScope.monthly,
+          ListScope.yearly,
+        };
+        final manager = ListManager([], activeScopes: activeScopes);
 
-      final scope = manager.getScopeForExpirationDate(
-        DateTime.now()
-            .add(Duration(days: 400))
-            .normalized,
-      );
+        final scope = manager.getScopeForExpirationDate(
+          DateTime.now().add(Duration(days: 400)).normalized,
+        );
 
-      expect(scope, null);
-    });
+        expect(scope, null);
+      },
+    );
   });
 
   group('test using mocks', () {
@@ -369,7 +365,7 @@ void main() {
     });
 
     test(
-      '$className isTodoTitleVacant returns false even with leading and tailing spaces',
+      'ListManager isTodoTitleVacant returns false even with leading and tailing spaces',
       () {
         final dailyList = TodoList(ListScope.daily);
         final title = 'title';
@@ -386,8 +382,8 @@ void main() {
       },
     );
 
-    group('$className getTodosToTransfer tests', () {
-      test('$className getTodosToTransfer: from daily list', () {
+    group('ListManager getTodosToTransfer tests', () {
+      test('ListManager getTodosToTransfer: from daily list', () {
         final dailyList = TodoList(ListScope.daily);
         final todoToTransfer = Todo(title: 'transfer');
         final todoNotToTransfer = Todo(title: 'do not transfer');
@@ -406,7 +402,7 @@ void main() {
         );
       });
 
-      test('$className getTodosToTransfer: from weekly list', () {
+      test('ListManager getTodosToTransfer: from weekly list', () {
         final weeklyList = TodoList(ListScope.weekly);
         final todoToTransfer = Todo(title: 'transfer');
         final todoNotToTransfer = Todo(title: 'do not transfer');
@@ -425,7 +421,7 @@ void main() {
         );
       });
 
-      test('$className getTodosToTransfer: from montly list', () {
+      test('ListManager getTodosToTransfer: from montly list', () {
         final monthlyList = TodoList(ListScope.monthly);
         final todoToTransfer = Todo(title: 'transfer');
         final todoNotToTransfer = Todo(title: 'do not transfer');
@@ -448,7 +444,7 @@ void main() {
         );
       });
 
-      test('$className getTodosToTransfer: from yearly list', () {
+      test('ListManager getTodosToTransfer: from yearly list', () {
         final yearlyList = TodoList(ListScope.yearly);
         final todoToTransfer = Todo(title: 'transfer');
         final todoNotToTransfer = Todo(title: 'do not transfer');
@@ -472,8 +468,8 @@ void main() {
       });
     });
 
-    group('$className transferTodos tests', () {
-      test('$className transferTodos: from weekly to daily list', () async {
+    group('ListManager transferTodos tests', () {
+      test('ListManager transferTodos: from weekly to daily list', () async {
         final transferFrom = TodoList(ListScope.weekly);
         final transferTo = TodoList(ListScope.daily);
         final todoToTransfer = Todo(title: 'transfer');
@@ -494,7 +490,7 @@ void main() {
         expect(transferTo.todos.first, todoToTransfer);
       });
 
-      test('$className transferTodos: from monthly to weekly list', () async {
+      test('ListManager transferTodos: from monthly to weekly list', () async {
         final transferFrom = TodoList(ListScope.monthly);
         final transferTo = TodoList(ListScope.weekly);
         final todoToTransfer = Todo(title: 'transfer');
@@ -517,7 +513,7 @@ void main() {
         expect(transferTo.todos.first, todoToTransfer);
       });
 
-      test('$className transferTodos: from yearly to monthly list', () async {
+      test('ListManager transferTodos: from yearly to monthly list', () async {
         final transferFrom = TodoList(ListScope.yearly);
         final transferTo = TodoList(ListScope.monthly);
         final todoToTransfer = Todo(title: 'transfer');
@@ -540,7 +536,7 @@ void main() {
         expect(transferTo.todos.first, todoToTransfer);
       });
 
-      test('$className transferTodos: todo stays in list', () async {
+      test('ListManager transferTodos: todo stays in list', () async {
         final transferFrom = TodoList(ListScope.weekly);
         final transferTo = TodoList(ListScope.daily);
         final todoNotToTransfer = Todo(title: 'do not transfer');
@@ -554,7 +550,7 @@ void main() {
       });
 
       test(
-        '$className transferTodos: no transfer from backlog to other list',
+        'ListManager transferTodos: no transfer from backlog to other list',
         () async {
           final backlog = TodoList(ListScope.backlog);
           final transferTo = TodoList(ListScope.weekly);
@@ -570,7 +566,7 @@ void main() {
       );
 
       test(
-        '$className transferTodos: todos stay in dailyList but todo is expired',
+        'ListManager transferTodos: todos stay in dailyList but todo is expired',
         () async {
           final weeklkyList = TodoList(ListScope.weekly);
           final dailyList = TodoList(ListScope.daily);
@@ -591,7 +587,7 @@ void main() {
       );
 
       test(
-        '$className transferTodos: todo expired yesterday moves from highest scope to dailyList',
+        'ListManager transferTodos: todo expired yesterday moves from highest scope to dailyList',
         () async {
           final dailyList = TodoList(ListScope.daily);
           final weeklyList = TodoList(ListScope.weekly);
@@ -619,7 +615,7 @@ void main() {
       );
 
       test(
-        '$className transferTodos: todo expires in 6 days moves from highest scope to weekly',
+        'ListManager transferTodos: todo expires in 6 days moves from highest scope to weekly',
         () async {
           final dailyList = TodoList(ListScope.daily);
           final weeklyList = TodoList(ListScope.weekly);
@@ -646,7 +642,7 @@ void main() {
         },
       );
 
-      test('$className transferTodos: skip missing ListScope', () async {
+      test('ListManager transferTodos: skip missing ListScope', () async {
         final dailyList = TodoList(ListScope.daily);
         final weeklyList = TodoList(ListScope.weekly);
         final monthlyList = TodoList(ListScope.monthly);
@@ -663,9 +659,9 @@ void main() {
       });
     });
 
-    group('$className toBeTransferredTomorrow tests', () {
+    group('ListManager toBeTransferredTomorrow tests', () {
       test(
-        '$className toBeTransferredTomorrow: todos from daily list are never transferred',
+        'ListManager toBeTransferredTomorrow: todos from daily list are never transferred',
         () {
           final dailyList = TodoList(ListScope.daily);
           final weeklyList = TodoList(ListScope.weekly);
@@ -694,7 +690,7 @@ void main() {
         },
       );
 
-      test('$className toBeTransferredTomorrow: from weekly list', () {
+      test('ListManager toBeTransferredTomorrow: from weekly list', () {
         final dailyList = TodoList(ListScope.daily);
         final weeklyList = TodoList(ListScope.weekly);
         final monthlyList = TodoList(ListScope.monthly);
@@ -722,7 +718,7 @@ void main() {
         expect(manager.toBeTransferredTomorrow(todoNotToTransfer), false);
       });
 
-      test('$className toBeTransferredTomorrow: from monthly list', () {
+      test('ListManager toBeTransferredTomorrow: from monthly list', () {
         final dailyList = TodoList(ListScope.daily);
         final weeklyList = TodoList(ListScope.weekly);
         final monthlyList = TodoList(ListScope.monthly);
@@ -750,7 +746,7 @@ void main() {
         expect(manager.toBeTransferredTomorrow(todoNotToTransfer), false);
       });
 
-      test('$className toBeTransferredTomorrow: from yearly list', () {
+      test('ListManager toBeTransferredTomorrow: from yearly list', () {
         final dailyList = TodoList(ListScope.daily);
         final weeklyList = TodoList(ListScope.weekly);
         final monthlyList = TodoList(ListScope.monthly);
@@ -779,7 +775,7 @@ void main() {
       });
 
       test(
-        '$className toBeTransferredTomorrow: todos from backlog are never transferred',
+        'ListManager toBeTransferredTomorrow: todos from backlog are never transferred',
         () {
           final dailyList = TodoList(ListScope.daily);
           final weeklyList = TodoList(ListScope.weekly);
@@ -810,8 +806,8 @@ void main() {
       );
     });
 
-    group('$className move todo tests', () {
-      test('$className moveToNextList sucessfully', () async {
+    group('ListManager move todo tests', () {
+      test('ListManager moveToNextList sucessfully', () async {
         final manager = ListManager([]);
         final todo = Todo(title: 'todo to move to next list');
         manager.getListByScope(ListScope.monthly)!.addTodo(todo);
@@ -825,7 +821,7 @@ void main() {
       });
 
       test(
-        '$className moveToNextList not possible if todo allready exists in destination list',
+        'ListManager moveToNextList not possible if todo allready exists in destination list',
         () async {
           final manager = ListManager([]);
           final title = 'todo to move to next list';
@@ -847,7 +843,7 @@ void main() {
         },
       );
 
-      test('$className moveToPreviousList sucessfully', () async {
+      test('ListManager moveToPreviousList sucessfully', () async {
         final manager = ListManager([]);
         final todo = Todo(title: 'todo to move to next list');
         manager.getListByScope(ListScope.daily)!.addTodo(todo);
@@ -861,7 +857,7 @@ void main() {
       });
 
       test(
-        '$className moveToPreviousList not possible if todo allready exists in destination list',
+        'ListManager moveToPreviousList not possible if todo allready exists in destination list',
         () async {
           final manager = ListManager([]);
           final title = 'todo to move to next list';
@@ -880,7 +876,7 @@ void main() {
         },
       );
 
-      test('$className moveAndUpdateTodo sucessfully moves todo', () async {
+      test('ListManager moveAndUpdateTodo sucessfully moves todo', () async {
         final manager = ListManager([]);
         final todo = Todo(title: 'todo to move to next list');
         manager.getListByScope(ListScope.daily)!.addTodo(todo);
@@ -902,7 +898,7 @@ void main() {
       });
 
       test(
-        '$className moveAndUpdateTodo sucessfully moves updated todo',
+        'ListManager moveAndUpdateTodo sucessfully moves updated todo',
         () async {
           final manager = ListManager([]);
           final todo = Todo(title: 'todo to move to next list');
@@ -929,7 +925,7 @@ void main() {
       );
 
       test(
-        '$className moveAndUpdateTodo not possible if destination list does not exist',
+        'ListManager moveAndUpdateTodo not possible if destination list does not exist',
         () async {
           final manager = ListManager(
             [],

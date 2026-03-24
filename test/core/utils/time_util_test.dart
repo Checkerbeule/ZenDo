@@ -5,8 +5,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:zen_do/core/utils/time_util.dart';
 
 void main() {
-  const className = 'TimeUtil';
-
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     await initializeDateFormatting('de');
@@ -14,8 +12,8 @@ void main() {
     await initializeDateFormatting('en_GB');
   });
 
-  group('$className parseLocalized tests', () {
-    test('$className parseLocalized with locale de successfully', () {
+  group('TimeUtil parseLocalized tests', () {
+    test('TimeUtil parseLocalized with locale de successfully', () {
       final locale = const Locale('de');
       final dateString = '25.12.2023';
 
@@ -24,7 +22,7 @@ void main() {
       expect(parsedDate, DateTime(2023, 12, 25));
     });
 
-    test('$className parseLocalized with locale en US successfully', () {
+    test('TimeUtil parseLocalized with locale en US successfully', () {
       final locale = const Locale('en', 'US');
       final dateString = '12/25/2023';
 
@@ -33,7 +31,7 @@ void main() {
       expect(parsedDate, DateTime(2023, 12, 25));
     });
 
-    test('$className parseLocalized with locale en GB successfully', () {
+    test('TimeUtil parseLocalized with locale en GB successfully', () {
       final locale = const Locale('en', 'GB');
       final dateString = '25/12/2023';
 
@@ -42,7 +40,7 @@ void main() {
       expect(parsedDate, DateTime(2023, 12, 25));
     });
 
-    test('$className parseLocalized fails on invalid date string', () {
+    test('TimeUtil parseLocalized fails on invalid date string', () {
       final locale = const Locale('de');
       final dateString = 'this is not a date';
 
@@ -52,22 +50,19 @@ void main() {
       );
     });
 
-    test(
-      '$className tryParseLocalized returns null on invalid date string',
-      () {
-        final locale = const Locale('de');
-        final dateString = 'this is not a date';
+    test('TimeUtil tryParseLocalized returns null on invalid date string', () {
+      final locale = const Locale('de');
+      final dateString = 'this is not a date';
 
-        final result = tryParseLocalized(dateString, locale);
+      final result = tryParseLocalized(dateString, locale);
 
-        expect(result, isNull);
-      },
-    );
+      expect(result, isNull);
+    });
   });
 
-  group('$className normalized DateTime tests', () {
+  group('TimeUtil normalized DateTime tests', () {
     test(
-      '$className normalized DateTime removes hours, minutes, seconds and milliseconds DateTime',
+      'TimeUtil normalized DateTime removes hours, minutes, seconds and milliseconds DateTime',
       () {
         final now = DateTime.now();
         final nowNormalized = DateTime(now.year, now.month, now.day);
@@ -79,8 +74,8 @@ void main() {
     );
   });
 
-  group('$className format DateTime tests', () {
-    test('$className format DateTime with locale de successfully', () {
+  group('TimeUtil format DateTime tests', () {
+    test('TimeUtil format DateTime with locale de successfully', () {
       final date = DateTime(2023, 12, 25);
       final locale = const Locale('de');
 
@@ -89,7 +84,7 @@ void main() {
       expect(formattedDate, 'Mo. 25.12.2023');
     });
 
-    test('$className format DateTime with locale en US successfully', () {
+    test('TimeUtil format DateTime with locale en US successfully', () {
       final date = DateTime(2023, 12, 25);
       final locale = const Locale('en', 'US');
 
@@ -98,7 +93,7 @@ void main() {
       expect(formattedDate, 'Mon. 12/25/2023');
     });
 
-    test('$className format DateTime with locale en GB successfully', () {
+    test('TimeUtil format DateTime with locale en GB successfully', () {
       final date = DateTime(2023, 12, 25);
       final locale = const Locale('en', 'GB');
 
@@ -107,7 +102,7 @@ void main() {
       expect(formattedDate, 'Mon. 25/12/2023');
     });
 
-    test('$className format DateTime with invalid locale fails', () {
+    test('TimeUtil format DateTime with invalid locale fails', () {
       final date = DateTime(2023, 12, 25);
       final locale = const Locale('xx', 'XX');
 
