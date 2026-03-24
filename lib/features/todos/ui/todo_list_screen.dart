@@ -8,6 +8,7 @@ import 'package:sliver_tools/sliver_tools.dart';
 import 'package:zen_do/core/app/app_settings_service.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/core/theme/theme.dart';
 import 'package:zen_do/core/ui/dialog_helper.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
@@ -199,9 +200,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                             animation: animation,
                             builder: (context, _) {
                               return Transform.scale(
-                                scale: 1.0,
+                                scale: 1.01,
                                 child: Material(
-                                  elevation: 3,
+                                  elevation: 5,
                                   color: Colors.transparent,
                                   child: child,
                                 ),
@@ -421,7 +422,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                               child: Card(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: const BorderRadiusGeometry.all(
-                                    Radius.circular(5),
+                                    AppTheme.smallRadius,
                                   ),
                                   side: BorderSide(
                                     color: isExpiredOrToBeTransferred

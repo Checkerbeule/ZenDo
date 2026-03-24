@@ -45,6 +45,18 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
         requiredDuringInsert: false,
         defaultValue: Constant(SyncStatus.localOnly.name),
       ).withConverter<SyncStatus>($TagsTable.$convertersyncStatus);
+  static const VerificationMeta _fractionalIndexMeta = const VerificationMeta(
+    'fractionalIndex',
+  );
+  @override
+  late final GeneratedColumn<String> fractionalIndex = GeneratedColumn<String>(
+    'fractional_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: Constant("a0"),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -85,6 +97,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     uuid,
     updatedAt,
     syncStatus,
+    fractionalIndex,
     id,
     name,
     color,
@@ -111,6 +124,15 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
       context.handle(
         _updatedAtMeta,
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('fractional_index')) {
+      context.handle(
+        _fractionalIndexMeta,
+        fractionalIndex.isAcceptableOrUnknown(
+          data['fractional_index']!,
+          _fractionalIndexMeta,
+        ),
       );
     }
     if (data.containsKey('id')) {
@@ -155,6 +177,10 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
           data['${effectivePrefix}sync_status'],
         )!,
       ),
+      fractionalIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fractional_index'],
+      )!,
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -179,10 +205,12 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
       const EnumNameConverter(SyncStatus.values);
 }
 
-class Tag extends SyncableEntity implements Insertable<Tag> {
+class Tag extends SyncableEntity
+    implements Insertable<Tag>, WithFractionalIndex {
   final String uuid;
   final DateTime updatedAt;
   final SyncStatus syncStatus;
+  final String fractionalIndex;
   final int id;
   final String name;
   final int color;
@@ -190,6 +218,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
     required this.uuid,
     required this.updatedAt,
     required this.syncStatus,
+    required this.fractionalIndex,
     required this.id,
     required this.name,
     required this.color,
@@ -204,6 +233,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
         $TagsTable.$convertersyncStatus.toSql(syncStatus),
       );
     }
+    map['fractional_index'] = Variable<String>(fractionalIndex);
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     map['color'] = Variable<int>(color);
@@ -215,6 +245,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
       uuid: Value(uuid),
       updatedAt: Value(updatedAt),
       syncStatus: Value(syncStatus),
+      fractionalIndex: Value(fractionalIndex),
       id: Value(id),
       name: Value(name),
       color: Value(color),
@@ -232,6 +263,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
       syncStatus: $TagsTable.$convertersyncStatus.fromJson(
         serializer.fromJson<String>(json['syncStatus']),
       ),
+      fractionalIndex: serializer.fromJson<String>(json['fractionalIndex']),
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<int>(json['color']),
@@ -246,6 +278,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
       'syncStatus': serializer.toJson<String>(
         $TagsTable.$convertersyncStatus.toJson(syncStatus),
       ),
+      'fractionalIndex': serializer.toJson<String>(fractionalIndex),
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<int>(color),
@@ -256,6 +289,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
     String? uuid,
     DateTime? updatedAt,
     SyncStatus? syncStatus,
+    String? fractionalIndex,
     int? id,
     String? name,
     int? color,
@@ -263,6 +297,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
     uuid: uuid ?? this.uuid,
     updatedAt: updatedAt ?? this.updatedAt,
     syncStatus: syncStatus ?? this.syncStatus,
+    fractionalIndex: fractionalIndex ?? this.fractionalIndex,
     id: id ?? this.id,
     name: name ?? this.name,
     color: color ?? this.color,
@@ -274,6 +309,9 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
       syncStatus: data.syncStatus.present
           ? data.syncStatus.value
           : this.syncStatus,
+      fractionalIndex: data.fractionalIndex.present
+          ? data.fractionalIndex.value
+          : this.fractionalIndex,
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       color: data.color.present ? data.color.value : this.color,
@@ -286,6 +324,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
           ..write('uuid: $uuid, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
+          ..write('fractionalIndex: $fractionalIndex, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('color: $color')
@@ -294,7 +333,15 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
   }
 
   @override
-  int get hashCode => Object.hash(uuid, updatedAt, syncStatus, id, name, color);
+  int get hashCode => Object.hash(
+    uuid,
+    updatedAt,
+    syncStatus,
+    fractionalIndex,
+    id,
+    name,
+    color,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -302,6 +349,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
           other.uuid == this.uuid &&
           other.updatedAt == this.updatedAt &&
           other.syncStatus == this.syncStatus &&
+          other.fractionalIndex == this.fractionalIndex &&
           other.id == this.id &&
           other.name == this.name &&
           other.color == this.color);
@@ -311,6 +359,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   final Value<String> uuid;
   final Value<DateTime> updatedAt;
   final Value<SyncStatus> syncStatus;
+  final Value<String> fractionalIndex;
   final Value<int> id;
   final Value<String> name;
   final Value<int> color;
@@ -318,6 +367,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     this.uuid = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncStatus = const Value.absent(),
+    this.fractionalIndex = const Value.absent(),
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.color = const Value.absent(),
@@ -326,6 +376,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     this.uuid = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncStatus = const Value.absent(),
+    this.fractionalIndex = const Value.absent(),
     this.id = const Value.absent(),
     required String name,
     required int color,
@@ -335,6 +386,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     Expression<String>? uuid,
     Expression<DateTime>? updatedAt,
     Expression<String>? syncStatus,
+    Expression<String>? fractionalIndex,
     Expression<int>? id,
     Expression<String>? name,
     Expression<int>? color,
@@ -343,6 +395,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
       if (uuid != null) 'uuid': uuid,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncStatus != null) 'sync_status': syncStatus,
+      if (fractionalIndex != null) 'fractional_index': fractionalIndex,
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (color != null) 'color': color,
@@ -353,6 +406,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     Value<String>? uuid,
     Value<DateTime>? updatedAt,
     Value<SyncStatus>? syncStatus,
+    Value<String>? fractionalIndex,
     Value<int>? id,
     Value<String>? name,
     Value<int>? color,
@@ -361,6 +415,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
       uuid: uuid ?? this.uuid,
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
+      fractionalIndex: fractionalIndex ?? this.fractionalIndex,
       id: id ?? this.id,
       name: name ?? this.name,
       color: color ?? this.color,
@@ -381,6 +436,9 @@ class TagsCompanion extends UpdateCompanion<Tag> {
         $TagsTable.$convertersyncStatus.toSql(syncStatus.value),
       );
     }
+    if (fractionalIndex.present) {
+      map['fractional_index'] = Variable<String>(fractionalIndex.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -399,6 +457,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
           ..write('uuid: $uuid, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
+          ..write('fractionalIndex: $fractionalIndex, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('color: $color')
@@ -411,11 +470,18 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $TagsTable tags = $TagsTable(this);
+  late final Index idxTagsFractionalIndex = Index(
+    'idx_tags_fractional_index',
+    'CREATE INDEX idx_tags_fractional_index ON tags (fractional_index)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [tags];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    tags,
+    idxTagsFractionalIndex,
+  ];
 }
 
 typedef $$TagsTableCreateCompanionBuilder =
@@ -423,6 +489,7 @@ typedef $$TagsTableCreateCompanionBuilder =
       Value<String> uuid,
       Value<DateTime> updatedAt,
       Value<SyncStatus> syncStatus,
+      Value<String> fractionalIndex,
       Value<int> id,
       required String name,
       required int color,
@@ -432,6 +499,7 @@ typedef $$TagsTableUpdateCompanionBuilder =
       Value<String> uuid,
       Value<DateTime> updatedAt,
       Value<SyncStatus> syncStatus,
+      Value<String> fractionalIndex,
       Value<int> id,
       Value<String> name,
       Value<int> color,
@@ -459,6 +527,11 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
   get syncStatus => $composableBuilder(
     column: $table.syncStatus,
     builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<String> get fractionalIndex => $composableBuilder(
+    column: $table.fractionalIndex,
+    builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<int> get id => $composableBuilder(
@@ -500,6 +573,11 @@ class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get fractionalIndex => $composableBuilder(
+    column: $table.fractionalIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -536,6 +614,11 @@ class $$TagsTableAnnotationComposer
         column: $table.syncStatus,
         builder: (column) => column,
       );
+
+  GeneratedColumn<String> get fractionalIndex => $composableBuilder(
+    column: $table.fractionalIndex,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -578,6 +661,7 @@ class $$TagsTableTableManager
                 Value<String> uuid = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<String> fractionalIndex = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<int> color = const Value.absent(),
@@ -585,6 +669,7 @@ class $$TagsTableTableManager
                 uuid: uuid,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,
+                fractionalIndex: fractionalIndex,
                 id: id,
                 name: name,
                 color: color,
@@ -594,6 +679,7 @@ class $$TagsTableTableManager
                 Value<String> uuid = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<String> fractionalIndex = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required String name,
                 required int color,
@@ -601,6 +687,7 @@ class $$TagsTableTableManager
                 uuid: uuid,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,
+                fractionalIndex: fractionalIndex,
                 id: id,
                 name: name,
                 color: color,

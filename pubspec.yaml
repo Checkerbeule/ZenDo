@@ -51,6 +51,7 @@ dependencies:
   drift_flutter: ^0.3.0
   flex_color_picker: ^3.8.0
   sliver_tools: ^0.2.12
+  fractional_indexing_dart: ^1.0.7
 
 dev_dependencies:
   flutter_test:

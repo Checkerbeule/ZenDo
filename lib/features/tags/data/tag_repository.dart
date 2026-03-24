@@ -1,6 +1,7 @@
+import 'package:drift/drift.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
-import 'package:zen_do/core/persistence/smart_delete_mixin.dart';
-import 'package:zen_do/core/persistence/syncable.dart';
+import 'package:zen_do/core/persistence/cloudsync/smart_delete_mixin.dart';
+import 'package:zen_do/core/persistence/cloudsync/syncable.dart';
 
 abstract class TagRepository {
   Stream<List<Tag>> watchTags();
@@ -19,9 +20,15 @@ class DriftTagRepository with SmartDeleteMixin implements TagRepository {
   /// Ignores tags with a sync status of [SyncStatus.deleted].
   @override
   Stream<List<Tag>> watchTags() {
-    return (db.select(
-      db.tags,
-    )..where((t) => t.syncStatus.isNotValue(SyncStatus.deleted.name))).watch();
+    return (db.select(db.tags)
+          ..where((t) => t.syncStatus.isNotValue(SyncStatus.deleted.name))
+          ..orderBy([
+            (t) => OrderingTerm(
+              expression: t.fractionalIndex,
+              mode: OrderingMode.asc,
+            ),
+          ]))
+        .watch();
   }
 
   @override
@@ -33,13 +40,13 @@ class DriftTagRepository with SmartDeleteMixin implements TagRepository {
 
   @override
   Future<bool> updateTag(Tag tag) {
+    final newSyncStatus = tag.syncStatus == SyncStatus.localOnly
+        ? SyncStatus.localOnly
+        : SyncStatus.pending;
     return db
         .update(db.tags)
         .replace(
-          tag.copyWith(
-            syncStatus: SyncStatus.pending,
-            updatedAt: DateTime.now(),
-          ),
+          tag.copyWith(syncStatus: newSyncStatus, updatedAt: DateTime.now()),
         );
   }
 
