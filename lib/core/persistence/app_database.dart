@@ -4,11 +4,8 @@ import 'package:flutter/material.dart' as material;
 import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:zen_do/core/persistence/fractionalindex/fractional_index_table.dart';
 import 'package:zen_do/core/persistence/cloudsync/syncable.dart';
 import 'package:zen_do/features/tags/data/tags.dart';
-
-export 'package:zen_do/core/persistence/fractionalindex/fractional_index_table.dart';
 
 part 'app_database.g.dart';
 
