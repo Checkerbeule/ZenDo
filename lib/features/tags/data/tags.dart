@@ -5,7 +5,7 @@ import 'package:zen_do/core/persistence/cloudsync/syncable.dart';
 @DataClassName(
   'Tag',
   extending: SyncableEntity,
-  implementing: [WithFractionalIndex],
+  implementing: [Reorderable],
 )
 @TableIndex(name: 'idx_tags_fractional_index', columns: {#fractionalIndex})
 class Tags extends SyncableTable with FractionalIndexTable {

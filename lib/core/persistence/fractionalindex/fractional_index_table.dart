@@ -4,6 +4,6 @@ mixin FractionalIndexTable on Table {
   TextColumn get fractionalIndex => text().withDefault(Constant("a0"))();
 }
 
-abstract class WithFractionalIndex {
+abstract class Reorderable {
   String get fractionalIndex;
 }

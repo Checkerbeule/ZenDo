@@ -205,8 +205,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
       const EnumNameConverter(SyncStatus.values);
 }
 
-class Tag extends SyncableEntity
-    implements Insertable<Tag>, WithFractionalIndex {
+class Tag extends SyncableEntity implements Insertable<Tag>, Reorderable {
   final String uuid;
   final DateTime updatedAt;
   final SyncStatus syncStatus;
