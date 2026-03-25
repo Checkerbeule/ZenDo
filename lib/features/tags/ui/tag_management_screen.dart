@@ -143,15 +143,15 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
                               list: _loadedTags,
                               oldIndex: oldIndex,
                               newIndex: newIndex,
-                              getIndex: (tag) => tag.fractionalIndex,
+                              getIndex: (tag) => tag.customOrder,
                             );
                         if (newFractionalIndex ==
-                            _loadedTags[oldIndex].fractionalIndex) {
+                            _loadedTags[oldIndex].customOrder) {
                           return;
                         }
 
                         final updatedTag = _loadedTags[oldIndex].copyWith(
-                          fractionalIndex: newFractionalIndex,
+                          customOrder: newFractionalIndex,
                         );
 
                         setState(() {
