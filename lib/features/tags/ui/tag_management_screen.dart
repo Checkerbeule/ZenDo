@@ -138,10 +138,12 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
                       padding: const EdgeInsets.only(bottom: 100),
                       itemCount: _loadedTags.length,
                       onReorder: (oldIndex, newIndex) async {
-                        final String newFractionalIndex = _loadedTags
-                            .generateNewFractionalIndex(
+                        final String newFractionalIndex =
+                            FractionalIndexReordering.generateFractionalIndex(
+                              list: _loadedTags,
                               oldIndex: oldIndex,
                               newIndex: newIndex,
+                              getIndex: (tag) => tag.fractionalIndex,
                             );
                         if (newFractionalIndex ==
                             _loadedTags[oldIndex].fractionalIndex) {
