@@ -10,7 +10,7 @@ import 'package:zen_do/core/persistence/hive/file_lock_helper.dart';
 import 'package:zen_do/core/persistence/hive/hive_initializer.dart';
 import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 
-import '../mocks/mocks.mocks.dart';
+import 'mocks/mocks.mocks.dart';
 
 void main() {
   group('PersistanceHelper.saveList', () {

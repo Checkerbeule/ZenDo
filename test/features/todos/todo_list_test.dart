@@ -7,67 +7,65 @@ import 'package:zen_do/core/persistence/hive/file_lock_helper.dart';
 import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 import 'package:zen_do/core/utils/time_util.dart';
 
-import '../mocks/mocks.mocks.dart';
+import '../../core/persistence/mocks/mocks.mocks.dart';
 
 void main() {
-  final className = 'TodoList:';
-
-  group('$className compareTo tests', () {
-    test('$className backlog compareTo backlog is 0', () {
+  group('TodoList: compareTo tests', () {
+    test('TodoList: backlog compareTo backlog is 0', () {
       final backlog_1 = TodoList(ListScope.backlog);
       final backlog_2 = TodoList(ListScope.backlog);
 
       expect(backlog_1.compareTo(backlog_2), 0);
     });
 
-    test('$className backlog compareTo itself is 0', () {
+    test('TodoList: backlog compareTo itself is 0', () {
       final backlog = TodoList(ListScope.backlog);
 
       expect(backlog.compareTo(backlog), 0);
     });
 
-    test('$className backlog compareTo yearlyList is 1', () {
+    test('TodoList: backlog compareTo yearlyList is 1', () {
       final backlog_1 = TodoList(ListScope.backlog);
       final yealrlyList = TodoList(ListScope.yearly);
 
       expect(backlog_1.compareTo(yealrlyList), 1);
     });
 
-    test('$className yearlyList compareTo backlog is -1', () {
+    test('TodoList: yearlyList compareTo backlog is -1', () {
       final backlog_1 = TodoList(ListScope.backlog);
       final yealrlyList = TodoList(ListScope.yearly);
 
       expect(yealrlyList.compareTo(backlog_1), -1);
     });
 
-    test('$className weeklyList compareTo weeklyList is 0', () {
+    test('TodoList: weeklyList compareTo weeklyList is 0', () {
       final weeklyList_1 = TodoList(ListScope.weekly);
       final weeklyList_2 = TodoList(ListScope.weekly);
 
       expect(weeklyList_1.compareTo(weeklyList_2), 0);
     });
 
-    test('$className weeklyList compareTo itself is 0', () {
+    test('TodoList: weeklyList compareTo itself is 0', () {
       final weeklyList = TodoList(ListScope.weekly);
 
       expect(weeklyList.compareTo(weeklyList), 0);
     });
 
-    test('$className dailyList compareTo weeklyList is -1', () {
+    test('TodoList: dailyList compareTo weeklyList is -1', () {
       final dailyList = TodoList(ListScope.daily);
       final weeklyList = TodoList(ListScope.weekly);
 
       expect(dailyList.compareTo(weeklyList), -1);
     });
 
-    test('$className monthlyList compareTo weeklyList is 1', () {
+    test('TodoList: monthlyList compareTo weeklyList is 1', () {
       final monthlyList = TodoList(ListScope.monthly);
       final weeklyList = TodoList(ListScope.weekly);
 
       expect(monthlyList.compareTo(weeklyList), 1);
     });
 
-    test('$className sorted TodoList list', () {
+    test('TodoList: sorted TodoList list', () {
       final dailyList = TodoList(ListScope.daily);
       final weeklyList = TodoList(ListScope.weekly);
       final monthlyList = TodoList(ListScope.monthly);
@@ -110,9 +108,9 @@ void main() {
       ).thenAnswer((_) async => {});
     });
 
-    group('$className dublicate todo title tests', () {
+    group('TodoList: dublicate todo title tests', () {
       test(
-        '$className addTodo: insertion of 2 todos with same title not possible',
+        'TodoList: addTodo: insertion of 2 todos with same title not possible',
         () async {
           final list = TodoList(ListScope.daily);
           final todo_1 = Todo(title: 'same title');
@@ -128,7 +126,7 @@ void main() {
       );
 
       test(
-        '$className addTodo: insertion of 2 equal todos not possible',
+        'TodoList: addTodo: insertion of 2 equal todos not possible',
         () async {
           final list = TodoList(ListScope.daily);
           final todo = Todo(title: 'same title');
@@ -143,7 +141,7 @@ void main() {
       );
 
       test(
-        '$className addAll: insertion of 2 todos with same title not possible',
+        'TodoList: addAll: insertion of 2 todos with same title not possible',
         () {
           final list = TodoList(ListScope.daily);
           final todo_1 = Todo(title: 'same title');
@@ -156,9 +154,9 @@ void main() {
       );
     });
 
-    group('$className expirationDate tests', () {
+    group('TodoList: expirationDate tests', () {
       test(
-        '$className inserted todo to dailyList gets expirationDate tomorrow',
+        'TodoList: inserted todo to dailyList gets expirationDate tomorrow',
         () {
           final dailyList = TodoList(ListScope.daily);
           final todo = Todo(title: 'todo expires tomorrow');
@@ -171,7 +169,7 @@ void main() {
       );
 
       test(
-        '$className inserted todo to dailyList usind addAll gets no expirationDate',
+        'TodoList: inserted todo to dailyList usind addAll gets no expirationDate',
         () {
           final dailyList = TodoList(ListScope.daily);
           final todo = Todo(title: 'todo expires tomorrow');
@@ -182,7 +180,7 @@ void main() {
       );
 
       test(
-        '$className inserted todo to weekyList gets expirationDate in 7 days',
+        'TodoList: inserted todo to weekyList gets expirationDate in 7 days',
         () {
           final weeklyList = TodoList(ListScope.weekly);
           final todo = Todo(title: 'todo expires in 7 days');
@@ -195,7 +193,7 @@ void main() {
       );
 
       test(
-        '$className inserted todo to monthlyList gets expirationDate in 30 days',
+        'TodoList: inserted todo to monthlyList gets expirationDate in 30 days',
         () {
           final monthlyList = TodoList(ListScope.monthly);
           final todo = Todo(title: 'todo expires in 30 days');
@@ -210,7 +208,7 @@ void main() {
       );
 
       test(
-        '$className inserted todo to yearlyList gets expirationDate in 365 days',
+        'TodoList: inserted todo to yearlyList gets expirationDate in 365 days',
         () {
           final yearlyList = TodoList(ListScope.yearly);
           final todo = Todo(title: 'todo expires in 365 days');
@@ -224,7 +222,7 @@ void main() {
         },
       );
 
-      test('$className inserted todo to backlog gets no expirationDate', () {
+      test('TodoList: inserted todo to backlog gets no expirationDate', () {
         final backlog = TodoList(ListScope.backlog);
         final todo = Todo(title: 'todo expires tomorrow');
         backlog.addTodo(todo);
@@ -233,7 +231,7 @@ void main() {
       });
 
       test(
-        '$className inserted todo with expirationDate keps expirationDate',
+        'TodoList: inserted todo with expirationDate keps expirationDate',
         () async {
           final list = TodoList(ListScope.daily);
           final todo = Todo(title: 'todo with custom expirationDate');
@@ -248,7 +246,7 @@ void main() {
       );
 
       test(
-        '$className inserted todo with expirationDate keps expirationDate',
+        'TodoList: inserted todo with expirationDate keps expirationDate',
         () async {
           final list = TodoList(ListScope.daily);
           final todo = Todo(title: 'todo with custom expirationDate');
@@ -263,7 +261,7 @@ void main() {
       );
 
       test(
-        '$className todo with expirationDate that does not fit the scope of the list fails to be added',
+        'TodoList: todo with expirationDate that does not fit the scope of the list fails to be added',
         () async {
           final list = TodoList(ListScope.daily);
           final todo = Todo(title: 'todo with custom expirationDate');
@@ -277,7 +275,7 @@ void main() {
         },
       );
 
-      test('$className restored todo keeps expirationDate', () {
+      test('TodoList: restored todo keeps expirationDate', () {
         final yearlyList = TodoList(ListScope.yearly);
         final todo = Todo(title: 'todo expires in 365 days');
         yearlyList.addTodo(todo);
@@ -289,7 +287,7 @@ void main() {
         expect(todo.expirationDate, expirationDate);
       });
     });
-    test('$className done todo is saved in doneList', () {
+    test('TodoList: done todo is saved in doneList', () {
       final yearlyList = TodoList(ListScope.yearly);
       final todo = Todo(title: 'todo expires in 365 days');
       yearlyList.addTodo(todo);
@@ -300,8 +298,8 @@ void main() {
       expect(yearlyList.doneTodos.first, todo);
     });
 
-    group('$className completionDate tests', () {
-      test('$className done todo gets completionDate', () {
+    group('TodoList: completionDate tests', () {
+      test('TodoList: done todo gets completionDate', () {
         final yearlyList = TodoList(ListScope.yearly);
         final todo = Todo(title: 'done todo with completionDate');
         yearlyList.addTodo(todo);
@@ -310,7 +308,7 @@ void main() {
         expect(todo.expirationDate != null, true);
       });
 
-      test('$className restored todo has no completionDate', () {
+      test('TodoList: restored todo has no completionDate', () {
         final yearlyList = TodoList(ListScope.yearly);
         final todo = Todo(title: 'restored todo without completionDate');
         yearlyList.addTodo(todo);
@@ -321,9 +319,9 @@ void main() {
       });
     });
 
-    group('$className replaceTodo tests', () {
+    group('TodoList: replaceTodo tests', () {
       test(
-        '$className replaceTodo replacement successfull and index of replacement stays the same',
+        'TodoList: replaceTodo replacement successfull and index of replacement stays the same',
         () async {
           final list = TodoList(ListScope.daily);
           final todo_1 = Todo(title: 'todo 1');
@@ -343,7 +341,7 @@ void main() {
       );
 
       test(
-        '$className replaceTodo replacement with edited description successfull',
+        'TodoList: replaceTodo replacement with edited description successfull',
         () async {
           final list = TodoList(ListScope.daily);
           final original = Todo(title: 'todo 1');
@@ -359,7 +357,7 @@ void main() {
       );
 
       test(
-        '$className replaceTodo modified copy of todo successfully replaced',
+        'TodoList: replaceTodo modified copy of todo successfully replaced',
         () async {
           final list = TodoList(ListScope.daily);
           final oldTodo = Todo(title: 'original');
@@ -375,7 +373,7 @@ void main() {
         },
       );
 
-      test('$className replaceTodo with copy not possible', () async {
+      test('TodoList: replaceTodo with copy not possible', () async {
         final list = TodoList(ListScope.daily);
         final oldTodo = Todo(title: 'original');
         list.addTodo(oldTodo);
@@ -388,7 +386,7 @@ void main() {
         expect(list.todos.first, oldTodo);
       });
 
-      test('$className replaceTodo with same not possible', () async {
+      test('TodoList: replaceTodo with same not possible', () async {
         final list = TodoList(ListScope.daily);
         final oldTodo = Todo(title: 'original');
         list.addTodo(oldTodo);
@@ -400,7 +398,7 @@ void main() {
         expect(list.todos.first, oldTodo);
       });
 
-      test('$className replaceTodo with non existent fails', () async {
+      test('TodoList: replaceTodo with non existent fails', () async {
         final list = TodoList(ListScope.daily);
         final oldTodo = Todo(title: 'original');
         final newTodo = Todo(title: 'original');
@@ -411,7 +409,7 @@ void main() {
         expect(list.todos.length, 0);
       });
 
-      test('$className replaceTodo with same titile fails', () async {
+      test('TodoList: replaceTodo with same titile fails', () async {
         final list = TodoList(ListScope.daily);
         final title = 'title';
         final oldTodo = Todo(title: 'todo to replace');
@@ -430,8 +428,8 @@ void main() {
       });
     });
 
-    group('$className delete todo tests', () {
-      test('$className deleteTodo: deleting existent todo successfull', () {
+    group('TodoList: delete todo tests', () {
+      test('TodoList: deleteTodo: deleting existent todo successfull', () {
         final list = TodoList(ListScope.daily);
         final todo = Todo(title: 'title');
         list.addTodo(todo);
@@ -442,7 +440,7 @@ void main() {
       });
 
       test(
-        '$className deleteTodo: deleting non existent todo does not effect list',
+        'TodoList: deleteTodo: deleting non existent todo does not effect list',
         () {
           final list = TodoList(ListScope.daily);
           final existingTodo = Todo(title: 'title');
@@ -456,7 +454,7 @@ void main() {
         },
       );
 
-      test('$className deleteAll: deleting existent todos successfull', () {
+      test('TodoList: deleteAll: deleting existent todos successfull', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');
@@ -470,7 +468,7 @@ void main() {
       });
 
       test(
-        '$className deleteAll: deleting non existent todos does not effect list',
+        'TodoList: deleteAll: deleting non existent todos does not effect list',
         () {
           final list = TodoList(ListScope.daily);
           final todo_1 = Todo(title: '1');
@@ -486,8 +484,8 @@ void main() {
       );
     });
 
-    group('$className isTodoTitleVacant tests', () {
-      test('$className isTodoTitleVacant returns true', () {
+    group('TodoList: isTodoTitleVacant tests', () {
+      test('TodoList: isTodoTitleVacant returns true', () {
         final list = TodoList(ListScope.daily);
         final todo = Todo(title: 'Title');
         list.addTodo(todo);
@@ -497,7 +495,7 @@ void main() {
         expect(isVacant, isTrue);
       });
 
-      test('$className isTodoTitleVacant returns false', () {
+      test('TodoList: isTodoTitleVacant returns false', () {
         final title = 'same title';
         final list = TodoList(ListScope.daily);
         final todo = Todo(title: title);
@@ -509,7 +507,7 @@ void main() {
       });
 
       test(
-        '$className isTodoTitleVacant returns false even with leading an tailing spaces',
+        'TodoList: isTodoTitleVacant returns false even with leading an tailing spaces',
         () {
           final title = 'same title';
           final list = TodoList(ListScope.daily);
@@ -523,9 +521,9 @@ void main() {
       );
     });
 
-    group('$className todo order tests', () {
+    group('TodoList: todo order tests', () {
       test(
-        '$className initMaxOrderAfterLoad sets _currentMaxOrder correctly',
+        'TodoList: initMaxOrderAfterLoad sets _currentMaxOrder correctly',
         () {
           final list = TodoList(ListScope.daily);
           final todo_1 = Todo(title: '1');
@@ -540,7 +538,7 @@ void main() {
         },
       );
 
-      test('$className addTodo sets order correctly', () {
+      test('TodoList: addTodo sets order correctly', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');
@@ -558,7 +556,7 @@ void main() {
         expect(todo_2.order, 3000);
       });
 
-      test('$className addAll sets order correctly', () {
+      test('TodoList: addAll sets order correctly', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');
@@ -574,7 +572,7 @@ void main() {
         expect(todo_2.order, 3000);
       });
 
-      test('$className deleteTodo keeps order on todo', () {
+      test('TodoList: deleteTodo keeps order on todo', () {
         final list = TodoList(ListScope.daily);
         final todo = Todo(title: 'todo');
 
@@ -584,7 +582,7 @@ void main() {
         expect(todo.order, 1000);
       });
 
-      test('$className deleteAll keeps order on todo', () {
+      test('TodoList: deleteAll keeps order on todo', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');
@@ -596,7 +594,7 @@ void main() {
         expect(todo_2.order, 2000);
       });
 
-      test('$className markAsDone keeps order on todo', () {
+      test('TodoList: markAsDone keeps order on todo', () {
         final list = TodoList(ListScope.daily);
         final todo = Todo(title: 'todo');
 
@@ -606,7 +604,7 @@ void main() {
         expect(todo.order, 1000);
       });
 
-      test('$className restoreTodo keeps order on todo', () {
+      test('TodoList: restoreTodo keeps order on todo', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');
@@ -619,7 +617,7 @@ void main() {
       });
 
       test(
-        '$className reorder on moved todo that is not in list not possible',
+        'TodoList: reorder on moved todo that is not in list not possible',
         () {
           final list = TodoList(ListScope.daily);
           final todoNotInList = Todo(title: '0');
@@ -630,7 +628,7 @@ void main() {
         },
       );
 
-      test('$className reorder successfull', () {
+      test('TodoList: reorder successfull', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');
@@ -644,7 +642,7 @@ void main() {
         expect(todo_3.order, 1500);
       });
 
-      test('$className reorder to first elem successfull', () {
+      test('TodoList: reorder to first elem successfull', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');
@@ -657,7 +655,7 @@ void main() {
         expect(todo_3.order, 500);
       });
 
-      test('$className reorder to last elem successfull', () {
+      test('TodoList: reorder to last elem successfull', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');
@@ -670,7 +668,7 @@ void main() {
         expect(todo_3.order, 3000);
       });
 
-      test('$className reorder with _normalizeOrder successfull', () {
+      test('TodoList: reorder with _normalizeOrder successfull', () {
         final list = TodoList(ListScope.daily);
         final todo_1 = Todo(title: '1');
         final todo_2 = Todo(title: '2');

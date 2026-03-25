@@ -9,10 +9,15 @@ class AppTheme {
 
   static const VisualDensity _visualDensity = VisualDensity.compact;
 
-  static const Radius _defaultRadius = Radius.circular(10);
+  static const Radius largeRadius = Radius.circular(10);
+  static const Radius smallRadius = Radius.circular(5);
 
   static const AppBarThemeData _appBarTheme = AppBarThemeData(
     toolbarHeight: 34,
+  );
+
+  static final CardThemeData cardTheme = CardThemeData(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
   );
 
   static final NavigationBarThemeData _navigationBarTheme =
@@ -47,9 +52,10 @@ class AppTheme {
       navigationBarTheme: _navigationBarTheme,
       bottomSheetTheme: BottomSheetThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: _defaultRadius),
+          borderRadius: BorderRadius.vertical(top: largeRadius),
         ),
       ),
+      cardTheme: cardTheme,
     );
   }
 
@@ -63,9 +69,10 @@ class AppTheme {
       navigationBarTheme: _navigationBarTheme,
       bottomSheetTheme: BottomSheetThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: _defaultRadius),
+          borderRadius: BorderRadius.vertical(top: largeRadius),
         ),
       ),
+      cardTheme: cardTheme,
     );
   }
 }

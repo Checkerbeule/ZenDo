@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/ui/dialog_helper.dart';
+import 'package:zen_do/core/utils/fractional_index_reordering.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/tags/domain/tag_delete_service.dart';
 import 'package:zen_do/features/tags/ui/tag_edit_sheet.dart';
@@ -23,6 +26,40 @@ class TagManagementScreen extends StatefulWidget {
 
 class _TagManagementScreenState extends State<TagManagementScreen> {
   final List<String> _deletedTagUuids = [];
+  List<Tag> _loadedTags = [];
+  StreamSubscription<List<Tag>>? _tagSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _tagSubscription = widget.repository.watchTags().listen((newData) {
+      if (_isDifferentData(newData)) {
+        setState(() {
+          _loadedTags = newData;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tagSubscription?.cancel();
+    super.dispose();
+  }
+
+  bool _isDifferentData(List<Tag> newData) {
+    if (newData.length != _loadedTags.length) return true;
+
+    for (int i = 0; i < newData.length; i++) {
+      if (newData[i].uuid != _loadedTags[i].uuid ||
+          newData[i].name != _loadedTags[i].name ||
+          newData[i].color != _loadedTags[i].color) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   void _close() {
     context.read<TodoState>().removeTagsFromFilter(_deletedTagUuids);
@@ -69,21 +106,8 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
               ),
             ),
             Expanded(
-              child: StreamBuilder<List<Tag>>(
-                stream: widget.repository.watchTags(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Text(context.tagsL10n.errorLoadingTags),
-                    );
-                  }
-
-                  final tags = snapshot.data ?? [];
-                  if (tags.isEmpty) {
-                    return Padding(
+              child: _loadedTags.isEmpty
+                  ? Padding(
                       padding: const EdgeInsets.only(bottom: 100),
                       child: Center(
                         child: Column(
@@ -109,60 +133,107 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
                           ],
                         ),
                       ),
-                    );
-                  }
+                    )
+                  : ReorderableListView.builder(
+                      padding: const EdgeInsets.only(bottom: 100),
+                      itemCount: _loadedTags.length,
+                      onReorder: (oldIndex, newIndex) async {
+                        final String newFractionalIndex =
+                            FractionalIndexReordering.generateFractionalIndex(
+                              list: _loadedTags,
+                              oldIndex: oldIndex,
+                              newIndex: newIndex,
+                              getIndex: (tag) => tag.customOrder,
+                            );
+                        if (newFractionalIndex ==
+                            _loadedTags[oldIndex].customOrder) {
+                          return;
+                        }
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 100),
-                    itemCount: tags.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 0,
-                          ),
-                          title: TagWidget.fromTag(tag: tags[index]),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.delete_forever),
-                                onPressed: () async {
-                                  final isDeleted =
-                                      await showDialogWithScaleTransition<bool>(
-                                        context: context,
-                                        child: DeleteDialog(
-                                          title:
-                                              context.tagsL10n.deleteTagTitle,
-                                          text: context.tagsL10n
-                                              .deleteTagMessage(
-                                                tags[index].name,
-                                              ),
-                                        ),
-                                      );
-                                  if (isDeleted == true) {
-                                    _deletedTagUuids.add(tags[index].uuid);
-                                    widget.tagService
-                                        .deleteTagAndcleanupReferences(
-                                          tags[index],
+                        final updatedTag = _loadedTags[oldIndex].copyWith(
+                          customOrder: newFractionalIndex,
+                        );
+
+                        setState(() {
+                          _loadedTags.removeAt(oldIndex);
+                          final targetIndex = oldIndex < newIndex
+                              ? newIndex - 1
+                              : newIndex;
+                          _loadedTags.insert(targetIndex, updatedTag);
+                        });
+
+                        await widget.repository.updateTag(updatedTag);
+                      },
+                      proxyDecorator: (child, index, animation) {
+                        return AnimatedBuilder(
+                          animation: animation,
+                          builder: (context, _) {
+                            return Transform.scale(
+                              scale: 1.01,
+                              child: Material(
+                                elevation: 5,
+                                color: Colors.transparent,
+                                borderRadius: BorderRadiusGeometry.all(
+                                  Radius.circular(10),
+                                ),
+                                child: child,
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      itemBuilder: (context, index) {
+                        return Card(
+                          key: ValueKey(_loadedTags[index].uuid),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 0,
+                            ),
+                            title: TagWidget.fromTag(tag: _loadedTags[index]),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.delete_forever),
+                                  onPressed: () async {
+                                    final isDeleted =
+                                        await showDialogWithScaleTransition<
+                                          bool
+                                        >(
+                                          context: context,
+                                          child: DeleteDialog(
+                                            title:
+                                                context.tagsL10n.deleteTagTitle,
+                                            text: context.tagsL10n
+                                                .deleteTagMessage(
+                                                  _loadedTags[index].name,
+                                                ),
+                                          ),
                                         );
-                                  }
-                                },
-                              ),
-                              IconButton(
-                                onPressed: () =>
-                                    _openEditor(context, tags[index]),
-                                icon: const Icon(Icons.edit),
-                              ),
-                            ],
+                                    if (isDeleted == true) {
+                                      _deletedTagUuids.add(
+                                        _loadedTags[index].uuid,
+                                      );
+                                      widget.tagService
+                                          .deleteTagAndcleanupReferences(
+                                            _loadedTags[index],
+                                          );
+                                    }
+                                  },
+                                ),
+                                IconButton(
+                                  onPressed: () =>
+                                      _openEditor(context, _loadedTags[index]),
+                                  icon: const Icon(Icons.edit),
+                                ),
+                                const Icon(Icons.drag_indicator),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

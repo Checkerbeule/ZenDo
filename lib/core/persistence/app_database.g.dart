@@ -80,6 +80,17 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _customOrderMeta = const VerificationMeta(
+    'customOrder',
+  );
+  @override
+  late final GeneratedColumn<String> customOrder = GeneratedColumn<String>(
+    'custom_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     uuid,
@@ -88,6 +99,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     id,
     name,
     color,
+    customOrder,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -132,6 +144,17 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     } else if (isInserting) {
       context.missing(_colorMeta);
     }
+    if (data.containsKey('custom_order')) {
+      context.handle(
+        _customOrderMeta,
+        customOrder.isAcceptableOrUnknown(
+          data['custom_order']!,
+          _customOrderMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_customOrderMeta);
+    }
     return context;
   }
 
@@ -167,6 +190,10 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
         DriftSqlType.int,
         data['${effectivePrefix}color'],
       )!,
+      customOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_order'],
+      )!,
     );
   }
 
@@ -186,6 +213,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
   final int id;
   final String name;
   final int color;
+  final String customOrder;
   const Tag({
     required this.uuid,
     required this.updatedAt,
@@ -193,6 +221,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
     required this.id,
     required this.name,
     required this.color,
+    required this.customOrder,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -207,6 +236,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     map['color'] = Variable<int>(color);
+    map['custom_order'] = Variable<String>(customOrder);
     return map;
   }
 
@@ -218,6 +248,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
       id: Value(id),
       name: Value(name),
       color: Value(color),
+      customOrder: Value(customOrder),
     );
   }
 
@@ -235,6 +266,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<int>(json['color']),
+      customOrder: serializer.fromJson<String>(json['customOrder']),
     );
   }
   @override
@@ -249,6 +281,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<int>(color),
+      'customOrder': serializer.toJson<String>(customOrder),
     };
   }
 
@@ -259,6 +292,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
     int? id,
     String? name,
     int? color,
+    String? customOrder,
   }) => Tag(
     uuid: uuid ?? this.uuid,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -266,6 +300,7 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
     id: id ?? this.id,
     name: name ?? this.name,
     color: color ?? this.color,
+    customOrder: customOrder ?? this.customOrder,
   );
   Tag copyWithCompanion(TagsCompanion data) {
     return Tag(
@@ -277,6 +312,9 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       color: data.color.present ? data.color.value : this.color,
+      customOrder: data.customOrder.present
+          ? data.customOrder.value
+          : this.customOrder,
     );
   }
 
@@ -288,13 +326,15 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
           ..write('syncStatus: $syncStatus, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('color: $color')
+          ..write('color: $color, ')
+          ..write('customOrder: $customOrder')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(uuid, updatedAt, syncStatus, id, name, color);
+  int get hashCode =>
+      Object.hash(uuid, updatedAt, syncStatus, id, name, color, customOrder);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -304,7 +344,8 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
           other.syncStatus == this.syncStatus &&
           other.id == this.id &&
           other.name == this.name &&
-          other.color == this.color);
+          other.color == this.color &&
+          other.customOrder == this.customOrder);
 }
 
 class TagsCompanion extends UpdateCompanion<Tag> {
@@ -314,6 +355,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   final Value<int> id;
   final Value<String> name;
   final Value<int> color;
+  final Value<String> customOrder;
   const TagsCompanion({
     this.uuid = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -321,6 +363,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.color = const Value.absent(),
+    this.customOrder = const Value.absent(),
   });
   TagsCompanion.insert({
     this.uuid = const Value.absent(),
@@ -329,8 +372,10 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     this.id = const Value.absent(),
     required String name,
     required int color,
+    required String customOrder,
   }) : name = Value(name),
-       color = Value(color);
+       color = Value(color),
+       customOrder = Value(customOrder);
   static Insertable<Tag> custom({
     Expression<String>? uuid,
     Expression<DateTime>? updatedAt,
@@ -338,6 +383,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     Expression<int>? id,
     Expression<String>? name,
     Expression<int>? color,
+    Expression<String>? customOrder,
   }) {
     return RawValuesInsertable({
       if (uuid != null) 'uuid': uuid,
@@ -346,6 +392,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (color != null) 'color': color,
+      if (customOrder != null) 'custom_order': customOrder,
     });
   }
 
@@ -356,6 +403,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     Value<int>? id,
     Value<String>? name,
     Value<int>? color,
+    Value<String>? customOrder,
   }) {
     return TagsCompanion(
       uuid: uuid ?? this.uuid,
@@ -364,6 +412,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
       id: id ?? this.id,
       name: name ?? this.name,
       color: color ?? this.color,
+      customOrder: customOrder ?? this.customOrder,
     );
   }
 
@@ -390,6 +439,9 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     if (color.present) {
       map['color'] = Variable<int>(color.value);
     }
+    if (customOrder.present) {
+      map['custom_order'] = Variable<String>(customOrder.value);
+    }
     return map;
   }
 
@@ -401,7 +453,8 @@ class TagsCompanion extends UpdateCompanion<Tag> {
           ..write('syncStatus: $syncStatus, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('color: $color')
+          ..write('color: $color, ')
+          ..write('customOrder: $customOrder')
           ..write(')'))
         .toString();
   }
@@ -411,11 +464,18 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $TagsTable tags = $TagsTable(this);
+  late final Index idxTagsCustomOrder = Index(
+    'idx_tags_custom_order',
+    'CREATE UNIQUE INDEX idx_tags_custom_order ON tags (custom_order)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [tags];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    tags,
+    idxTagsCustomOrder,
+  ];
 }
 
 typedef $$TagsTableCreateCompanionBuilder =
@@ -426,6 +486,7 @@ typedef $$TagsTableCreateCompanionBuilder =
       Value<int> id,
       required String name,
       required int color,
+      required String customOrder,
     });
 typedef $$TagsTableUpdateCompanionBuilder =
     TagsCompanion Function({
@@ -435,6 +496,7 @@ typedef $$TagsTableUpdateCompanionBuilder =
       Value<int> id,
       Value<String> name,
       Value<int> color,
+      Value<String> customOrder,
     });
 
 class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
@@ -473,6 +535,11 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
 
   ColumnFilters<int> get color => $composableBuilder(
     column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customOrder => $composableBuilder(
+    column: $table.customOrder,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -514,6 +581,11 @@ class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
     column: $table.color,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get customOrder => $composableBuilder(
+    column: $table.customOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TagsTableAnnotationComposer
@@ -545,6 +617,11 @@ class $$TagsTableAnnotationComposer
 
   GeneratedColumn<int> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<String> get customOrder => $composableBuilder(
+    column: $table.customOrder,
+    builder: (column) => column,
+  );
 }
 
 class $$TagsTableTableManager
@@ -581,6 +658,7 @@ class $$TagsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<int> color = const Value.absent(),
+                Value<String> customOrder = const Value.absent(),
               }) => TagsCompanion(
                 uuid: uuid,
                 updatedAt: updatedAt,
@@ -588,6 +666,7 @@ class $$TagsTableTableManager
                 id: id,
                 name: name,
                 color: color,
+                customOrder: customOrder,
               ),
           createCompanionCallback:
               ({
@@ -597,6 +676,7 @@ class $$TagsTableTableManager
                 Value<int> id = const Value.absent(),
                 required String name,
                 required int color,
+                required String customOrder,
               }) => TagsCompanion.insert(
                 uuid: uuid,
                 updatedAt: updatedAt,
@@ -604,6 +684,7 @@ class $$TagsTableTableManager
                 id: id,
                 name: name,
                 color: color,
+                customOrder: customOrder,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

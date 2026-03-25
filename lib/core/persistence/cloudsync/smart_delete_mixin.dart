@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
-import 'package:zen_do/core/persistence/syncable.dart';
+import 'package:zen_do/core/persistence/cloudsync/syncable.dart';
 
 mixin SmartDeleteMixin {
   AppDatabase get db;

@@ -1,10 +1,12 @@
+import 'package:drift/drift.dart';
+import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
-import 'package:zen_do/core/persistence/smart_delete_mixin.dart';
-import 'package:zen_do/core/persistence/syncable.dart';
+import 'package:zen_do/core/persistence/cloudsync/smart_delete_mixin.dart';
+import 'package:zen_do/core/persistence/cloudsync/syncable.dart';
 
 abstract class TagRepository {
   Stream<List<Tag>> watchTags();
-  Future<int> createTag({required String name, required int color});
+  Future<void> createTag({required String name, required int color});
   Future<bool> updateTag(Tag tag);
   Future<void> deleteTag(Tag tag);
 }
@@ -19,27 +21,55 @@ class DriftTagRepository with SmartDeleteMixin implements TagRepository {
   /// Ignores tags with a sync status of [SyncStatus.deleted].
   @override
   Stream<List<Tag>> watchTags() {
-    return (db.select(
-      db.tags,
-    )..where((t) => t.syncStatus.isNotValue(SyncStatus.deleted.name))).watch();
+    return (db.select(db.tags)
+          ..where((t) => t.syncStatus.isNotValue(SyncStatus.deleted.name))
+          ..orderBy([
+            (t) =>
+                OrderingTerm(expression: t.customOrder, mode: OrderingMode.asc),
+          ]))
+        .watch();
   }
 
   @override
-  Future<int> createTag({required String name, required int color}) {
-    return db
-        .into(db.tags)
-        .insert(TagsCompanion.insert(name: name, color: color));
+  Future<void> createTag({required String name, required int color}) async {
+    await db.transaction(() async {
+      final lastTag =
+          await (db.select(db.tags)
+                ..orderBy([
+                  (t) => OrderingTerm(
+                    expression: t.customOrder,
+                    mode: OrderingMode.desc,
+                  ),
+                ])
+                ..limit(1))
+              .getSingleOrNull();
+
+      final String newOrder = FractionalIndexing.generateKeyBetween(
+        lastTag?.customOrder,
+        null,
+      );
+
+      return db
+          .into(db.tags)
+          .insert(
+            TagsCompanion.insert(
+              name: name,
+              color: color,
+              customOrder: newOrder,
+            ),
+          );
+    });
   }
 
   @override
   Future<bool> updateTag(Tag tag) {
+    final newSyncStatus = tag.syncStatus == SyncStatus.localOnly
+        ? SyncStatus.localOnly
+        : SyncStatus.pending;
     return db
         .update(db.tags)
         .replace(
-          tag.copyWith(
-            syncStatus: SyncStatus.pending,
-            updatedAt: DateTime.now(),
-          ),
+          tag.copyWith(syncStatus: newSyncStatus, updatedAt: DateTime.now()),
         );
   }
 
