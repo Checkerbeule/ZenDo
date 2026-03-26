@@ -136,6 +136,7 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
                     )
                   : ReorderableListView.builder(
                       padding: const EdgeInsets.only(bottom: 100),
+                      buildDefaultDragHandles: false,
                       itemCount: _loadedTags.length,
                       onReorder: (oldIndex, newIndex) async {
                         final String newFractionalIndex =
@@ -227,7 +228,10 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
                                       _openEditor(context, _loadedTags[index]),
                                   icon: const Icon(Icons.edit),
                                 ),
-                                const Icon(Icons.drag_indicator),
+                                ReorderableDragStartListener(
+                                  index: index,
+                                  child: const Icon(Icons.drag_indicator),
+                                ),
                               ],
                             ),
                           ),

@@ -80,7 +80,11 @@ class TagWidget extends StatelessWidget {
               color: baseColor.withValues(alpha: isSelected ? 1.0 : 0.9),
             ),
             SizedBox(width: isCompact ? 4 : 8),
-            Text(name, style: TextStyle(fontSize: isCompact ? 12 : 14)),
+            Text(
+              name,
+              style: TextStyle(fontSize: isCompact ? 12 : 14),
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
       ),
