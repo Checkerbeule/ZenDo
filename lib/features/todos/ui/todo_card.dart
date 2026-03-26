@@ -60,7 +60,7 @@ class _TodoCardState extends State<TodoCard> {
       shape: RoundedRectangleBorder(
         borderRadius: const BorderRadiusGeometry.all(AppTheme.smallRadius),
         side: BorderSide(
-          color: isExpiredOrToBeTransferred
+          color: isExpiredOrToBeTransferred && !isTodoCompleted
               ? Theme.of(context).colorScheme.error.withValues(alpha: 0.5)
               : Colors.transparent,
         ),
@@ -71,7 +71,7 @@ class _TodoCardState extends State<TodoCard> {
         padding: const EdgeInsets.all(0),
         alignment: Alignment.topLeft,
         backgroundColor: Colors.transparent,
-        isLabelVisible: isExpiredOrToBeTransferred,
+        isLabelVisible: isExpiredOrToBeTransferred && !isTodoCompleted,
         label: Icon(
           Icons.access_time_outlined,
           size: 15,
