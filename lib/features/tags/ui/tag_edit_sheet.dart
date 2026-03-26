@@ -70,103 +70,135 @@ class _TagEditSheetState extends State<TagEditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewPadding.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 3,
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.92,
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
           ),
-          Text(
-            widget.initialTag == null
-                ? context.tagsL10n.addNewTag
-                : context.tagsL10n.editTag,
-            style: TextTheme.of(context).headlineSmall,
-          ),
-          const SizedBox(height: 2),
-          TagWidget.preview(
-            name: _nameController.text,
-            colorValue: _selectedColor.toARGB32(),
-          ),
-          const SizedBox(height: 2),
-          TextField(
-            controller: _nameController,
-            decoration: InputDecoration(
-              labelText: context.tagsL10n.tagNameLabel,
-            ),
-            autofocus: true,
-            maxLength: 25,
-            textCapitalization: TextCapitalization.sentences,
-            onChanged: (_) => setState(() {}),
-          ),
-          Container(
-            constraints: const BoxConstraints(
-              minHeight: 450,
-              minWidth: 300,
-              maxWidth: 380,
-            ),
-            child: ColorPicker(
-              color: _selectedColor,
-              onColorChanged: (Color color) => setState(() {
-                _selectedColor = color;
-              }),
-              pickersEnabled: const <ColorPickerType, bool>{
-                ColorPickerType.primary: true,
-                ColorPickerType.accent: false,
-                ColorPickerType.wheel: true,
-              },
-              pickerTypeLabels: {
-                ColorPickerType.primary:
-                    context.tagsL10n.colorPickerPrimaryLable,
-                ColorPickerType.wheel: context.tagsL10n.colorPickerWheelLable,
-              },
-              heading: Text(context.tagsL10n.tagColorHeading),
-              subheading: Text(context.tagsL10n.tagColorSubheading),
-              wheelSubheading: Text(context.tagsL10n.tagColorSubheading),
-              showColorName: true,
-            ),
-          ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
+              // Draghandle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                child: Text(
-                  MaterialLocalizations.of(context).cancelButtonLabel,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
               ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.primary,
+              Text(
+                widget.initialTag == null
+                    ? context.tagsL10n.addNewTag
+                    : context.tagsL10n.editTag,
+                style: TextTheme.of(context).headlineSmall,
+              ),
+              const SizedBox(height: 2),
+              TagWidget.preview(
+                name: _nameController.text,
+                colorValue: _selectedColor.toARGB32(),
+              ),
+              const SizedBox(height: 5),
+
+              // Body
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: context.tagsL10n.tagNameLabel,
+                        ),
+                        autofocus: true,
+                        maxLength: 25,
+                        textCapitalization: TextCapitalization.sentences,
+                        onChanged: (_) => setState(() {}),
+                      ),
+
+                      Container(
+                        constraints: const BoxConstraints(
+                          minHeight: 460,
+                          minWidth: 300,
+                          maxWidth: 380,
+                        ),
+                        child: ColorPicker(
+                          color: _selectedColor,
+                          onColorChanged: (Color color) => setState(() {
+                            _selectedColor = color;
+                          }),
+                          pickersEnabled: const <ColorPickerType, bool>{
+                            ColorPickerType.primary: true,
+                            ColorPickerType.accent: false,
+                            ColorPickerType.wheel: true,
+                          },
+                          pickerTypeLabels: {
+                            ColorPickerType.primary:
+                                context.tagsL10n.colorPickerPrimaryLable,
+                            ColorPickerType.wheel:
+                                context.tagsL10n.colorPickerWheelLable,
+                          },
+                          heading: Text(context.tagsL10n.tagColorHeading),
+                          subheading: Text(context.tagsL10n.tagColorSubheading),
+                          wheelSubheading: Text(
+                            context.tagsL10n.tagColorSubheading,
+                          ),
+                          showColorName: true,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Text(MaterialLocalizations.of(context).saveButtonLabel),
-                onPressed: () {
-                  _save();
-                },
+              ),
+
+              // Footer
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.error.withValues(alpha: 0.15),
+                    ),
+                    child: Text(
+                      MaterialLocalizations.of(context).cancelButtonLabel,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  const SizedBox(width: 5),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.primaryContainer.withValues(alpha: 0.5),
+                    ),
+                    child: Text(
+                      MaterialLocalizations.of(context).saveButtonLabel,
+                    ),
+                    onPressed: () {
+                      _save();
+                    },
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
