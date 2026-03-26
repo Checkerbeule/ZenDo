@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/core/ui/base_bottom_sheet.dart';
+import 'package:zen_do/core/ui/standard_buttons.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 
@@ -70,27 +72,10 @@ class _TagEditSheetState extends State<TagEditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewPadding.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    return BaseBottomSheet(
+      header: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 3,
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
           Text(
             widget.initialTag == null
                 ? context.tagsL10n.addNewTag
@@ -102,7 +87,11 @@ class _TagEditSheetState extends State<TagEditSheet> {
             name: _nameController.text,
             colorValue: _selectedColor.toARGB32(),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 5),
+        ],
+      ),
+      body: Column(
+        children: [
           TextField(
             controller: _nameController,
             decoration: InputDecoration(
@@ -113,9 +102,10 @@ class _TagEditSheetState extends State<TagEditSheet> {
             textCapitalization: TextCapitalization.sentences,
             onChanged: (_) => setState(() {}),
           ),
+
           Container(
             constraints: const BoxConstraints(
-              minHeight: 450,
+              minHeight: 460,
               minWidth: 300,
               maxWidth: 380,
             ),
@@ -140,33 +130,11 @@ class _TagEditSheetState extends State<TagEditSheet> {
               showColorName: true,
             ),
           ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
-                ),
-                child: Text(
-                  MaterialLocalizations.of(context).cancelButtonLabel,
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                ),
-                child: Text(MaterialLocalizations.of(context).saveButtonLabel),
-                onPressed: () {
-                  _save();
-                },
-              ),
-            ],
-          ),
         ],
+      ),
+      footer: CancelSaveButtonPair(
+        onCancelPressed: () => Navigator.of(context).pop(),
+        onSavePressed: _save,
       ),
     );
   }
