@@ -125,6 +125,12 @@ abstract class TodosLocalizations {
   /// **'completed'**
   String get completed;
 
+  /// No description provided for @completedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed on'**
+  String get completedOn;
+
   /// No description provided for @completedTodos.
   ///
   /// In en, this message translates to:

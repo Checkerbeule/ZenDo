@@ -5,6 +5,7 @@
   "changeToFittingList": "Should the following fitting list be selected?",
   "checkTodoFilters": "Check your filter settings",
   "completed": "completed",
+  "completedOn": "Completed on",
   "completedTodos": "Completed todos",
   "createdOn": "Created on",
   "creationDate": "Creation date",
