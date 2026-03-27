@@ -12,7 +12,7 @@ import 'package:zen_do/features/todos/data/todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
-import 'package:zen_do/features/todos/ui/todo_card.dart';
+import 'package:zen_do/features/todos/ui/todo_widget.dart';
 import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
@@ -393,7 +393,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                   );
                                 }
                               },
-                              child: TodoCard(todo: todo, list: list),
+                              child: TodoWidget(todo: todo, list: list),
                             ),
                           );
                         },
@@ -419,7 +419,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                             todoState.toggleExpansion(listScope),
                         children: [
                           for (var todo in list.doneTodos)
-                            TodoCard(todo: todo, list: list),
+                            TodoWidget(todo: todo, list: list),
                         ],
                       ),
                     ],

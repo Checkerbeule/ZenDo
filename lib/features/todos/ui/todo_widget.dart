@@ -12,17 +12,17 @@ import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
 import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
-class TodoCard extends StatefulWidget {
+class TodoWidget extends StatefulWidget {
   final Todo todo;
   final TodoList list;
 
-  const TodoCard({super.key, required this.todo, required this.list});
+  const TodoWidget({super.key, required this.todo, required this.list});
 
   @override
-  State<TodoCard> createState() => _TodoCardState();
+  State<TodoWidget> createState() => _TodoWidgetState();
 }
 
-class _TodoCardState extends State<TodoCard> {
+class _TodoWidgetState extends State<TodoWidget> {
   StreamSubscription<List<Tag>>? _tagSubscription;
   Map<String, Tag> _tagsByUuid = {};
 
