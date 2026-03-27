@@ -5,11 +5,12 @@ import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zen_do/core/persistence/cloudsync/syncable.dart';
+import 'package:zen_do/core/persistence/entities.dart';
 import 'package:zen_do/features/tags/data/tags.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Tags])
+@DriftDatabase(tables: [Tags, Entities])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
