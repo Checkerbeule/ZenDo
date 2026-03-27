@@ -24,6 +24,9 @@ class TodosLocalizationsDe extends TodosLocalizations {
   String get completed => 'erledigt';
 
   @override
+  String get completedOn => 'Erledigt am';
+
+  @override
   String get completedTodos => 'Erledigte Aufgaben';
 
   @override

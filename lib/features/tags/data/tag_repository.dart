@@ -6,6 +6,7 @@ import 'package:zen_do/core/persistence/cloudsync/syncable.dart';
 
 abstract class TagRepository {
   Stream<List<Tag>> watchTags();
+  Future<List<Tag>> getAllTags();
   Future<void> createTag({required String name, required int color});
   Future<bool> updateTag(Tag tag);
   Future<void> deleteTag(Tag tag);
@@ -28,6 +29,17 @@ class DriftTagRepository with SmartDeleteMixin implements TagRepository {
                 OrderingTerm(expression: t.customOrder, mode: OrderingMode.asc),
           ]))
         .watch();
+  }
+
+  @override
+  Future<List<Tag>> getAllTags() {
+    return (db.select(db.tags)
+          ..where((t) => t.syncStatus.isNotValue(SyncStatus.deleted.name))
+          ..orderBy([
+            (t) =>
+                OrderingTerm(expression: t.customOrder, mode: OrderingMode.asc),
+          ]))
+        .get();
   }
 
   @override

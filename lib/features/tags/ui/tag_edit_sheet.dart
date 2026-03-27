@@ -73,6 +73,7 @@ class _TagEditSheetState extends State<TagEditSheet> {
   @override
   Widget build(BuildContext context) {
     return BaseBottomSheet(
+      maxHeight: 0.965,
       header: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

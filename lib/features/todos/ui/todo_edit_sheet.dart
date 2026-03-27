@@ -98,8 +98,10 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
     //final loc = TodosLocalizations.of(context);
     final locale = Localizations.localeOf(context);
     final TagRepository tagRepository = context.read<TagRepository>();
+    final isTodoCompleted = todo?.completionDate != null;
 
-    final List<DropdownMenuItem> listScopeDropDownItems = manager.scopes
+    final List<DropdownMenuItem<ListScope>> listScopeDropDownItems = manager
+        .scopes
         .map(
           (scope) => DropdownMenuItem(
             value: scope,
@@ -122,32 +124,56 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
             style: TextTheme.of(context).headlineSmall,
           ),
           if (todo != null)
-            IconButton(
-              icon: const Icon(Icons.delete_forever),
-              color: Theme.of(context).colorScheme.error,
-              onPressed: () async {
-                final navigator = Navigator.of(context);
-                final delete = await showDialogWithScaleTransition<bool>(
-                  context: context,
-                  child: DeleteDialog(
-                    title: '${context.todosL10n.deleteTodo}?',
-                    text: context.todosL10n.deleteTodoQuestion,
+            Row(
+              children: [
+                if (!isTodoCompleted)
+                  IconButton(
+                    icon: Icon(Icons.check_circle_outline),
+                    color: Theme.of(context).colorScheme.primary,
+                    onPressed: () async {
+                      try {
+                        final TodoList list = manager.getListByScope(
+                          todo!.listScope!,
+                        )!;
+                        widget.todoState.performAcitionOnList<void>(
+                          () => list.markAsDone(todo!),
+                        );
+                      } catch (e) {
+                        logger.e(
+                          'Error ${isTodoCompleted ? 'restoring' : 'completing'} todo: $todo\n${e.toString()}',
+                        );
+                      }
+                      Navigator.of(context).pop();
+                    },
                   ),
-                );
-                if (delete != null && delete) {
-                  try {
-                    final TodoList list = manager.getListByScope(
-                      todo!.listScope!,
-                    )!;
-                    widget.todoState.performAcitionOnList<bool>(
-                      () => list.deleteTodo(todo!),
+                IconButton(
+                  icon: const Icon(Icons.delete_forever),
+                  color: Theme.of(context).colorScheme.error,
+                  onPressed: () async {
+                    final navigator = Navigator.of(context);
+                    final delete = await showDialogWithScaleTransition<bool>(
+                      context: context,
+                      child: DeleteDialog(
+                        title: '${context.todosL10n.deleteTodo}?',
+                        text: context.todosL10n.deleteTodoQuestion,
+                      ),
                     );
-                    navigator.pop();
-                  } catch (e) {
-                    logger.e('Error deleting todo: $todo\n${e.toString()}');
-                  }
-                }
-              },
+                    if (delete != null && delete) {
+                      try {
+                        final TodoList list = manager.getListByScope(
+                          todo!.listScope!,
+                        )!;
+                        widget.todoState.performAcitionOnList<bool>(
+                          () => list.deleteTodo(todo!),
+                        );
+                        navigator.pop();
+                      } catch (e) {
+                        logger.e('Error deleting todo: $todo\n${e.toString()}');
+                      }
+                    }
+                  },
+                ),
+              ],
             ),
         ],
       ),
@@ -160,7 +186,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                 TextFormField(
                   controller: titleController,
                   autocorrect: true,
-                  autofocus: true,
+                  autofocus: isNewTodo,
                   textCapitalization: TextCapitalization.sentences,
                   maxLength: 40,
                   maxLengthEnforcement:
@@ -200,23 +226,25 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField(
+                  child: DropdownButtonFormField<ListScope>(
                     decoration: InputDecoration(
                       labelText: '${context.todosL10n.list}: ',
                       icon: const Icon(Icons.view_column),
                     ),
                     items: listScopeDropDownItems,
                     initialValue: selectedScope,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedScope = value;
-                        expirationDateController.text =
-                            manager
-                                .calcExpirationDate(selectedScope)
-                                ?.formatYmD(locale) ??
-                            ' - ';
-                      });
-                    },
+                    onChanged: isTodoCompleted
+                        ? null
+                        : (value) {
+                            setState(() {
+                              selectedScope = value!;
+                              expirationDateController.text =
+                                  manager
+                                      .calcExpirationDate(selectedScope)
+                                      ?.formatYmD(locale) ??
+                                  ' - ';
+                            });
+                          },
                     validator: (value) {
                       if (isNewTodo &&
                               !manager.isTodoTitleVacant(
@@ -242,7 +270,8 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                   child: TextFormField(
                     key: expirationDateKey,
                     controller: expirationDateController,
-                    enabled: selectedScope != ListScope.backlog,
+                    enabled:
+                        selectedScope != ListScope.backlog && !isTodoCompleted,
                     keyboardType: TextInputType.none,
                     showCursor: false,
                     decoration: InputDecoration(
@@ -379,6 +408,13 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                 '${context.todosL10n.createdOn}: '
                 '${todo!.creationDate.formatYmD(locale)}',
               ),
+              if (isTodoCompleted) ...[
+                const SizedBox(height: 5),
+                Text(
+                  '${context.todosL10n.completedOn}: '
+                  '${todo!.completionDate!.formatYmD(locale)}',
+                ),
+              ],
             ],
           ],
         ),

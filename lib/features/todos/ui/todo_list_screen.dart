@@ -7,15 +7,12 @@ import 'package:provider/provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:zen_do/core/app/app_settings_service.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
-import 'package:zen_do/core/persistence/app_database.dart';
-import 'package:zen_do/core/theme/theme.dart';
-import 'package:zen_do/core/ui/dialog_helper.dart';
-import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
+import 'package:zen_do/features/todos/ui/todo_widget.dart';
 import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
@@ -34,9 +31,6 @@ class _TodoListScreenState extends State<TodoListScreen> {
   late final AppSettingsService settings;
   SortOption sortOption = SortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
-  Offset tapPosition = Offset.zero;
-  StreamSubscription<List<Tag>>? _tagSubscription;
-  Map<String, Tag> _tagsByUuid = {};
 
   List<Todo> getSortedAndFilteredTodos(Set<String> tagFilter) {
     final todos = List<Todo>.from(widget.list.todos);
@@ -94,21 +88,6 @@ class _TodoListScreenState extends State<TodoListScreen> {
   void initState() {
     super.initState();
     _loadSettings();
-    _tagSubscription = context.read<TagRepository>().watchTags().listen((
-      allTags,
-    ) {
-      if (mounted) {
-        setState(() {
-          _tagsByUuid = {for (var tag in allTags) tag.uuid: tag};
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _tagSubscription?.cancel();
-    super.dispose();
   }
 
   @override
@@ -229,12 +208,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                           final todo = getSortedAndFilteredTodos(
                             tagFilter,
                           )[index];
-                          final isExpiredOrToBeTransferred =
-                              listManager.toBeTransferredTomorrow(todo) ||
-                              (todo.expirationDate != null &&
-                                  todo.expirationDate!.isBefore(
-                                    DateTime.now(),
-                                  ));
+
                           return ReorderableDelayedDragStartListener(
                             enabled: sortOption == SortOption.custom,
                             key: ValueKey(todo.id),
@@ -419,206 +393,37 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                   );
                                 }
                               },
-                              child: Card(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: const BorderRadiusGeometry.all(
-                                    AppTheme.smallRadius,
-                                  ),
-                                  side: BorderSide(
-                                    color: isExpiredOrToBeTransferred
-                                        ? Theme.of(context).colorScheme.error
-                                              .withValues(alpha: 0.5)
-                                        : Colors.transparent,
-                                  ),
-                                ),
-                                elevation: 0.2,
-                                child: Listener(
-                                  onPointerUp: (event) {
-                                    tapPosition = event.position;
-                                  },
-                                  child: Badge(
-                                    offset: const Offset(2, 2),
-                                    padding: const EdgeInsets.all(0),
-                                    alignment: Alignment.topLeft,
-                                    backgroundColor: Colors.transparent,
-                                    isLabelVisible: isExpiredOrToBeTransferred,
-                                    label: Icon(
-                                      Icons.access_time_outlined,
-                                      size: 15,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.error,
-                                    ),
-                                    child: ListTile(
-                                      visualDensity: const VisualDensity(
-                                        vertical: -4,
-                                      ),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 5,
-                                          ),
-                                      onTap: () async {
-                                        final updatedTodo =
-                                            await showModalBottomSheet(
-                                              context: context,
-                                              isScrollControlled: true,
-                                              builder: (context) =>
-                                                  TodoEditSheet.editTodo(
-                                                    todo: todo,
-                                                    todoState: todoState,
-                                                  ),
-                                            );
-
-                                        if (updatedTodo != null) {
-                                          if (updatedTodo.listScope !=
-                                              todo.listScope) {
-                                            todoState.performAcitionOnList(
-                                              () =>
-                                                  listManager.moveAndUpdateTodo(
-                                                    oldTodo: todo,
-                                                    todo: updatedTodo,
-                                                    destination:
-                                                        updatedTodo.listScope!,
-                                                  ),
-                                            );
-                                          } else {
-                                            todoState
-                                                .performAcitionOnList<bool>(
-                                                  () => listManager
-                                                      .getListByScope(
-                                                        updatedTodo.listScope!,
-                                                      )!
-                                                      .replaceTodo(
-                                                        todo,
-                                                        updatedTodo,
-                                                      ),
-                                                );
-                                          }
-                                        }
-                                      },
-                                      leading: IconButton(
-                                        onPressed: () => {
-                                          todoState.performAcitionOnList<void>(
-                                            () => list.markAsDone(todo),
-                                          ),
-                                        },
-                                        icon: const Icon(Icons.circle_outlined),
-                                      ),
-                                      title: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            todo.title,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-
-                                          if (todo.description != null &&
-                                              todo.description!.isNotEmpty)
-                                            Text(
-                                              todo.description!,
-                                              maxLines: 1,
-                                              style: TextStyle(
-                                                color: Theme.of(
-                                                  context,
-                                                ).disabledColor,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                        ],
-                                      ),
-                                      subtitle: Wrap(
-                                        alignment: WrapAlignment.start,
-                                        spacing: 2,
-                                        runSpacing: 2,
-                                        children: todo.tagUuids.map((uuid) {
-                                          final tag = _tagsByUuid[uuid];
-                                          if (tag == null) {
-                                            return const SizedBox.shrink();
-                                          }
-
-                                          return Icon(
-                                            Icons.label,
-                                            size: 14,
-                                            color: Color(
-                                              _tagsByUuid[uuid]!.color,
-                                            ).withValues(alpha: 0.8),
-                                          );
-                                        }).toList(),
-                                      ),
-                                      trailing: IconButton(
-                                        onPressed: () async {
-                                          final delete =
-                                              await showDialogWithScaleTransition<
-                                                bool
-                                              >(
-                                                context: context,
-                                                child: DeleteDialog(
-                                                  title: '${loc.deleteTodo}?',
-                                                  text: loc.deleteTodoQuestion,
-                                                ),
-                                              );
-                                          if (delete != null && delete) {
-                                            todoState
-                                                .performAcitionOnList<bool>(
-                                                  () => list.deleteTodo(todo),
-                                                );
-                                          }
-                                        },
-                                        icon: const Icon(Icons.delete_forever),
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.tertiary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              child: TodoWidget(todo: todo, list: list),
                             ),
                           );
                         },
                       ),
               ),
               SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    const Divider(),
-                    ExpansionTile(
-                      title: Text(loc.completedTodos),
-                      subtitle: Text('${list.doneCount} ${loc.completed}'),
-                      shape: const RoundedRectangleBorder(
-                        side: BorderSide.none,
+                child: Padding(
+                  padding: EdgeInsetsGeometry.only(bottom: 65),
+                  child: Column(
+                    children: [
+                      const Divider(),
+                      ExpansionTile(
+                        title: Text(loc.completedTodos),
+                        subtitle: Text('${list.doneCount} ${loc.completed}'),
+                        shape: const RoundedRectangleBorder(
+                          side: BorderSide.none,
+                        ),
+                        collapsedIconColor: Theme.of(context).primaryColor,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        initiallyExpanded:
+                            todoState.doneTodosExpanded[listScope] ?? false,
+                        onExpansionChanged: (bool expanding) =>
+                            todoState.toggleExpansion(listScope),
+                        children: [
+                          for (var todo in list.doneTodos)
+                            TodoWidget(todo: todo, list: list),
+                        ],
                       ),
-                      collapsedIconColor: Theme.of(context).primaryColor,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      initiallyExpanded:
-                          todoState.doneTodosExpanded[listScope] ?? false,
-                      onExpansionChanged: (bool expanding) =>
-                          todoState.toggleExpansion(listScope),
-                      children: [
-                        for (var todo in list.doneTodos)
-                          ListTile(
-                            leading: IconButton(
-                              onPressed: () =>
-                                  todoState.performAcitionOnList<bool>(
-                                    () => list.restoreTodo(todo),
-                                  ),
-                              icon: const Icon(Icons.check_circle),
-                              color: Theme.of(context).primaryColor,
-                            ),
-                            title: Text(
-                              todo.title,
-                              style: TextStyle(
-                                decoration: TextDecoration.lineThrough,
-                                color: Theme.of(context).disabledColor,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
