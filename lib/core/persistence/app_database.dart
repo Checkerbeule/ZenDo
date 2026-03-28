@@ -4,7 +4,6 @@ import 'package:flutter/material.dart' as material;
 import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:zen_do/core/persistence/cloudsync/syncable.dart';
 import 'package:zen_do/core/persistence/entities.dart';
 import 'package:zen_do/features/tags/data/tags.dart';
 
@@ -34,26 +33,36 @@ class AppDatabase extends _$AppDatabase {
 
         if (details.wasCreated) {
           await batch((batch) {
+            final List<EntitiesCompanion> initialEntitiesForTags =
+                List.generate(
+                  3,
+                  (_) => EntitiesCompanion.insert(
+                    uuid: Uuid().v4(),
+                    type: EntityType.tag,
+                    createdAt: DateTime.now().toUtc(),
+                    updatedAt: DateTime.now().toUtc(),
+                  ),
+                );
+            batch.insertAll(entities, initialEntitiesForTags);
+
             batch.insertAll(tags, [
               TagsCompanion.insert(
+                uuid: initialEntitiesForTags[0].uuid.value,
                 name: 'Work',
                 color: material.Colors.red.toARGB32(),
                 customOrder: 'a0',
               ),
               TagsCompanion.insert(
+                uuid: initialEntitiesForTags[1].uuid.value,
                 name: 'Private',
-                color: material.Colors.green.toARGB32(),
+                color: material.Colors.yellow.toARGB32(),
                 customOrder: 'a1',
               ),
               TagsCompanion.insert(
-                name: 'Focus',
+                uuid: initialEntitiesForTags[2].uuid.value,
+                name: 'Volunteering',
                 color: material.Colors.blue.toARGB32(),
                 customOrder: 'a2',
-              ),
-              TagsCompanion.insert(
-                name: 'On the Go',
-                color: material.Colors.purple.toARGB32(),
-                customOrder: 'a3',
               ),
             ]);
           });
@@ -61,26 +70,6 @@ class AppDatabase extends _$AppDatabase {
       },
 
       onUpgrade: (m, from, to) async {
-        if (from < 2) {
-          await m.alterTable(
-            TableMigration(
-              tags,
-              columnTransformer: {
-                tags.syncStatus: CustomExpression<int>('sync_status')
-                    .caseMatch<String>(
-                      when: {
-                        Constant(0): Constant(SyncStatus.localOnly.name),
-                        Constant(1): Constant(SyncStatus.synced.name),
-                        Constant(2): Constant(SyncStatus.pending.name),
-                        Constant(3): Constant(SyncStatus.deleted.name),
-                      },
-                      orElse: Constant(SyncStatus.localOnly.name),
-                    ),
-              },
-            ),
-          );
-        }
-
         if (from < 3) {
           await m.alterTable(
             TableMigration(
@@ -102,7 +91,44 @@ class AppDatabase extends _$AppDatabase {
 
         if (from < 4) {
           await m.createTable(entities);
-          await _populateEntitiesForExistingData();
+
+          final oldTags = await customSelect('SELECT * FROM tags').get();
+
+          await m.drop(tags);
+          await m.createTable(tags);
+
+          final timeStamp = DateTime.now().toUtc();
+          await batch((batch) {
+            for (int i = 0; i < oldTags.length; i++) {
+              final uuid = oldTags[i].data['uuid']?.toString() ?? Uuid().v4();
+              final name = oldTags[i].data['name'] as String;
+              final color = oldTags[i].data['color'] as int;
+              final order =
+                  oldTags[i].data['custom_order']?.toString() ?? 'a$i';
+
+              batch.insert(
+                tags,
+                TagsCompanion.insert(
+                  uuid: uuid,
+                  name: name,
+                  color: color,
+                  customOrder: order,
+                ),
+              );
+
+              batch.insert(
+                entities,
+                EntitiesCompanion.insert(
+                  uuid: uuid,
+                  type: EntityType.tag,
+                  createdAt: timeStamp,
+                  updatedAt: timeStamp,
+                ),
+                mode: InsertMode.insertOrIgnore,
+              );
+            }
+          });
+
           await m.createIndex(
             Index(
               'idx_entities_type',
@@ -115,50 +141,35 @@ class AppDatabase extends _$AppDatabase {
               'CREATE INDEX idx_entities_pending_sync ON entities (updated_at, last_synced_at);',
             ),
           );
+          await m.createIndex(
+            Index(
+              'idx_tags_custom_order',
+              'CREATE UNIQUE INDEX idx_tags_custom_order ON tags (custom_order);',
+            ),
+          );
         }
       },
     );
   }
 
   Future<void> _fillInitialFractionalIndices() async {
-    final allTags = await (select(
-      tags,
-    )..orderBy([(t) => OrderingTerm.asc(t.id)])).get();
+    final allTags = await customSelect('SELECT id FROM tags').get();
 
     if (allTags.isEmpty) return;
 
-    await batch((batch) {
+    await transaction(() async {
       String? lastKey;
 
       for (final tag in allTags) {
+        final id = tag.read<int>('id');
         final newKey = FractionalIndexing.generateKeyBetween(lastKey, null);
 
-        batch.update(
-          tags,
-          TagsCompanion(customOrder: Value(newKey)),
-          where: (t) => t.id.equals(tag.id),
-        );
+        await customStatement('UPDATE tags SET custom_order = ? WHERE id = ?', [
+          newKey,
+          id,
+        ]);
 
         lastKey = newKey;
-      }
-    });
-  }
-
-  Future<void> _populateEntitiesForExistingData() async {
-    final allTags = await (select(tags)).get();
-    final timeStamp = DateTime.now().toUtc();
-    await batch((batch) {
-      for (final tag in allTags) {
-        batch.insert(
-          entities,
-          EntitiesCompanion.insert(
-            uuid: tag.uuid,
-            type: EntityType.tag,
-            createdAt: timeStamp,
-            updatedAt: timeStamp,
-          ),
-          mode: InsertMode.insertOrIgnore,
-        );
       }
     });
   }

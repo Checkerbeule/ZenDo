@@ -19,44 +19,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
       maxTextLength: 36,
     ),
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
-    clientDefault: () => const Uuid().v4(),
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  @override
-  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
-      GeneratedColumn<String>(
-        'sync_status',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-        defaultValue: Constant(SyncStatus.localOnly.name),
-      ).withConverter<SyncStatus>($TagsTable.$convertersyncStatus);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
@@ -92,15 +55,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [
-    uuid,
-    updatedAt,
-    syncStatus,
-    id,
-    name,
-    color,
-    customOrder,
-  ];
+  List<GeneratedColumn> get $columns => [uuid, name, color, customOrder];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -118,15 +73,8 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
         _uuidMeta,
         uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta),
       );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -159,7 +107,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {uuid};
   @override
   Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -167,20 +115,6 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
       uuid: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}uuid'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      syncStatus: $TagsTable.$convertersyncStatus.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}sync_status'],
-        )!,
-      ),
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
       )!,
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -201,24 +135,15 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
   $TagsTable createAlias(String alias) {
     return $TagsTable(attachedDatabase, alias);
   }
-
-  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
-      const EnumNameConverter(SyncStatus.values);
 }
 
-class Tag extends SyncableEntity implements Insertable<Tag> {
+class Tag extends DataClass implements Insertable<Tag> {
   final String uuid;
-  final DateTime updatedAt;
-  final SyncStatus syncStatus;
-  final int id;
   final String name;
   final int color;
   final String customOrder;
   const Tag({
     required this.uuid,
-    required this.updatedAt,
-    required this.syncStatus,
-    required this.id,
     required this.name,
     required this.color,
     required this.customOrder,
@@ -227,13 +152,6 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['uuid'] = Variable<String>(uuid);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    {
-      map['sync_status'] = Variable<String>(
-        $TagsTable.$convertersyncStatus.toSql(syncStatus),
-      );
-    }
-    map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
     map['color'] = Variable<int>(color);
     map['custom_order'] = Variable<String>(customOrder);
@@ -243,9 +161,6 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
   TagsCompanion toCompanion(bool nullToAbsent) {
     return TagsCompanion(
       uuid: Value(uuid),
-      updatedAt: Value(updatedAt),
-      syncStatus: Value(syncStatus),
-      id: Value(id),
       name: Value(name),
       color: Value(color),
       customOrder: Value(customOrder),
@@ -259,11 +174,6 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Tag(
       uuid: serializer.fromJson<String>(json['uuid']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      syncStatus: $TagsTable.$convertersyncStatus.fromJson(
-        serializer.fromJson<String>(json['syncStatus']),
-      ),
-      id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       color: serializer.fromJson<int>(json['color']),
       customOrder: serializer.fromJson<String>(json['customOrder']),
@@ -274,42 +184,22 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'uuid': serializer.toJson<String>(uuid),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'syncStatus': serializer.toJson<String>(
-        $TagsTable.$convertersyncStatus.toJson(syncStatus),
-      ),
-      'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'color': serializer.toJson<int>(color),
       'customOrder': serializer.toJson<String>(customOrder),
     };
   }
 
-  Tag copyWith({
-    String? uuid,
-    DateTime? updatedAt,
-    SyncStatus? syncStatus,
-    int? id,
-    String? name,
-    int? color,
-    String? customOrder,
-  }) => Tag(
-    uuid: uuid ?? this.uuid,
-    updatedAt: updatedAt ?? this.updatedAt,
-    syncStatus: syncStatus ?? this.syncStatus,
-    id: id ?? this.id,
-    name: name ?? this.name,
-    color: color ?? this.color,
-    customOrder: customOrder ?? this.customOrder,
-  );
+  Tag copyWith({String? uuid, String? name, int? color, String? customOrder}) =>
+      Tag(
+        uuid: uuid ?? this.uuid,
+        name: name ?? this.name,
+        color: color ?? this.color,
+        customOrder: customOrder ?? this.customOrder,
+      );
   Tag copyWithCompanion(TagsCompanion data) {
     return Tag(
       uuid: data.uuid.present ? data.uuid.value : this.uuid,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
-      id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       color: data.color.present ? data.color.value : this.color,
       customOrder: data.customOrder.present
@@ -322,9 +212,6 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
   String toString() {
     return (StringBuffer('Tag(')
           ..write('uuid: $uuid, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('color: $color, ')
           ..write('customOrder: $customOrder')
@@ -333,16 +220,12 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(uuid, updatedAt, syncStatus, id, name, color, customOrder);
+  int get hashCode => Object.hash(uuid, name, color, customOrder);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Tag &&
           other.uuid == this.uuid &&
-          other.updatedAt == this.updatedAt &&
-          other.syncStatus == this.syncStatus &&
-          other.id == this.id &&
           other.name == this.name &&
           other.color == this.color &&
           other.customOrder == this.customOrder);
@@ -350,69 +233,56 @@ class Tag extends SyncableEntity implements Insertable<Tag> {
 
 class TagsCompanion extends UpdateCompanion<Tag> {
   final Value<String> uuid;
-  final Value<DateTime> updatedAt;
-  final Value<SyncStatus> syncStatus;
-  final Value<int> id;
   final Value<String> name;
   final Value<int> color;
   final Value<String> customOrder;
+  final Value<int> rowid;
   const TagsCompanion({
     this.uuid = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.color = const Value.absent(),
     this.customOrder = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
   TagsCompanion.insert({
-    this.uuid = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.syncStatus = const Value.absent(),
-    this.id = const Value.absent(),
+    required String uuid,
     required String name,
     required int color,
     required String customOrder,
-  }) : name = Value(name),
+    this.rowid = const Value.absent(),
+  }) : uuid = Value(uuid),
+       name = Value(name),
        color = Value(color),
        customOrder = Value(customOrder);
   static Insertable<Tag> custom({
     Expression<String>? uuid,
-    Expression<DateTime>? updatedAt,
-    Expression<String>? syncStatus,
-    Expression<int>? id,
     Expression<String>? name,
     Expression<int>? color,
     Expression<String>? customOrder,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (uuid != null) 'uuid': uuid,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (syncStatus != null) 'sync_status': syncStatus,
-      if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (color != null) 'color': color,
       if (customOrder != null) 'custom_order': customOrder,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
   TagsCompanion copyWith({
     Value<String>? uuid,
-    Value<DateTime>? updatedAt,
-    Value<SyncStatus>? syncStatus,
-    Value<int>? id,
     Value<String>? name,
     Value<int>? color,
     Value<String>? customOrder,
+    Value<int>? rowid,
   }) {
     return TagsCompanion(
       uuid: uuid ?? this.uuid,
-      updatedAt: updatedAt ?? this.updatedAt,
-      syncStatus: syncStatus ?? this.syncStatus,
-      id: id ?? this.id,
       name: name ?? this.name,
       color: color ?? this.color,
       customOrder: customOrder ?? this.customOrder,
+      rowid: rowid ?? this.rowid,
     );
   }
 
@@ -421,17 +291,6 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     final map = <String, Expression>{};
     if (uuid.present) {
       map['uuid'] = Variable<String>(uuid.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<String>(
-        $TagsTable.$convertersyncStatus.toSql(syncStatus.value),
-      );
-    }
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -442,6 +301,9 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     if (customOrder.present) {
       map['custom_order'] = Variable<String>(customOrder.value);
     }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
     return map;
   }
 
@@ -449,12 +311,10 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   String toString() {
     return (StringBuffer('TagsCompanion(')
           ..write('uuid: $uuid, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('syncStatus: $syncStatus, ')
-          ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('color: $color, ')
-          ..write('customOrder: $customOrder')
+          ..write('customOrder: $customOrder, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -918,23 +778,19 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$TagsTableCreateCompanionBuilder =
     TagsCompanion Function({
-      Value<String> uuid,
-      Value<DateTime> updatedAt,
-      Value<SyncStatus> syncStatus,
-      Value<int> id,
+      required String uuid,
       required String name,
       required int color,
       required String customOrder,
+      Value<int> rowid,
     });
 typedef $$TagsTableUpdateCompanionBuilder =
     TagsCompanion Function({
       Value<String> uuid,
-      Value<DateTime> updatedAt,
-      Value<SyncStatus> syncStatus,
-      Value<int> id,
       Value<String> name,
       Value<int> color,
       Value<String> customOrder,
+      Value<int> rowid,
     });
 
 class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
@@ -947,22 +803,6 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
   });
   ColumnFilters<String> get uuid => $composableBuilder(
     column: $table.uuid,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
-  get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
-  );
-
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -995,21 +835,6 @@ class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
@@ -1037,18 +862,6 @@ class $$TagsTableAnnotationComposer
   });
   GeneratedColumn<String> get uuid =>
       $composableBuilder(column: $table.uuid, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
-      $composableBuilder(
-        column: $table.syncStatus,
-        builder: (column) => column,
-      );
-
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -1091,38 +904,30 @@ class $$TagsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> uuid = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<SyncStatus> syncStatus = const Value.absent(),
-                Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<int> color = const Value.absent(),
                 Value<String> customOrder = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
               }) => TagsCompanion(
                 uuid: uuid,
-                updatedAt: updatedAt,
-                syncStatus: syncStatus,
-                id: id,
                 name: name,
                 color: color,
                 customOrder: customOrder,
+                rowid: rowid,
               ),
           createCompanionCallback:
               ({
-                Value<String> uuid = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<SyncStatus> syncStatus = const Value.absent(),
-                Value<int> id = const Value.absent(),
+                required String uuid,
                 required String name,
                 required int color,
                 required String customOrder,
+                Value<int> rowid = const Value.absent(),
               }) => TagsCompanion.insert(
                 uuid: uuid,
-                updatedAt: updatedAt,
-                syncStatus: syncStatus,
-                id: id,
                 name: name,
                 color: color,
                 customOrder: customOrder,
+                rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
