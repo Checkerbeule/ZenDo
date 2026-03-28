@@ -478,17 +478,15 @@ class $EntitiesTable extends Entities with TableInfo<$EntitiesTable, Entity> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _entityTypeMeta = const VerificationMeta(
-    'entityType',
-  );
   @override
-  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
-    'entity_type',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+  late final GeneratedColumnWithTypeConverter<EntityType, String> type =
+      GeneratedColumn<String>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<EntityType>($EntitiesTable.$convertertype);
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -540,7 +538,7 @@ class $EntitiesTable extends Entities with TableInfo<$EntitiesTable, Entity> {
   @override
   List<GeneratedColumn> get $columns => [
     uuid,
-    entityType,
+    type,
     createdAt,
     updatedAt,
     lastSyncedAt,
@@ -565,14 +563,6 @@ class $EntitiesTable extends Entities with TableInfo<$EntitiesTable, Entity> {
       );
     } else if (isInserting) {
       context.missing(_uuidMeta);
-    }
-    if (data.containsKey('entity_type')) {
-      context.handle(
-        _entityTypeMeta,
-        entityType.isAcceptableOrUnknown(data['entity_type']!, _entityTypeMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_entityTypeMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -618,10 +608,12 @@ class $EntitiesTable extends Entities with TableInfo<$EntitiesTable, Entity> {
         DriftSqlType.string,
         data['${effectivePrefix}uuid'],
       )!,
-      entityType: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}entity_type'],
-      )!,
+      type: $EntitiesTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -645,18 +637,21 @@ class $EntitiesTable extends Entities with TableInfo<$EntitiesTable, Entity> {
   $EntitiesTable createAlias(String alias) {
     return $EntitiesTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<EntityType, String, String> $convertertype =
+      const EnumNameConverter(EntityType.values);
 }
 
 class Entity extends DataClass implements Insertable<Entity> {
   final String uuid;
-  final String entityType;
+  final EntityType type;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? lastSyncedAt;
   final bool isDeleted;
   const Entity({
     required this.uuid,
-    required this.entityType,
+    required this.type,
     required this.createdAt,
     required this.updatedAt,
     this.lastSyncedAt,
@@ -666,7 +661,9 @@ class Entity extends DataClass implements Insertable<Entity> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['uuid'] = Variable<String>(uuid);
-    map['entity_type'] = Variable<String>(entityType);
+    {
+      map['type'] = Variable<String>($EntitiesTable.$convertertype.toSql(type));
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || lastSyncedAt != null) {
@@ -679,7 +676,7 @@ class Entity extends DataClass implements Insertable<Entity> {
   EntitiesCompanion toCompanion(bool nullToAbsent) {
     return EntitiesCompanion(
       uuid: Value(uuid),
-      entityType: Value(entityType),
+      type: Value(type),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       lastSyncedAt: lastSyncedAt == null && nullToAbsent
@@ -696,7 +693,9 @@ class Entity extends DataClass implements Insertable<Entity> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Entity(
       uuid: serializer.fromJson<String>(json['uuid']),
-      entityType: serializer.fromJson<String>(json['entityType']),
+      type: $EntitiesTable.$convertertype.fromJson(
+        serializer.fromJson<String>(json['type']),
+      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       lastSyncedAt: serializer.fromJson<DateTime?>(json['lastSyncedAt']),
@@ -708,7 +707,9 @@ class Entity extends DataClass implements Insertable<Entity> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'uuid': serializer.toJson<String>(uuid),
-      'entityType': serializer.toJson<String>(entityType),
+      'type': serializer.toJson<String>(
+        $EntitiesTable.$convertertype.toJson(type),
+      ),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'lastSyncedAt': serializer.toJson<DateTime?>(lastSyncedAt),
@@ -718,14 +719,14 @@ class Entity extends DataClass implements Insertable<Entity> {
 
   Entity copyWith({
     String? uuid,
-    String? entityType,
+    EntityType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> lastSyncedAt = const Value.absent(),
     bool? isDeleted,
   }) => Entity(
     uuid: uuid ?? this.uuid,
-    entityType: entityType ?? this.entityType,
+    type: type ?? this.type,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     lastSyncedAt: lastSyncedAt.present ? lastSyncedAt.value : this.lastSyncedAt,
@@ -734,9 +735,7 @@ class Entity extends DataClass implements Insertable<Entity> {
   Entity copyWithCompanion(EntitiesCompanion data) {
     return Entity(
       uuid: data.uuid.present ? data.uuid.value : this.uuid,
-      entityType: data.entityType.present
-          ? data.entityType.value
-          : this.entityType,
+      type: data.type.present ? data.type.value : this.type,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       lastSyncedAt: data.lastSyncedAt.present
@@ -750,7 +749,7 @@ class Entity extends DataClass implements Insertable<Entity> {
   String toString() {
     return (StringBuffer('Entity(')
           ..write('uuid: $uuid, ')
-          ..write('entityType: $entityType, ')
+          ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('lastSyncedAt: $lastSyncedAt, ')
@@ -760,20 +759,14 @@ class Entity extends DataClass implements Insertable<Entity> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    uuid,
-    entityType,
-    createdAt,
-    updatedAt,
-    lastSyncedAt,
-    isDeleted,
-  );
+  int get hashCode =>
+      Object.hash(uuid, type, createdAt, updatedAt, lastSyncedAt, isDeleted);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Entity &&
           other.uuid == this.uuid &&
-          other.entityType == this.entityType &&
+          other.type == this.type &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.lastSyncedAt == this.lastSyncedAt &&
@@ -782,7 +775,7 @@ class Entity extends DataClass implements Insertable<Entity> {
 
 class EntitiesCompanion extends UpdateCompanion<Entity> {
   final Value<String> uuid;
-  final Value<String> entityType;
+  final Value<EntityType> type;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> lastSyncedAt;
@@ -790,7 +783,7 @@ class EntitiesCompanion extends UpdateCompanion<Entity> {
   final Value<int> rowid;
   const EntitiesCompanion({
     this.uuid = const Value.absent(),
-    this.entityType = const Value.absent(),
+    this.type = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.lastSyncedAt = const Value.absent(),
@@ -799,19 +792,19 @@ class EntitiesCompanion extends UpdateCompanion<Entity> {
   });
   EntitiesCompanion.insert({
     required String uuid,
-    required String entityType,
+    required EntityType type,
     required DateTime createdAt,
     required DateTime updatedAt,
     this.lastSyncedAt = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : uuid = Value(uuid),
-       entityType = Value(entityType),
+       type = Value(type),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<Entity> custom({
     Expression<String>? uuid,
-    Expression<String>? entityType,
+    Expression<String>? type,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? lastSyncedAt,
@@ -820,7 +813,7 @@ class EntitiesCompanion extends UpdateCompanion<Entity> {
   }) {
     return RawValuesInsertable({
       if (uuid != null) 'uuid': uuid,
-      if (entityType != null) 'entity_type': entityType,
+      if (type != null) 'type': type,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (lastSyncedAt != null) 'last_synced_at': lastSyncedAt,
@@ -831,7 +824,7 @@ class EntitiesCompanion extends UpdateCompanion<Entity> {
 
   EntitiesCompanion copyWith({
     Value<String>? uuid,
-    Value<String>? entityType,
+    Value<EntityType>? type,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? lastSyncedAt,
@@ -840,7 +833,7 @@ class EntitiesCompanion extends UpdateCompanion<Entity> {
   }) {
     return EntitiesCompanion(
       uuid: uuid ?? this.uuid,
-      entityType: entityType ?? this.entityType,
+      type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
@@ -855,8 +848,10 @@ class EntitiesCompanion extends UpdateCompanion<Entity> {
     if (uuid.present) {
       map['uuid'] = Variable<String>(uuid.value);
     }
-    if (entityType.present) {
-      map['entity_type'] = Variable<String>(entityType.value);
+    if (type.present) {
+      map['type'] = Variable<String>(
+        $EntitiesTable.$convertertype.toSql(type.value),
+      );
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -880,7 +875,7 @@ class EntitiesCompanion extends UpdateCompanion<Entity> {
   String toString() {
     return (StringBuffer('EntitiesCompanion(')
           ..write('uuid: $uuid, ')
-          ..write('entityType: $entityType, ')
+          ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('lastSyncedAt: $lastSyncedAt, ')
@@ -900,6 +895,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_tags_custom_order',
     'CREATE UNIQUE INDEX idx_tags_custom_order ON tags (custom_order)',
   );
+  late final Index idxEntitiesType = Index(
+    'idx_entities_type',
+    'CREATE INDEX idx_entities_type ON entities (type)',
+  );
+  late final Index idxEntitiesPendingSync = Index(
+    'idx_entities_pending_sync',
+    'CREATE INDEX idx_entities_pending_sync ON entities (updated_at, last_synced_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -908,6 +911,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     tags,
     entities,
     idxTagsCustomOrder,
+    idxEntitiesType,
+    idxEntitiesPendingSync,
   ];
 }
 
@@ -1144,7 +1149,7 @@ typedef $$TagsTableProcessedTableManager =
 typedef $$EntitiesTableCreateCompanionBuilder =
     EntitiesCompanion Function({
       required String uuid,
-      required String entityType,
+      required EntityType type,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> lastSyncedAt,
@@ -1154,7 +1159,7 @@ typedef $$EntitiesTableCreateCompanionBuilder =
 typedef $$EntitiesTableUpdateCompanionBuilder =
     EntitiesCompanion Function({
       Value<String> uuid,
-      Value<String> entityType,
+      Value<EntityType> type,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> lastSyncedAt,
@@ -1176,10 +1181,11 @@ class $$EntitiesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get entityType => $composableBuilder(
-    column: $table.entityType,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnWithTypeConverterFilters<EntityType, EntityType, String> get type =>
+      $composableBuilder(
+        column: $table.type,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
@@ -1216,8 +1222,8 @@ class $$EntitiesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get entityType => $composableBuilder(
-    column: $table.entityType,
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1254,10 +1260,8 @@ class $$EntitiesTableAnnotationComposer
   GeneratedColumn<String> get uuid =>
       $composableBuilder(column: $table.uuid, builder: (column) => column);
 
-  GeneratedColumn<String> get entityType => $composableBuilder(
-    column: $table.entityType,
-    builder: (column) => column,
-  );
+  GeneratedColumnWithTypeConverter<EntityType, String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -1303,7 +1307,7 @@ class $$EntitiesTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> uuid = const Value.absent(),
-                Value<String> entityType = const Value.absent(),
+                Value<EntityType> type = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> lastSyncedAt = const Value.absent(),
@@ -1311,7 +1315,7 @@ class $$EntitiesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => EntitiesCompanion(
                 uuid: uuid,
-                entityType: entityType,
+                type: type,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 lastSyncedAt: lastSyncedAt,
@@ -1321,7 +1325,7 @@ class $$EntitiesTableTableManager
           createCompanionCallback:
               ({
                 required String uuid,
-                required String entityType,
+                required EntityType type,
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> lastSyncedAt = const Value.absent(),
@@ -1329,7 +1333,7 @@ class $$EntitiesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => EntitiesCompanion.insert(
                 uuid: uuid,
-                entityType: entityType,
+                type: type,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 lastSyncedAt: lastSyncedAt,

@@ -99,6 +99,23 @@ class AppDatabase extends _$AppDatabase {
             ),
           );
         }
+
+        if (from < 4) {
+          await m.createTable(entities);
+          await _populateEntitiesForExistingData();
+          await m.createIndex(
+            Index(
+              'idx_entities_type',
+              'CREATE INDEX idx_entities_type ON entities (type);',
+            ),
+          );
+          await m.createIndex(
+            Index(
+              'idx_entities_pending_sync',
+              'CREATE INDEX idx_entities_pending_sync ON entities (updated_at, last_synced_at);',
+            ),
+          );
+        }
       },
     );
   }
@@ -123,6 +140,25 @@ class AppDatabase extends _$AppDatabase {
         );
 
         lastKey = newKey;
+      }
+    });
+  }
+
+  Future<void> _populateEntitiesForExistingData() async {
+    final allTags = await (select(tags)).get();
+    final timeStamp = DateTime.now().toUtc();
+    await batch((batch) {
+      for (final tag in allTags) {
+        batch.insert(
+          entities,
+          EntitiesCompanion.insert(
+            uuid: tag.uuid,
+            type: EntityType.tag,
+            createdAt: timeStamp,
+            updatedAt: timeStamp,
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
       }
     });
   }

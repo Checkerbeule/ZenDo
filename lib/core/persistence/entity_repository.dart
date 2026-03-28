@@ -19,7 +19,7 @@ class EntityRepository {
         .insert(
           EntitiesCompanion.insert(
             uuid: uuid,
-            entityType: type.name,
+            type: type,
             createdAt: timestamp,
             updatedAt: timestamp,
           ),
@@ -53,15 +53,19 @@ class EntityRepository {
   }
 
   /// Retrieves all entities of a specific [type].
-  Future<List<Entity>> readAllByType(EntityType type) async {
-    return await (db.select(
-      db.entities,
-    )..where((entity) => entity.entityType.equals(type.name))).get();
+  Future<List<Entity>> readAllActiveByType(EntityType type) async {
+    return await (db.select(db.entities)..where(
+          (entity) =>
+              entity.type.equalsValue(type) & entity.isDeleted.equals(false),
+        ))
+        .get();
   }
 
   /// Retrieves all existing entities across all types.
-  Future<List<Entity>> readAll() async {
-    return await (db.select(db.entities)).get();
+  Future<List<Entity>> readAllActive() async {
+    return await (db.select(
+      db.entities,
+    )..where((entity) => entity.isDeleted.equals(false))).get();
   }
 
   /// Retrieves all entities that have pending changes not yet synced to the server.
@@ -75,6 +79,18 @@ class EntityRepository {
         .get();
   }
 
+  /// Finds all entities that are marked as deleted AND have been synced.
+  /// These can be safely removed from the local database.
+  Future<List<Entity>> readSyncedDeletes() async {
+    return await (db.select(db.entities)..where(
+          (entity) =>
+              entity.isDeleted.equals(true) &
+              entity.lastSyncedAt.isNotNull() &
+              entity.lastSyncedAt.isBiggerOrEqual(entity.updatedAt),
+        ))
+        .get();
+  }
+
   /// Provides a continuous stream of a single entity's data by [uuid].
   Stream<Entity?> watch(String uuid) {
     return (db.select(
@@ -84,14 +100,18 @@ class EntityRepository {
 
   /// Provides a stream of all entities of a specific [type].
   Stream<List<Entity>> watchAllByType(EntityType type) {
-    return (db.select(
-      db.entities,
-    )..where((entity) => entity.entityType.equals(type.name))).watch();
+    return (db.select(db.entities)..where(
+          (entity) =>
+              entity.type.equalsValue(type) & entity.isDeleted.equals(false),
+        ))
+        .watch();
   }
 
   /// Provides a stream of all existing entities.
   Stream<List<Entity>> watchAll() {
-    return (db.select(db.entities)).watch();
+    return (db.select(
+      db.entities,
+    )..where((entity) => entity.isDeleted.equals(false))).watch();
   }
 
   /// Updates the `updatedAt` timestamp to the current UTC time.
@@ -149,8 +169,9 @@ class EntityRepository {
   /// Permanently removes an entity from the local database.
   /// Only call this after the server has confirmed the deletion.
   Future<int> hardDelete(String uuid) async {
-    return await (db.delete(
-      db.entities,
-    )..where((entity) => entity.uuid.equals(uuid))).go();
+    return await (db.delete(db.entities)..where(
+          (entity) => entity.uuid.equals(uuid) & entity.isDeleted.equals(true),
+        ))
+        .go();
   }
 }
