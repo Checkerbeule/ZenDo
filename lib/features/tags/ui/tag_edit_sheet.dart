@@ -55,12 +55,12 @@ class _TagEditSheetState extends State<TagEditSheet> {
     if (_nameController.text.isEmpty) return;
 
     if (widget.initialTag == null) {
-      widget.repository.createTag(
+      widget.repository.create(
         name: _nameController.text.trim(),
         color: _selectedColor.toARGB32(),
       );
     } else {
-      widget.repository.updateTag(
+      widget.repository.update(
         widget.initialTag!.copyWith(
           name: _nameController.text.trim(),
           color: _selectedColor.toARGB32(),

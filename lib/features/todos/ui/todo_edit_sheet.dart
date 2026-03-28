@@ -354,7 +354,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
             ),
             const SizedBox(height: 5),
             StreamBuilder<List<Tag>>(
-              stream: tagRepository.watchTags(),
+              stream: tagRepository.watchAll(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   final tags = snapshot.data!;

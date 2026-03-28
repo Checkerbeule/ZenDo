@@ -114,7 +114,7 @@ class _SliverTodoSortFilterAppBarState
             child: Padding(
               padding: const EdgeInsetsGeometry.only(left: 5),
               child: StreamBuilder<List<Tag>>(
-                stream: tagRepository.watchTags(),
+                stream: tagRepository.watchAll(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     final tags = snapshot.data!;

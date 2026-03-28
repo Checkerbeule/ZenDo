@@ -38,7 +38,7 @@ class ZenDoApp extends StatelessWidget {
           dispose: (_, db) => db.close(),
         ),
         ProxyProvider<AppDatabase, TagRepository>(
-          update: (_, db, __) => DriftTagRepository(db),
+          update: (_, db, __) => TagRepository(db),
         ),
         ChangeNotifierProvider<ProviderL10n>(create: (_) => ProviderL10n()),
         ChangeNotifierProvider<ZenDoAppState>(create: (_) => ZenDoAppState()),

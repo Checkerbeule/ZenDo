@@ -145,6 +145,15 @@ class EntityRepository {
     });
   }
 
+  /// Marks an entity as deleted (Soft Delete) to ensure the deletion is synced.
+  Future<int> markAsDeleted(String uuid) async {
+    return await updateWithTouch(uuid, () async {
+      return await (db.update(db.entities)
+            ..where((entity) => entity.uuid.equals(uuid)))
+          .write(EntitiesCompanion(isDeleted: Value(true)));
+    });
+  }
+
   /// Sets the [lastSyncedAt] timestamp after a successful server synchronization.
   Future<bool> markAsSynced(String uuid, DateTime syncedAtUtc) async {
     final marked =
@@ -152,18 +161,6 @@ class EntityRepository {
               ..where((entity) => entity.uuid.equals(uuid)))
             .write(EntitiesCompanion(lastSyncedAt: Value(syncedAtUtc)));
     return marked == 1;
-  }
-
-  /// Marks an entity as deleted (Soft Delete) to ensure the deletion is synced.
-  Future<int> markAsDeleted(String uuid) async {
-    return await (db.update(
-      db.entities,
-    )..where((entity) => entity.uuid.equals(uuid))).write(
-      EntitiesCompanion(
-        isDeleted: Value(true),
-        updatedAt: Value(DateTime.now().toUtc()),
-      ),
-    );
   }
 
   /// Permanently removes an entity from the local database.

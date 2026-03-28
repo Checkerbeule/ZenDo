@@ -32,7 +32,7 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
   @override
   void initState() {
     super.initState();
-    _tagSubscription = widget.repository.watchTags().listen((newData) {
+    _tagSubscription = widget.repository.watchAll().listen((newData) {
       if (_isDifferentData(newData)) {
         setState(() {
           _loadedTags = newData;
@@ -163,7 +163,7 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
                           _loadedTags.insert(targetIndex, updatedTag);
                         });
 
-                        await widget.repository.updateTag(updatedTag);
+                        await widget.repository.update(updatedTag);
                       },
                       proxyDecorator: (child, index, animation) {
                         return AnimatedBuilder(

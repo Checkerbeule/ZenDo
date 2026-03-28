@@ -29,7 +29,7 @@ class _TodoWidgetState extends State<TodoWidget> {
   @override
   void initState() {
     super.initState();
-    _tagSubscription = context.read<TagRepository>().watchTags().listen((
+    _tagSubscription = context.read<TagRepository>().watchAll().listen((
       allTags,
     ) {
       if (mounted) {
