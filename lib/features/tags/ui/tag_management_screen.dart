@@ -5,8 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/ui/dialog_helper.dart';
 import 'package:zen_do/core/utils/fractional_index_reordering.dart';
-import 'package:zen_do/features/tags/data/tag_repository.dart';
-import 'package:zen_do/features/tags/domain/tag_delete_service.dart';
+import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/ui/tag_edit_sheet.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
@@ -14,11 +13,9 @@ import 'package:zen_do/features/todos/ui/todo_screen.dart';
 import '../l10n/tags_l10n_extension.dart';
 
 class TagManagementScreen extends StatefulWidget {
-  final TagRepository repository;
-  final TagDeleteService tagService;
+  final TagService tagService;
 
-  TagManagementScreen({required this.repository, super.key})
-    : tagService = TagDeleteService(tagRepo: repository);
+  const TagManagementScreen({required this.tagService, super.key});
 
   @override
   State<TagManagementScreen> createState() => _TagManagementScreenState();
@@ -32,7 +29,7 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
   @override
   void initState() {
     super.initState();
-    _tagSubscription = widget.repository.watchAll().listen((newData) {
+    _tagSubscription = widget.tagService.watchAll().listen((newData) {
       if (_isDifferentData(newData)) {
         setState(() {
           _loadedTags = newData;
@@ -71,7 +68,7 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
       context: context,
       isScrollControlled: true,
       builder: (context) =>
-          TagEditSheet(initialTag: tag, repository: widget.repository),
+          TagEditSheet(initialTag: tag, tagService: widget.tagService),
     );
   }
 
@@ -163,7 +160,7 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
                           _loadedTags.insert(targetIndex, updatedTag);
                         });
 
-                        await widget.repository.update(updatedTag);
+                        await widget.tagService.update(updatedTag);
                       },
                       proxyDecorator: (child, index, animation) {
                         return AnimatedBuilder(
@@ -216,10 +213,9 @@ class _TagManagementScreenState extends State<TagManagementScreen> {
                                       _deletedTagUuids.add(
                                         _loadedTags[index].uuid,
                                       );
-                                      widget.tagService
-                                          .deleteTagAndcleanupReferences(
-                                            _loadedTags[index],
-                                          );
+                                      widget.tagService.delete(
+                                        _loadedTags[index],
+                                      );
                                     }
                                   },
                                 ),

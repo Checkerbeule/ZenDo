@@ -7,12 +7,12 @@ class TagRepository {
 
   TagRepository(this.db);
 
-  Future<void> create({
+  Future<int> create({
     required String uuid,
     required String name,
     required int color,
   }) async {
-    await db.transaction(() async {
+    return await db.transaction(() async {
       final lastTag =
           await (db.select(db.tags)
                 ..orderBy([
@@ -29,7 +29,7 @@ class TagRepository {
         null,
       );
 
-      return db
+      return await db
           .into(db.tags)
           .insert(
             TagsCompanion.insert(

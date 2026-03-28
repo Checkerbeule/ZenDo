@@ -7,7 +7,7 @@ import 'package:zen_do/core/persistence/entities.dart';
 class EntityRepository {
   final AppDatabase db;
 
-  EntityRepository({required this.db});
+  EntityRepository(this.db);
 
   /// Creates a new entity entry and returns its unique [uuid].
   /// Sets initial timestamps (UTC) for creation and update.
@@ -34,14 +34,13 @@ class EntityRepository {
   /// actual data entry are both created successfully, or neither is.
   ///
   /// Returns the generated [uuid] after both create statements have completed.
-  Future<String> createWithEntity(
+  Future<T> createWithEntity<T>(
     EntityType type,
-    Future<void> Function(String uuid) createStatement,
+    Future<T> Function(String uuid) createStatement,
   ) async {
     return db.transaction(() async {
       final uuid = await create(type);
-      await createStatement(uuid);
-      return uuid;
+      return await createStatement(uuid);
     });
   }
 
