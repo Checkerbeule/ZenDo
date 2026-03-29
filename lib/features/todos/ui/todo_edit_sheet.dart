@@ -8,7 +8,7 @@ import 'package:zen_do/core/ui/base_bottom_sheet.dart';
 import 'package:zen_do/core/ui/dialog_helper.dart';
 import 'package:zen_do/core/ui/standard_buttons.dart';
 import 'package:zen_do/core/utils/time_util.dart';
-import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/l10n/tags_l10n_extension.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
@@ -97,7 +97,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
   Widget build(BuildContext context) {
     //final loc = TodosLocalizations.of(context);
     final locale = Localizations.localeOf(context);
-    final TagRepository tagRepository = context.read<TagRepository>();
+    final TagService tagService = context.read<TagService>();
     final isTodoCompleted = todo?.completionDate != null;
 
     final List<DropdownMenuItem<ListScope>> listScopeDropDownItems = manager
@@ -354,7 +354,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
             ),
             const SizedBox(height: 5),
             StreamBuilder<List<Tag>>(
-              stream: tagRepository.watchAll(),
+              stream: tagService.watchAll(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   final tags = snapshot.data!;

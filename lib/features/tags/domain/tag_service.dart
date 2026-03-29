@@ -11,7 +11,9 @@ class TagService {
   TagService({required this.tagRepo, required this.entityRepo});
 
   Future<String> create({required String name, required int color}) async {
-    return await entityRepo.createWithEntity(EntityType.tag, (String uuid) async {
+    return await entityRepo.createWithEntity(EntityType.tag, (
+      String uuid,
+    ) async {
       await tagRepo.create(uuid: uuid, name: name, color: color);
       return uuid;
     });
@@ -26,7 +28,7 @@ class TagService {
   }
 
   Future<int> delete(Tag tag) async {
-    await PersistenceHelper.cleanupTagReferences(tag.uuid); // das hier löscht die verknüfungen zu den todos (noch in Hive). Muss noch auf Drift umgestellt werden. Nur eine Zwischenlösung.
+    await PersistenceHelper.cleanupTagReferences(tag.uuid);
     return await entityRepo.markAsDeleted(tag.uuid);
   }
 }

@@ -9,12 +9,12 @@ import 'package:zen_do/features/tags/data/tags.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Tags, Entities])
+@DriftDatabase(tables: [Entities, Tags])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
@@ -33,14 +33,15 @@ class AppDatabase extends _$AppDatabase {
 
         if (details.wasCreated) {
           await batch((batch) {
+            final timestamp = DateTime.now().toUtc();
             final List<EntitiesCompanion> initialEntitiesForTags =
                 List.generate(
                   3,
                   (_) => EntitiesCompanion.insert(
                     uuid: Uuid().v4(),
                     type: EntityType.tag,
-                    createdAt: DateTime.now().toUtc(),
-                    updatedAt: DateTime.now().toUtc(),
+                    createdAt: timestamp,
+                    updatedAt: timestamp,
                   ),
                 );
             batch.insertAll(entities, initialEntitiesForTags);
@@ -70,6 +71,8 @@ class AppDatabase extends _$AppDatabase {
       },
 
       onUpgrade: (m, from, to) async {
+        await customStatement('PRAGMA foreign_keys = OFF');
+
         if (from < 3) {
           await m.alterTable(
             TableMigration(
@@ -146,6 +149,14 @@ class AppDatabase extends _$AppDatabase {
               'idx_tags_custom_order',
               'CREATE UNIQUE INDEX idx_tags_custom_order ON tags (custom_order);',
             ),
+          );
+        }
+
+        await customStatement('PRAGMA foreign_keys = ON');
+        final violations = await customSelect('PRAGMA foreign_key_check').get();
+        if (violations.isNotEmpty) {
+          throw Exception(
+            'Foreign key constraint violations detected after migration: $violations',
           );
         }
       },

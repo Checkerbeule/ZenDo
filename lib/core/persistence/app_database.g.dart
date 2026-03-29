@@ -3,323 +3,6 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $TagsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
-  @override
-  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
-    'uuid',
-    aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 36,
-      maxTextLength: 36,
-    ),
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 25,
-    ),
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _colorMeta = const VerificationMeta('color');
-  @override
-  late final GeneratedColumn<int> color = GeneratedColumn<int>(
-    'color',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _customOrderMeta = const VerificationMeta(
-    'customOrder',
-  );
-  @override
-  late final GeneratedColumn<String> customOrder = GeneratedColumn<String>(
-    'custom_order',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [uuid, name, color, customOrder];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'tags';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Tag> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('uuid')) {
-      context.handle(
-        _uuidMeta,
-        uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_uuidMeta);
-    }
-    if (data.containsKey('name')) {
-      context.handle(
-        _nameMeta,
-        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_nameMeta);
-    }
-    if (data.containsKey('color')) {
-      context.handle(
-        _colorMeta,
-        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_colorMeta);
-    }
-    if (data.containsKey('custom_order')) {
-      context.handle(
-        _customOrderMeta,
-        customOrder.isAcceptableOrUnknown(
-          data['custom_order']!,
-          _customOrderMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_customOrderMeta);
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {uuid};
-  @override
-  Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Tag(
-      uuid: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}uuid'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      color: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}color'],
-      )!,
-      customOrder: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}custom_order'],
-      )!,
-    );
-  }
-
-  @override
-  $TagsTable createAlias(String alias) {
-    return $TagsTable(attachedDatabase, alias);
-  }
-}
-
-class Tag extends DataClass implements Insertable<Tag> {
-  final String uuid;
-  final String name;
-  final int color;
-  final String customOrder;
-  const Tag({
-    required this.uuid,
-    required this.name,
-    required this.color,
-    required this.customOrder,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['uuid'] = Variable<String>(uuid);
-    map['name'] = Variable<String>(name);
-    map['color'] = Variable<int>(color);
-    map['custom_order'] = Variable<String>(customOrder);
-    return map;
-  }
-
-  TagsCompanion toCompanion(bool nullToAbsent) {
-    return TagsCompanion(
-      uuid: Value(uuid),
-      name: Value(name),
-      color: Value(color),
-      customOrder: Value(customOrder),
-    );
-  }
-
-  factory Tag.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Tag(
-      uuid: serializer.fromJson<String>(json['uuid']),
-      name: serializer.fromJson<String>(json['name']),
-      color: serializer.fromJson<int>(json['color']),
-      customOrder: serializer.fromJson<String>(json['customOrder']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'uuid': serializer.toJson<String>(uuid),
-      'name': serializer.toJson<String>(name),
-      'color': serializer.toJson<int>(color),
-      'customOrder': serializer.toJson<String>(customOrder),
-    };
-  }
-
-  Tag copyWith({String? uuid, String? name, int? color, String? customOrder}) =>
-      Tag(
-        uuid: uuid ?? this.uuid,
-        name: name ?? this.name,
-        color: color ?? this.color,
-        customOrder: customOrder ?? this.customOrder,
-      );
-  Tag copyWithCompanion(TagsCompanion data) {
-    return Tag(
-      uuid: data.uuid.present ? data.uuid.value : this.uuid,
-      name: data.name.present ? data.name.value : this.name,
-      color: data.color.present ? data.color.value : this.color,
-      customOrder: data.customOrder.present
-          ? data.customOrder.value
-          : this.customOrder,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Tag(')
-          ..write('uuid: $uuid, ')
-          ..write('name: $name, ')
-          ..write('color: $color, ')
-          ..write('customOrder: $customOrder')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(uuid, name, color, customOrder);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Tag &&
-          other.uuid == this.uuid &&
-          other.name == this.name &&
-          other.color == this.color &&
-          other.customOrder == this.customOrder);
-}
-
-class TagsCompanion extends UpdateCompanion<Tag> {
-  final Value<String> uuid;
-  final Value<String> name;
-  final Value<int> color;
-  final Value<String> customOrder;
-  final Value<int> rowid;
-  const TagsCompanion({
-    this.uuid = const Value.absent(),
-    this.name = const Value.absent(),
-    this.color = const Value.absent(),
-    this.customOrder = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  TagsCompanion.insert({
-    required String uuid,
-    required String name,
-    required int color,
-    required String customOrder,
-    this.rowid = const Value.absent(),
-  }) : uuid = Value(uuid),
-       name = Value(name),
-       color = Value(color),
-       customOrder = Value(customOrder);
-  static Insertable<Tag> custom({
-    Expression<String>? uuid,
-    Expression<String>? name,
-    Expression<int>? color,
-    Expression<String>? customOrder,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (uuid != null) 'uuid': uuid,
-      if (name != null) 'name': name,
-      if (color != null) 'color': color,
-      if (customOrder != null) 'custom_order': customOrder,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  TagsCompanion copyWith({
-    Value<String>? uuid,
-    Value<String>? name,
-    Value<int>? color,
-    Value<String>? customOrder,
-    Value<int>? rowid,
-  }) {
-    return TagsCompanion(
-      uuid: uuid ?? this.uuid,
-      name: name ?? this.name,
-      color: color ?? this.color,
-      customOrder: customOrder ?? this.customOrder,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (uuid.present) {
-      map['uuid'] = Variable<String>(uuid.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (color.present) {
-      map['color'] = Variable<int>(color.value);
-    }
-    if (customOrder.present) {
-      map['custom_order'] = Variable<String>(customOrder.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TagsCompanion(')
-          ..write('uuid: $uuid, ')
-          ..write('name: $name, ')
-          ..write('color: $color, ')
-          ..write('customOrder: $customOrder, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $EntitiesTable extends Entities with TableInfo<$EntitiesTable, Entity> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -746,15 +429,331 @@ class EntitiesCompanion extends UpdateCompanion<Entity> {
   }
 }
 
+class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+    'uuid',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 36,
+      maxTextLength: 36,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES entities (uuid) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 25,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  @override
+  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+    'color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _customOrderMeta = const VerificationMeta(
+    'customOrder',
+  );
+  @override
+  late final GeneratedColumn<String> customOrder = GeneratedColumn<String>(
+    'custom_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [uuid, name, color, customOrder];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Tag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('uuid')) {
+      context.handle(
+        _uuidMeta,
+        uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('color')) {
+      context.handle(
+        _colorMeta,
+        color.isAcceptableOrUnknown(data['color']!, _colorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorMeta);
+    }
+    if (data.containsKey('custom_order')) {
+      context.handle(
+        _customOrderMeta,
+        customOrder.isAcceptableOrUnknown(
+          data['custom_order']!,
+          _customOrderMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_customOrderMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {uuid};
+  @override
+  Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Tag(
+      uuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uuid'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      )!,
+      customOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_order'],
+      )!,
+    );
+  }
+
+  @override
+  $TagsTable createAlias(String alias) {
+    return $TagsTable(attachedDatabase, alias);
+  }
+}
+
+class Tag extends DataClass implements Insertable<Tag> {
+  final String uuid;
+  final String name;
+  final int color;
+  final String customOrder;
+  const Tag({
+    required this.uuid,
+    required this.name,
+    required this.color,
+    required this.customOrder,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['uuid'] = Variable<String>(uuid);
+    map['name'] = Variable<String>(name);
+    map['color'] = Variable<int>(color);
+    map['custom_order'] = Variable<String>(customOrder);
+    return map;
+  }
+
+  TagsCompanion toCompanion(bool nullToAbsent) {
+    return TagsCompanion(
+      uuid: Value(uuid),
+      name: Value(name),
+      color: Value(color),
+      customOrder: Value(customOrder),
+    );
+  }
+
+  factory Tag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Tag(
+      uuid: serializer.fromJson<String>(json['uuid']),
+      name: serializer.fromJson<String>(json['name']),
+      color: serializer.fromJson<int>(json['color']),
+      customOrder: serializer.fromJson<String>(json['customOrder']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'uuid': serializer.toJson<String>(uuid),
+      'name': serializer.toJson<String>(name),
+      'color': serializer.toJson<int>(color),
+      'customOrder': serializer.toJson<String>(customOrder),
+    };
+  }
+
+  Tag copyWith({String? uuid, String? name, int? color, String? customOrder}) =>
+      Tag(
+        uuid: uuid ?? this.uuid,
+        name: name ?? this.name,
+        color: color ?? this.color,
+        customOrder: customOrder ?? this.customOrder,
+      );
+  Tag copyWithCompanion(TagsCompanion data) {
+    return Tag(
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      name: data.name.present ? data.name.value : this.name,
+      color: data.color.present ? data.color.value : this.color,
+      customOrder: data.customOrder.present
+          ? data.customOrder.value
+          : this.customOrder,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Tag(')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name, ')
+          ..write('color: $color, ')
+          ..write('customOrder: $customOrder')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(uuid, name, color, customOrder);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Tag &&
+          other.uuid == this.uuid &&
+          other.name == this.name &&
+          other.color == this.color &&
+          other.customOrder == this.customOrder);
+}
+
+class TagsCompanion extends UpdateCompanion<Tag> {
+  final Value<String> uuid;
+  final Value<String> name;
+  final Value<int> color;
+  final Value<String> customOrder;
+  final Value<int> rowid;
+  const TagsCompanion({
+    this.uuid = const Value.absent(),
+    this.name = const Value.absent(),
+    this.color = const Value.absent(),
+    this.customOrder = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TagsCompanion.insert({
+    required String uuid,
+    required String name,
+    required int color,
+    required String customOrder,
+    this.rowid = const Value.absent(),
+  }) : uuid = Value(uuid),
+       name = Value(name),
+       color = Value(color),
+       customOrder = Value(customOrder);
+  static Insertable<Tag> custom({
+    Expression<String>? uuid,
+    Expression<String>? name,
+    Expression<int>? color,
+    Expression<String>? customOrder,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (uuid != null) 'uuid': uuid,
+      if (name != null) 'name': name,
+      if (color != null) 'color': color,
+      if (customOrder != null) 'custom_order': customOrder,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TagsCompanion copyWith({
+    Value<String>? uuid,
+    Value<String>? name,
+    Value<int>? color,
+    Value<String>? customOrder,
+    Value<int>? rowid,
+  }) {
+    return TagsCompanion(
+      uuid: uuid ?? this.uuid,
+      name: name ?? this.name,
+      color: color ?? this.color,
+      customOrder: customOrder ?? this.customOrder,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (color.present) {
+      map['color'] = Variable<int>(color.value);
+    }
+    if (customOrder.present) {
+      map['custom_order'] = Variable<String>(customOrder.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TagsCompanion(')
+          ..write('uuid: $uuid, ')
+          ..write('name: $name, ')
+          ..write('color: $color, ')
+          ..write('customOrder: $customOrder, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $TagsTable tags = $TagsTable(this);
   late final $EntitiesTable entities = $EntitiesTable(this);
-  late final Index idxTagsCustomOrder = Index(
-    'idx_tags_custom_order',
-    'CREATE UNIQUE INDEX idx_tags_custom_order ON tags (custom_order)',
-  );
+  late final $TagsTable tags = $TagsTable(this);
   late final Index idxEntitiesType = Index(
     'idx_entities_type',
     'CREATE INDEX idx_entities_type ON entities (type)',
@@ -763,194 +762,33 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_entities_pending_sync',
     'CREATE INDEX idx_entities_pending_sync ON entities (updated_at, last_synced_at)',
   );
+  late final Index idxTagsCustomOrder = Index(
+    'idx_tags_custom_order',
+    'CREATE UNIQUE INDEX idx_tags_custom_order ON tags (custom_order)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    tags,
     entities,
-    idxTagsCustomOrder,
+    tags,
     idxEntitiesType,
     idxEntitiesPendingSync,
+    idxTagsCustomOrder,
   ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'entities',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('tags', kind: UpdateKind.delete)],
+    ),
+  ]);
 }
 
-typedef $$TagsTableCreateCompanionBuilder =
-    TagsCompanion Function({
-      required String uuid,
-      required String name,
-      required int color,
-      required String customOrder,
-      Value<int> rowid,
-    });
-typedef $$TagsTableUpdateCompanionBuilder =
-    TagsCompanion Function({
-      Value<String> uuid,
-      Value<String> name,
-      Value<int> color,
-      Value<String> customOrder,
-      Value<int> rowid,
-    });
-
-class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get uuid => $composableBuilder(
-    column: $table.uuid,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get color => $composableBuilder(
-    column: $table.color,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get customOrder => $composableBuilder(
-    column: $table.customOrder,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get uuid => $composableBuilder(
-    column: $table.uuid,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get color => $composableBuilder(
-    column: $table.color,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get customOrder => $composableBuilder(
-    column: $table.customOrder,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$TagsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $TagsTable> {
-  $$TagsTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get uuid =>
-      $composableBuilder(column: $table.uuid, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<int> get color =>
-      $composableBuilder(column: $table.color, builder: (column) => column);
-
-  GeneratedColumn<String> get customOrder => $composableBuilder(
-    column: $table.customOrder,
-    builder: (column) => column,
-  );
-}
-
-class $$TagsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $TagsTable,
-          Tag,
-          $$TagsTableFilterComposer,
-          $$TagsTableOrderingComposer,
-          $$TagsTableAnnotationComposer,
-          $$TagsTableCreateCompanionBuilder,
-          $$TagsTableUpdateCompanionBuilder,
-          (Tag, BaseReferences<_$AppDatabase, $TagsTable, Tag>),
-          Tag,
-          PrefetchHooks Function()
-        > {
-  $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$TagsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$TagsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$TagsTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> uuid = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<int> color = const Value.absent(),
-                Value<String> customOrder = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => TagsCompanion(
-                uuid: uuid,
-                name: name,
-                color: color,
-                customOrder: customOrder,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String uuid,
-                required String name,
-                required int color,
-                required String customOrder,
-                Value<int> rowid = const Value.absent(),
-              }) => TagsCompanion.insert(
-                uuid: uuid,
-                name: name,
-                color: color,
-                customOrder: customOrder,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
-
-typedef $$TagsTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $TagsTable,
-      Tag,
-      $$TagsTableFilterComposer,
-      $$TagsTableOrderingComposer,
-      $$TagsTableAnnotationComposer,
-      $$TagsTableCreateCompanionBuilder,
-      $$TagsTableUpdateCompanionBuilder,
-      (Tag, BaseReferences<_$AppDatabase, $TagsTable, Tag>),
-      Tag,
-      PrefetchHooks Function()
-    >;
 typedef $$EntitiesTableCreateCompanionBuilder =
     EntitiesCompanion Function({
       required String uuid,
@@ -971,6 +809,30 @@ typedef $$EntitiesTableUpdateCompanionBuilder =
       Value<bool> isDeleted,
       Value<int> rowid,
     });
+
+final class $$EntitiesTableReferences
+    extends BaseReferences<_$AppDatabase, $EntitiesTable, Entity> {
+  $$EntitiesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TagsTable, List<Tag>> _tagsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.tags,
+    aliasName: $_aliasNameGenerator(db.entities.uuid, db.tags.uuid),
+  );
+
+  $$TagsTableProcessedTableManager get tagsRefs {
+    final manager = $$TagsTableTableManager(
+      $_db,
+      $_db.tags,
+    ).filter((f) => f.uuid.uuid.sqlEquals($_itemColumn<String>('uuid')!));
+
+    final cache = $_typedResult.readTableOrNull(_tagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
 
 class $$EntitiesTableFilterComposer
     extends Composer<_$AppDatabase, $EntitiesTable> {
@@ -1011,6 +873,31 @@ class $$EntitiesTableFilterComposer
     column: $table.isDeleted,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> tagsRefs(
+    Expression<bool> Function($$TagsTableFilterComposer f) f,
+  ) {
+    final $$TagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableFilterComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EntitiesTableOrderingComposer
@@ -1081,6 +968,31 @@ class $$EntitiesTableAnnotationComposer
 
   GeneratedColumn<bool> get isDeleted =>
       $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  Expression<T> tagsRefs<T extends Object>(
+    Expression<T> Function($$TagsTableAnnotationComposer a) f,
+  ) {
+    final $$TagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EntitiesTableTableManager
@@ -1094,9 +1006,9 @@ class $$EntitiesTableTableManager
           $$EntitiesTableAnnotationComposer,
           $$EntitiesTableCreateCompanionBuilder,
           $$EntitiesTableUpdateCompanionBuilder,
-          (Entity, BaseReferences<_$AppDatabase, $EntitiesTable, Entity>),
+          (Entity, $$EntitiesTableReferences),
           Entity,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool tagsRefs})
         > {
   $$EntitiesTableTableManager(_$AppDatabase db, $EntitiesTable table)
     : super(
@@ -1146,9 +1058,36 @@ class $$EntitiesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$EntitiesTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({tagsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (tagsRefs) db.tags],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (tagsRefs)
+                    await $_getPrefetchedData<Entity, $EntitiesTable, Tag>(
+                      currentTable: table,
+                      referencedTable: $$EntitiesTableReferences._tagsRefsTable(
+                        db,
+                      ),
+                      managerFromTypedResult: (p0) =>
+                          $$EntitiesTableReferences(db, table, p0).tagsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.uuid == item.uuid),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
         ),
       );
 }
@@ -1163,15 +1102,312 @@ typedef $$EntitiesTableProcessedTableManager =
       $$EntitiesTableAnnotationComposer,
       $$EntitiesTableCreateCompanionBuilder,
       $$EntitiesTableUpdateCompanionBuilder,
-      (Entity, BaseReferences<_$AppDatabase, $EntitiesTable, Entity>),
+      (Entity, $$EntitiesTableReferences),
       Entity,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool tagsRefs})
+    >;
+typedef $$TagsTableCreateCompanionBuilder =
+    TagsCompanion Function({
+      required String uuid,
+      required String name,
+      required int color,
+      required String customOrder,
+      Value<int> rowid,
+    });
+typedef $$TagsTableUpdateCompanionBuilder =
+    TagsCompanion Function({
+      Value<String> uuid,
+      Value<String> name,
+      Value<int> color,
+      Value<String> customOrder,
+      Value<int> rowid,
+    });
+
+final class $$TagsTableReferences
+    extends BaseReferences<_$AppDatabase, $TagsTable, Tag> {
+  $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $EntitiesTable _uuidTable(_$AppDatabase db) => db.entities.createAlias(
+    $_aliasNameGenerator(db.tags.uuid, db.entities.uuid),
+  );
+
+  $$EntitiesTableProcessedTableManager get uuid {
+    final $_column = $_itemColumn<String>('uuid')!;
+
+    final manager = $$EntitiesTableTableManager(
+      $_db,
+      $_db.entities,
+    ).filter((f) => f.uuid.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_uuidTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customOrder => $composableBuilder(
+    column: $table.customOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EntitiesTableFilterComposer get uuid {
+    final $$EntitiesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.entities,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntitiesTableFilterComposer(
+            $db: $db,
+            $table: $db.entities,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get color => $composableBuilder(
+    column: $table.color,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customOrder => $composableBuilder(
+    column: $table.customOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EntitiesTableOrderingComposer get uuid {
+    final $$EntitiesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.entities,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntitiesTableOrderingComposer(
+            $db: $db,
+            $table: $db.entities,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TagsTable> {
+  $$TagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get color =>
+      $composableBuilder(column: $table.color, builder: (column) => column);
+
+  GeneratedColumn<String> get customOrder => $composableBuilder(
+    column: $table.customOrder,
+    builder: (column) => column,
+  );
+
+  $$EntitiesTableAnnotationComposer get uuid {
+    final $$EntitiesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.entities,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntitiesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.entities,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TagsTable,
+          Tag,
+          $$TagsTableFilterComposer,
+          $$TagsTableOrderingComposer,
+          $$TagsTableAnnotationComposer,
+          $$TagsTableCreateCompanionBuilder,
+          $$TagsTableUpdateCompanionBuilder,
+          (Tag, $$TagsTableReferences),
+          Tag,
+          PrefetchHooks Function({bool uuid})
+        > {
+  $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> uuid = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> color = const Value.absent(),
+                Value<String> customOrder = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TagsCompanion(
+                uuid: uuid,
+                name: name,
+                color: color,
+                customOrder: customOrder,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String uuid,
+                required String name,
+                required int color,
+                required String customOrder,
+                Value<int> rowid = const Value.absent(),
+              }) => TagsCompanion.insert(
+                uuid: uuid,
+                name: name,
+                color: color,
+                customOrder: customOrder,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$TagsTableReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback: ({uuid = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (uuid) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.uuid,
+                                referencedTable: $$TagsTableReferences
+                                    ._uuidTable(db),
+                                referencedColumn: $$TagsTableReferences
+                                    ._uuidTable(db)
+                                    .uuid,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TagsTable,
+      Tag,
+      $$TagsTableFilterComposer,
+      $$TagsTableOrderingComposer,
+      $$TagsTableAnnotationComposer,
+      $$TagsTableCreateCompanionBuilder,
+      $$TagsTableUpdateCompanionBuilder,
+      (Tag, $$TagsTableReferences),
+      Tag,
+      PrefetchHooks Function({bool uuid})
     >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
   $$EntitiesTableTableManager get entities =>
       $$EntitiesTableTableManager(_db, _db.entities);
+  $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
 }

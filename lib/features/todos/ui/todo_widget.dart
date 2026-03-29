@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/theme/theme.dart';
 import 'package:zen_do/core/ui/dialog_helper.dart';
-import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/todos/data/todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
@@ -29,9 +29,7 @@ class _TodoWidgetState extends State<TodoWidget> {
   @override
   void initState() {
     super.initState();
-    _tagSubscription = context.read<TagRepository>().watchAll().listen((
-      allTags,
-    ) {
+    _tagSubscription = context.read<TagService>().watchAll().listen((allTags) {
       if (mounted) {
         setState(() {
           _tagsByUuid = {for (var tag in allTags) tag.uuid: tag};

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
-import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 
@@ -84,7 +84,7 @@ class _SliverTodoSortFilterAppBarState
 
   @override
   Widget build(BuildContext context) {
-    final TagRepository tagRepository = context.read<TagRepository>();
+    final TagService tagService = context.read<TagService>();
     return SliverAppBar(
       pinned: false,
       floating: false,
@@ -114,7 +114,7 @@ class _SliverTodoSortFilterAppBarState
             child: Padding(
               padding: const EdgeInsetsGeometry.only(left: 5),
               child: StreamBuilder<List<Tag>>(
-                stream: tagRepository.watchAll(),
+                stream: tagService.watchAll(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     final tags = snapshot.data!;

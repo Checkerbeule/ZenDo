@@ -33,7 +33,8 @@ class EntityRepository {
   /// This ensures that the metadata entry in the 'entities' table and the
   /// actual data entry are both created successfully, or neither is.
   ///
-  /// Returns the generated [uuid] after both create statements have completed.
+  /// Generates a new UUID, passes it to the [createStatement], and returns
+  /// the statement's result upon successful completion of the transaction.
   Future<T> createWithEntity<T>(
     EntityType type,
     Future<T> Function(String uuid) createStatement,
@@ -44,14 +45,15 @@ class EntityRepository {
     });
   }
 
-  /// Retrieves a single entity by its [uuid]. Returns null if not found.
+  /// Retrieves a single entity by its [uuid], regardless if it is marked as deleted.
+  /// Returns null if not found.
   Future<Entity?> read(String uuid) async {
     return await (db.select(
       db.entities,
     )..where((entity) => entity.uuid.equals(uuid))).getSingleOrNull();
   }
 
-  /// Retrieves all entities of a specific [type].
+  /// Retrieves all entities of a specific [type], that are not marked as deleted.
   Future<List<Entity>> readAllActiveByType(EntityType type) async {
     return await (db.select(db.entities)..where(
           (entity) =>
@@ -60,7 +62,7 @@ class EntityRepository {
         .get();
   }
 
-  /// Retrieves all existing entities across all types.
+  /// Retrieves all existing entities across all types, that are not marked as deleted.
   Future<List<Entity>> readAllActive() async {
     return await (db.select(
       db.entities,
@@ -91,6 +93,7 @@ class EntityRepository {
   }
 
   /// Provides a continuous stream of a single entity's data by [uuid].
+  /// Note: Returns the entity even if [isDeleted] is true.
   Stream<Entity?> watch(String uuid) {
     return (db.select(
       db.entities,
@@ -130,9 +133,6 @@ class EntityRepository {
   /// the corresponding metadata in the 'entities' table is
   /// updated to trigger a synchronization during the next sync cycle.
   ///
-  /// The generic type [T] allows the [updateStatement] to return its own
-  /// result (e.g., the number of rows affected or a boolean) back to the caller.
-  ///
   /// Returns the result of the [updateStatement].
   Future<T> updateWithTouch<T>(
     String uuid,
@@ -146,11 +146,14 @@ class EntityRepository {
 
   /// Marks an entity as deleted (Soft Delete) to ensure the deletion is synced.
   Future<int> markAsDeleted(String uuid) async {
-    return await updateWithTouch(uuid, () async {
-      return await (db.update(db.entities)
-            ..where((entity) => entity.uuid.equals(uuid)))
-          .write(EntitiesCompanion(isDeleted: Value(true)));
-    });
+    return await (db.update(
+      db.entities,
+    )..where((entity) => entity.uuid.equals(uuid))).write(
+      EntitiesCompanion(
+        isDeleted: Value(true),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
   }
 
   /// Sets the [lastSyncedAt] timestamp after a successful server synchronization.
