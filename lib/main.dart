@@ -7,11 +7,13 @@ import 'package:zen_do/core/app/zen_do_lifecycle_listener.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
 import 'package:zen_do/core/l10n/localizations_delegates.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
+import 'package:zen_do/core/persistence/entity_repository.dart';
 import 'package:zen_do/core/persistence/hive/hive_initializer.dart';
 import 'package:zen_do/core/theme/theme.dart';
 import 'package:zen_do/core/ui/coming_soon_screen.dart';
 import 'package:zen_do/features/settings/ui/settings_screen.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -37,9 +39,14 @@ class ZenDoApp extends StatelessWidget {
           create: (_) => AppDatabase(),
           dispose: (_, db) => db.close(),
         ),
-        ProxyProvider<AppDatabase, TagRepository>(
-          update: (_, db, __) => DriftTagRepository(db),
+        ProxyProvider<AppDatabase, EntityRepository>(
+          update: (_, db, __) => EntityRepository(db),
         ),
+        ProxyProvider2<AppDatabase, EntityRepository, TagService>(
+          update: (_, db, entityRepo, __) =>
+              TagService(tagRepo: TagRepository(db), entityRepo: entityRepo),
+        ),
+
         ChangeNotifierProvider<ProviderL10n>(create: (_) => ProviderL10n()),
         ChangeNotifierProvider<ZenDoAppState>(create: (_) => ZenDoAppState()),
         ChangeNotifierProxyProvider<ZenDoAppState, TodoState>(

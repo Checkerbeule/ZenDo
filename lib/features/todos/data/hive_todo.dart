@@ -3,10 +3,10 @@ import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 
-part 'todo.g.dart';
+part 'hive_todo.g.dart';
 
 @HiveType(typeId: 0)
-class Todo {
+class HiveTodo {
   @HiveField(7)
   final String id;
 
@@ -45,7 +45,7 @@ class Todo {
   @HiveField(8)
   Set<String> tagUuids;
 
-  Todo({
+  HiveTodo({
     required String title,
     String? description,
     this.expirationDate,
@@ -58,7 +58,7 @@ class Todo {
     this.description = description;
   }
 
-  Todo._internal({
+  HiveTodo._internal({
     required this.id,
     required String title,
     String? description,
@@ -73,7 +73,7 @@ class Todo {
     this.description = description;
   }
 
-  Todo copyWith({
+  HiveTodo copyWith({
     String? title,
     String? description,
     DateTime? creationDate,
@@ -83,7 +83,7 @@ class Todo {
     int? order,
     Set<String>? tagUuids,
   }) {
-    return Todo._internal(
+    return HiveTodo._internal(
       id: id,
       title: title ?? this.title,
       description: description ?? this.description,
@@ -96,7 +96,7 @@ class Todo {
     );
   }
 
-  Todo.copy(Todo other)
+  HiveTodo.copy(HiveTodo other)
     : id = other.id,
       creationDate = other.creationDate,
       expirationDate = other.expirationDate,
@@ -119,7 +119,7 @@ class Todo {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is Todo &&
+    return other is HiveTodo &&
         other.title == title &&
         other.description == description &&
         other.creationDate == creationDate &&

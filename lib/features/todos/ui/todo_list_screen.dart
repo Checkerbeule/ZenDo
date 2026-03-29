@@ -8,7 +8,7 @@ import 'package:sliver_tools/sliver_tools.dart';
 import 'package:zen_do/core/app/app_settings_service.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
@@ -32,8 +32,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
   SortOption sortOption = SortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
 
-  List<Todo> getSortedAndFilteredTodos(Set<String> tagFilter) {
-    final todos = List<Todo>.from(widget.list.todos);
+  List<HiveTodo> getSortedAndFilteredTodos(Set<String> tagFilter) {
+    final todos = List<HiveTodo>.from(widget.list.todos);
     if (tagFilter.isNotEmpty) {
       todos.retainWhere(
         (t) => t.tagUuids.any((tagUuid) => tagFilter.contains(tagUuid)),
@@ -434,7 +434,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
             mini: true,
             child: const Icon(Icons.add),
             onPressed: () async {
-              Todo? newTodo = await showModalBottomSheet(
+              HiveTodo? newTodo = await showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
                 builder: (context) => TodoEditSheet.newTodo(

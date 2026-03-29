@@ -1,50 +1,18 @@
 import 'package:drift/drift.dart';
 import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
-import 'package:zen_do/core/persistence/cloudsync/smart_delete_mixin.dart';
-import 'package:zen_do/core/persistence/cloudsync/syncable.dart';
 
-abstract class TagRepository {
-  Stream<List<Tag>> watchTags();
-  Future<List<Tag>> getAllTags();
-  Future<void> createTag({required String name, required int color});
-  Future<bool> updateTag(Tag tag);
-  Future<void> deleteTag(Tag tag);
-}
-
-class DriftTagRepository with SmartDeleteMixin implements TagRepository {
-  @override
+class TagRepository {
   final AppDatabase db;
 
-  DriftTagRepository(this.db);
+  TagRepository(this.db);
 
-  /// Retreive all [Tag]s from the database as a stream.
-  /// Ignores tags with a sync status of [SyncStatus.deleted].
-  @override
-  Stream<List<Tag>> watchTags() {
-    return (db.select(db.tags)
-          ..where((t) => t.syncStatus.isNotValue(SyncStatus.deleted.name))
-          ..orderBy([
-            (t) =>
-                OrderingTerm(expression: t.customOrder, mode: OrderingMode.asc),
-          ]))
-        .watch();
-  }
-
-  @override
-  Future<List<Tag>> getAllTags() {
-    return (db.select(db.tags)
-          ..where((t) => t.syncStatus.isNotValue(SyncStatus.deleted.name))
-          ..orderBy([
-            (t) =>
-                OrderingTerm(expression: t.customOrder, mode: OrderingMode.asc),
-          ]))
-        .get();
-  }
-
-  @override
-  Future<void> createTag({required String name, required int color}) async {
-    await db.transaction(() async {
+  Future<int> create({
+    required String uuid,
+    required String name,
+    required int color,
+  }) async {
+    return await db.transaction(() async {
       final lastTag =
           await (db.select(db.tags)
                 ..orderBy([
@@ -61,10 +29,11 @@ class DriftTagRepository with SmartDeleteMixin implements TagRepository {
         null,
       );
 
-      return db
+      return await db
           .into(db.tags)
           .insert(
             TagsCompanion.insert(
+              uuid: uuid,
               name: name,
               color: color,
               customOrder: newOrder,
@@ -73,23 +42,29 @@ class DriftTagRepository with SmartDeleteMixin implements TagRepository {
     });
   }
 
-  @override
-  Future<bool> updateTag(Tag tag) {
-    final newSyncStatus = tag.syncStatus == SyncStatus.localOnly
-        ? SyncStatus.localOnly
-        : SyncStatus.pending;
-    return db
-        .update(db.tags)
-        .replace(
-          tag.copyWith(syncStatus: newSyncStatus, updatedAt: DateTime.now()),
-        );
+  Future<List<Tag>> readAll() {
+    return (db.select(db.tags).join([
+            innerJoin(db.entities, db.entities.uuid.equalsExp(db.tags.uuid)),
+          ])
+          ..where(db.entities.isDeleted.equals(false))
+          ..orderBy([OrderingTerm.asc(db.tags.customOrder)]))
+        .get()
+        .then((rows) => rows.map((row) => row.readTable(db.tags)).toList());
   }
 
-  /// Uses the SmartDeleteMixin to perform a smartDelete.
-  /// This hard deletes the given [tag] entity if [SyncStatus.localOnly] is present.
-  /// Soft delete is performed if the [tag] entity was synced with cloud (syncStatus != [SyncStatus.localOnly])
-  @override
-  Future<void> deleteTag(Tag tag) {
-    return smartDelete(table: db.tags, entity: tag);
+  /// Retreive all [Tag]s from the database as a stream.
+  /// Ignores tags with a sync status of [SyncStatus.deleted].
+  Stream<List<Tag>> watchAll() {
+    return (db.select(db.tags).join([
+            innerJoin(db.entities, db.entities.uuid.equalsExp(db.tags.uuid)),
+          ])
+          ..where(db.entities.isDeleted.equals(false))
+          ..orderBy([OrderingTerm.asc(db.tags.customOrder)]))
+        .watch()
+        .map((rows) => rows.map((row) => row.readTable(db.tags)).toList());
+  }
+
+  Future<bool> update(Tag tag) {
+    return db.update(db.tags).replace(tag);
   }
 }

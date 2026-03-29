@@ -1,18 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 
 void main() {
   group('Todo expirationDate tests', () {
     test('Todo expirationDate: null value returns false', () {
-      final todo = Todo(title: 'Todo without expirationDate');
+      final todo = HiveTodo(title: 'Todo without expirationDate');
 
       expect(todo.expirationDate, isNull);
       expect(todo.isExpired, false);
     });
 
     test('Todo expirationDate: future expirationDate returns false', () {
-      final todo = Todo(title: 'Todo with future expirationDate');
+      final todo = HiveTodo(title: 'Todo with future expirationDate');
       todo.expirationDate = DateTime.now().add(Duration(days: 1));
 
       expect(todo.expirationDate, isNotNull);
@@ -20,7 +20,7 @@ void main() {
     });
 
     test('Todo expirationDate: past expirationDate returns true', () {
-      final todo = Todo(title: 'Todo with past expirationDate');
+      final todo = HiveTodo(title: 'Todo with past expirationDate');
       todo.expirationDate = DateTime.now().subtract(Duration(days: 1));
 
       expect(todo.expirationDate, isNotNull);
@@ -29,9 +29,9 @@ void main() {
   });
 
   test('Todo copy constructor creates identical todo object', () {
-    final original = Todo(title: 'Original todo', description: 'description');
+    final original = HiveTodo(title: 'Original todo', description: 'description');
 
-    final copy = Todo.copy(original);
+    final copy = HiveTodo.copy(original);
 
     expect(original, copy);
     expect(original.title, copy.title);
@@ -45,7 +45,7 @@ void main() {
   test(
     'Todo copyWith constructor creates identical todo object when no attributes are modified',
     () {
-      final original = Todo(title: 'Original todo', description: 'description');
+      final original = HiveTodo(title: 'Original todo', description: 'description');
 
       final copy = original.copyWith();
 
@@ -61,7 +61,7 @@ void main() {
   test(
     'Todo copyWith constructor gives a correct copy with modified attributes',
     () {
-      final original = Todo(title: 'Original todo', description: 'description');
+      final original = HiveTodo(title: 'Original todo', description: 'description');
       final completionDate = DateTime.now();
       final creationDate = DateTime.now();
       final description = 'description';
@@ -90,13 +90,13 @@ void main() {
 
   test('Todo constructor trimms title', () {
     final title = 'Title with leading and tailing spaces';
-    final todo = Todo(title: '   $title   ');
+    final todo = HiveTodo(title: '   $title   ');
 
     expect(todo.title, title);
   });
 
   test('Todo set title trimms given value', () {
-    final todo = Todo(title: 'Title');
+    final todo = HiveTodo(title: 'Title');
     final String newTitle = 'Title with leading and tailing spaces';
     todo.title = '   $newTitle   ';
 
