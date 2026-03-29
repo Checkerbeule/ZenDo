@@ -19,8 +19,8 @@ class TodoListAdapter extends TypeAdapter<TodoList> {
     return TodoList(
       fields[0] as ListScope,
     )
-      ..todos = (fields[1] as List).cast<Todo>()
-      ..doneTodos = (fields[2] as List).cast<Todo>();
+      ..todos = (fields[1] as List).cast<HiveTodo>()
+      ..doneTodos = (fields[2] as List).cast<HiveTodo>();
   }
 
   @override

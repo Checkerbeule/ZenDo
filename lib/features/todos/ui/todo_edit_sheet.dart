@@ -12,7 +12,7 @@ import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/l10n/tags_l10n_extension.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_manager.dart';
 import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
@@ -33,7 +33,7 @@ class TodoEditSheet extends StatefulWidget {
     required this.listScope,
   }) : todo = null;
 
-  final Todo? todo;
+  final HiveTodo? todo;
   final TodoState todoState;
   final ListScope? listScope;
 
@@ -42,7 +42,7 @@ class TodoEditSheet extends StatefulWidget {
 }
 
 class _TodoEditSheetState extends State<TodoEditSheet> {
-  late final Todo? todo;
+  late final HiveTodo? todo;
   late final ListManager manager;
   late final bool isNewTodo;
 
@@ -424,12 +424,12 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
         onSavePressed: () async {
           if (isTodoEdited) {
             if (formKey.currentState!.validate()) {
-              late final Todo todoToReturn;
+              late final HiveTodo todoToReturn;
               final selectedExpirationDate = selectedScope == ListScope.backlog
                   ? null
                   : parseLocalized(expirationDateController.text, locale);
               if (isNewTodo) {
-                todoToReturn = Todo(
+                todoToReturn = HiveTodo(
                   title: titleController.text,
                   description: descriptionController.text,
                   expirationDate: selectedExpirationDate,

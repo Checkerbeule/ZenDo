@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:mockito/mockito.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/core/persistence/hive/file_lock_helper.dart';
 import 'package:zen_do/core/persistence/hive/hive_initializer.dart';
@@ -52,7 +52,7 @@ void main() {
       final list = TodoList(scope);
       final title = 'test todo';
       final description = 'test description';
-      final todo = Todo(title: title, description: description);
+      final todo = HiveTodo(title: title, description: description);
       list.addTodo(todo);
 
       await PersistenceHelper.saveList(list);
@@ -68,12 +68,12 @@ void main() {
       final scope = ListScope.daily;
       final list = TodoList(scope);
 
-      final initialTodo = Todo(title: 'initial todo');
+      final initialTodo = HiveTodo(title: 'initial todo');
       list.addTodo(initialTodo);
       await PersistenceHelper.saveList(list);
 
       final updatedTitle = 'updated';
-      final updatedTodo = Todo(title: updatedTitle);
+      final updatedTodo = HiveTodo(title: updatedTitle);
       list.deleteTodo(initialTodo);
       list.addTodo(updatedTodo);
       await PersistenceHelper.saveList(list);

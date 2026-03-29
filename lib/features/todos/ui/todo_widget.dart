@@ -6,14 +6,14 @@ import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/theme/theme.dart';
 import 'package:zen_do/core/ui/dialog_helper.dart';
 import 'package:zen_do/features/tags/domain/tag_service.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
 import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
 class TodoWidget extends StatefulWidget {
-  final Todo todo;
+  final HiveTodo todo;
   final TodoList list;
 
   const TodoWidget({super.key, required this.todo, required this.list});

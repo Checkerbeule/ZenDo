@@ -1,22 +1,22 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'todo.dart';
+part of 'hive_todo.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class TodoAdapter extends TypeAdapter<Todo> {
+class TodoAdapter extends TypeAdapter<HiveTodo> {
   @override
   final int typeId = 0;
 
   @override
-  Todo read(BinaryReader reader) {
+  HiveTodo read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Todo(
+    return HiveTodo(
         title: fields[0] as String,
         expirationDate: fields[3] as DateTime?,
         listScope: fields[5] as ListScope?,
@@ -29,7 +29,7 @@ class TodoAdapter extends TypeAdapter<Todo> {
   }
 
   @override
-  void write(BinaryWriter writer, Todo obj) {
+  void write(BinaryWriter writer, HiveTodo obj) {
     writer
       ..writeByte(9)
       ..writeByte(7)
