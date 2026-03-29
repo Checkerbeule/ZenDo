@@ -749,11 +749,505 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   }
 }
 
+class $TodosTable extends Todos with TableInfo<$TodosTable, Todo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+    'uuid',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 36,
+      maxTextLength: 36,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES entities (uuid) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(minTextLength: 1),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _expiresAtMeta = const VerificationMeta(
+    'expiresAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> expiresAt = GeneratedColumn<DateTime>(
+    'expires_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<ListScope, String> scope =
+      GeneratedColumn<String>(
+        'scope',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<ListScope>($TodosTable.$converterscope);
+  static const VerificationMeta _customOrderMeta = const VerificationMeta(
+    'customOrder',
+  );
+  @override
+  late final GeneratedColumn<String> customOrder = GeneratedColumn<String>(
+    'custom_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    uuid,
+    title,
+    description,
+    expiresAt,
+    completedAt,
+    scope,
+    customOrder,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'todos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Todo> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('uuid')) {
+      context.handle(
+        _uuidMeta,
+        uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('expires_at')) {
+      context.handle(
+        _expiresAtMeta,
+        expiresAt.isAcceptableOrUnknown(data['expires_at']!, _expiresAtMeta),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('custom_order')) {
+      context.handle(
+        _customOrderMeta,
+        customOrder.isAcceptableOrUnknown(
+          data['custom_order']!,
+          _customOrderMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_customOrderMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {uuid};
+  @override
+  Todo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Todo(
+      uuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uuid'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      expiresAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}expires_at'],
+      ),
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      scope: $TodosTable.$converterscope.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}scope'],
+        )!,
+      ),
+      customOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_order'],
+      )!,
+    );
+  }
+
+  @override
+  $TodosTable createAlias(String alias) {
+    return $TodosTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<ListScope, String, String> $converterscope =
+      const EnumNameConverter(ListScope.values);
+}
+
+class Todo extends DataClass implements Insertable<Todo> {
+  final String uuid;
+  final String title;
+  final String? description;
+  final DateTime? expiresAt;
+  final DateTime? completedAt;
+  final ListScope scope;
+  final String customOrder;
+  const Todo({
+    required this.uuid,
+    required this.title,
+    this.description,
+    this.expiresAt,
+    this.completedAt,
+    required this.scope,
+    required this.customOrder,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['uuid'] = Variable<String>(uuid);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || expiresAt != null) {
+      map['expires_at'] = Variable<DateTime>(expiresAt);
+    }
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    {
+      map['scope'] = Variable<String>($TodosTable.$converterscope.toSql(scope));
+    }
+    map['custom_order'] = Variable<String>(customOrder);
+    return map;
+  }
+
+  TodosCompanion toCompanion(bool nullToAbsent) {
+    return TodosCompanion(
+      uuid: Value(uuid),
+      title: Value(title),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      expiresAt: expiresAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expiresAt),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      scope: Value(scope),
+      customOrder: Value(customOrder),
+    );
+  }
+
+  factory Todo.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Todo(
+      uuid: serializer.fromJson<String>(json['uuid']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String?>(json['description']),
+      expiresAt: serializer.fromJson<DateTime?>(json['expiresAt']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      scope: $TodosTable.$converterscope.fromJson(
+        serializer.fromJson<String>(json['scope']),
+      ),
+      customOrder: serializer.fromJson<String>(json['customOrder']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'uuid': serializer.toJson<String>(uuid),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String?>(description),
+      'expiresAt': serializer.toJson<DateTime?>(expiresAt),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'scope': serializer.toJson<String>(
+        $TodosTable.$converterscope.toJson(scope),
+      ),
+      'customOrder': serializer.toJson<String>(customOrder),
+    };
+  }
+
+  Todo copyWith({
+    String? uuid,
+    String? title,
+    Value<String?> description = const Value.absent(),
+    Value<DateTime?> expiresAt = const Value.absent(),
+    Value<DateTime?> completedAt = const Value.absent(),
+    ListScope? scope,
+    String? customOrder,
+  }) => Todo(
+    uuid: uuid ?? this.uuid,
+    title: title ?? this.title,
+    description: description.present ? description.value : this.description,
+    expiresAt: expiresAt.present ? expiresAt.value : this.expiresAt,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    scope: scope ?? this.scope,
+    customOrder: customOrder ?? this.customOrder,
+  );
+  Todo copyWithCompanion(TodosCompanion data) {
+    return Todo(
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      expiresAt: data.expiresAt.present ? data.expiresAt.value : this.expiresAt,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      scope: data.scope.present ? data.scope.value : this.scope,
+      customOrder: data.customOrder.present
+          ? data.customOrder.value
+          : this.customOrder,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Todo(')
+          ..write('uuid: $uuid, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('expiresAt: $expiresAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('scope: $scope, ')
+          ..write('customOrder: $customOrder')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    uuid,
+    title,
+    description,
+    expiresAt,
+    completedAt,
+    scope,
+    customOrder,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Todo &&
+          other.uuid == this.uuid &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.expiresAt == this.expiresAt &&
+          other.completedAt == this.completedAt &&
+          other.scope == this.scope &&
+          other.customOrder == this.customOrder);
+}
+
+class TodosCompanion extends UpdateCompanion<Todo> {
+  final Value<String> uuid;
+  final Value<String> title;
+  final Value<String?> description;
+  final Value<DateTime?> expiresAt;
+  final Value<DateTime?> completedAt;
+  final Value<ListScope> scope;
+  final Value<String> customOrder;
+  final Value<int> rowid;
+  const TodosCompanion({
+    this.uuid = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.expiresAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.scope = const Value.absent(),
+    this.customOrder = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TodosCompanion.insert({
+    required String uuid,
+    required String title,
+    this.description = const Value.absent(),
+    this.expiresAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    required ListScope scope,
+    required String customOrder,
+    this.rowid = const Value.absent(),
+  }) : uuid = Value(uuid),
+       title = Value(title),
+       scope = Value(scope),
+       customOrder = Value(customOrder);
+  static Insertable<Todo> custom({
+    Expression<String>? uuid,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<DateTime>? expiresAt,
+    Expression<DateTime>? completedAt,
+    Expression<String>? scope,
+    Expression<String>? customOrder,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (uuid != null) 'uuid': uuid,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (expiresAt != null) 'expires_at': expiresAt,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (scope != null) 'scope': scope,
+      if (customOrder != null) 'custom_order': customOrder,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TodosCompanion copyWith({
+    Value<String>? uuid,
+    Value<String>? title,
+    Value<String?>? description,
+    Value<DateTime?>? expiresAt,
+    Value<DateTime?>? completedAt,
+    Value<ListScope>? scope,
+    Value<String>? customOrder,
+    Value<int>? rowid,
+  }) {
+    return TodosCompanion(
+      uuid: uuid ?? this.uuid,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      expiresAt: expiresAt ?? this.expiresAt,
+      completedAt: completedAt ?? this.completedAt,
+      scope: scope ?? this.scope,
+      customOrder: customOrder ?? this.customOrder,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (expiresAt.present) {
+      map['expires_at'] = Variable<DateTime>(expiresAt.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (scope.present) {
+      map['scope'] = Variable<String>(
+        $TodosTable.$converterscope.toSql(scope.value),
+      );
+    }
+    if (customOrder.present) {
+      map['custom_order'] = Variable<String>(customOrder.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodosCompanion(')
+          ..write('uuid: $uuid, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('expiresAt: $expiresAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('scope: $scope, ')
+          ..write('customOrder: $customOrder, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $EntitiesTable entities = $EntitiesTable(this);
   late final $TagsTable tags = $TagsTable(this);
+  late final $TodosTable todos = $TodosTable(this);
   late final Index idxEntitiesType = Index(
     'idx_entities_type',
     'CREATE INDEX idx_entities_type ON entities (type)',
@@ -766,6 +1260,18 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_tags_custom_order',
     'CREATE UNIQUE INDEX idx_tags_custom_order ON tags (custom_order)',
   );
+  late final Index idxTodosScopeOrder = Index(
+    'idx_todos_scope_order',
+    'CREATE INDEX idx_todos_scope_order ON todos (scope, custom_order)',
+  );
+  late final Index idxTodosCompleted = Index(
+    'idx_todos_completed',
+    'CREATE INDEX idx_todos_completed ON todos (scope, completed_at)',
+  );
+  late final Index idxTodosExpires = Index(
+    'idx_todos_expires',
+    'CREATE INDEX idx_todos_expires ON todos (scope, expires_at)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -773,9 +1279,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     entities,
     tags,
+    todos,
     idxEntitiesType,
     idxEntitiesPendingSync,
     idxTagsCustomOrder,
+    idxTodosScopeOrder,
+    idxTodosCompleted,
+    idxTodosExpires,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -785,6 +1295,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('tags', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'entities',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('todos', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -828,6 +1345,25 @@ final class $$EntitiesTableReferences
     ).filter((f) => f.uuid.uuid.sqlEquals($_itemColumn<String>('uuid')!));
 
     final cache = $_typedResult.readTableOrNull(_tagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TodosTable, List<Todo>> _todosRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.todos,
+    aliasName: $_aliasNameGenerator(db.entities.uuid, db.todos.uuid),
+  );
+
+  $$TodosTableProcessedTableManager get todosRefs {
+    final manager = $$TodosTableTableManager(
+      $_db,
+      $_db.todos,
+    ).filter((f) => f.uuid.uuid.sqlEquals($_itemColumn<String>('uuid')!));
+
+    final cache = $_typedResult.readTableOrNull(_todosRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -890,6 +1426,31 @@ class $$EntitiesTableFilterComposer
           }) => $$TagsTableFilterComposer(
             $db: $db,
             $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> todosRefs(
+    Expression<bool> Function($$TodosTableFilterComposer f) f,
+  ) {
+    final $$TodosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.todos,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodosTableFilterComposer(
+            $db: $db,
+            $table: $db.todos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -993,6 +1554,31 @@ class $$EntitiesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> todosRefs<T extends Object>(
+    Expression<T> Function($$TodosTableAnnotationComposer a) f,
+  ) {
+    final $$TodosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.todos,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.todos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EntitiesTableTableManager
@@ -1008,7 +1594,7 @@ class $$EntitiesTableTableManager
           $$EntitiesTableUpdateCompanionBuilder,
           (Entity, $$EntitiesTableReferences),
           Entity,
-          PrefetchHooks Function({bool tagsRefs})
+          PrefetchHooks Function({bool tagsRefs, bool todosRefs})
         > {
   $$EntitiesTableTableManager(_$AppDatabase db, $EntitiesTable table)
     : super(
@@ -1065,10 +1651,13 @@ class $$EntitiesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({tagsRefs = false}) {
+          prefetchHooksCallback: ({tagsRefs = false, todosRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (tagsRefs) db.tags],
+              explicitlyWatchedTables: [
+                if (tagsRefs) db.tags,
+                if (todosRefs) db.todos,
+              ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
@@ -1080,6 +1669,17 @@ class $$EntitiesTableTableManager
                       ),
                       managerFromTypedResult: (p0) =>
                           $$EntitiesTableReferences(db, table, p0).tagsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.uuid == item.uuid),
+                      typedResults: items,
+                    ),
+                  if (todosRefs)
+                    await $_getPrefetchedData<Entity, $EntitiesTable, Todo>(
+                      currentTable: table,
+                      referencedTable: $$EntitiesTableReferences
+                          ._todosRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$EntitiesTableReferences(db, table, p0).todosRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
                           referencedItems.where((e) => e.uuid == item.uuid),
                       typedResults: items,
@@ -1104,7 +1704,7 @@ typedef $$EntitiesTableProcessedTableManager =
       $$EntitiesTableUpdateCompanionBuilder,
       (Entity, $$EntitiesTableReferences),
       Entity,
-      PrefetchHooks Function({bool tagsRefs})
+      PrefetchHooks Function({bool tagsRefs, bool todosRefs})
     >;
 typedef $$TagsTableCreateCompanionBuilder =
     TagsCompanion Function({
@@ -1403,6 +2003,366 @@ typedef $$TagsTableProcessedTableManager =
       Tag,
       PrefetchHooks Function({bool uuid})
     >;
+typedef $$TodosTableCreateCompanionBuilder =
+    TodosCompanion Function({
+      required String uuid,
+      required String title,
+      Value<String?> description,
+      Value<DateTime?> expiresAt,
+      Value<DateTime?> completedAt,
+      required ListScope scope,
+      required String customOrder,
+      Value<int> rowid,
+    });
+typedef $$TodosTableUpdateCompanionBuilder =
+    TodosCompanion Function({
+      Value<String> uuid,
+      Value<String> title,
+      Value<String?> description,
+      Value<DateTime?> expiresAt,
+      Value<DateTime?> completedAt,
+      Value<ListScope> scope,
+      Value<String> customOrder,
+      Value<int> rowid,
+    });
+
+final class $$TodosTableReferences
+    extends BaseReferences<_$AppDatabase, $TodosTable, Todo> {
+  $$TodosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $EntitiesTable _uuidTable(_$AppDatabase db) => db.entities.createAlias(
+    $_aliasNameGenerator(db.todos.uuid, db.entities.uuid),
+  );
+
+  $$EntitiesTableProcessedTableManager get uuid {
+    final $_column = $_itemColumn<String>('uuid')!;
+
+    final manager = $$EntitiesTableTableManager(
+      $_db,
+      $_db.entities,
+    ).filter((f) => f.uuid.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_uuidTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
+  $$TodosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<ListScope, ListScope, String> get scope =>
+      $composableBuilder(
+        column: $table.scope,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get customOrder => $composableBuilder(
+    column: $table.customOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$EntitiesTableFilterComposer get uuid {
+    final $$EntitiesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.entities,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntitiesTableFilterComposer(
+            $db: $db,
+            $table: $db.entities,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TodosTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodosTable> {
+  $$TodosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customOrder => $composableBuilder(
+    column: $table.customOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$EntitiesTableOrderingComposer get uuid {
+    final $$EntitiesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.entities,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntitiesTableOrderingComposer(
+            $db: $db,
+            $table: $db.entities,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TodosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodosTable> {
+  $$TodosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get expiresAt =>
+      $composableBuilder(column: $table.expiresAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<ListScope, String> get scope =>
+      $composableBuilder(column: $table.scope, builder: (column) => column);
+
+  GeneratedColumn<String> get customOrder => $composableBuilder(
+    column: $table.customOrder,
+    builder: (column) => column,
+  );
+
+  $$EntitiesTableAnnotationComposer get uuid {
+    final $$EntitiesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.entities,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EntitiesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.entities,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TodosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TodosTable,
+          Todo,
+          $$TodosTableFilterComposer,
+          $$TodosTableOrderingComposer,
+          $$TodosTableAnnotationComposer,
+          $$TodosTableCreateCompanionBuilder,
+          $$TodosTableUpdateCompanionBuilder,
+          (Todo, $$TodosTableReferences),
+          Todo,
+          PrefetchHooks Function({bool uuid})
+        > {
+  $$TodosTableTableManager(_$AppDatabase db, $TodosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TodosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TodosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> uuid = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<DateTime?> expiresAt = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<ListScope> scope = const Value.absent(),
+                Value<String> customOrder = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TodosCompanion(
+                uuid: uuid,
+                title: title,
+                description: description,
+                expiresAt: expiresAt,
+                completedAt: completedAt,
+                scope: scope,
+                customOrder: customOrder,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String uuid,
+                required String title,
+                Value<String?> description = const Value.absent(),
+                Value<DateTime?> expiresAt = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                required ListScope scope,
+                required String customOrder,
+                Value<int> rowid = const Value.absent(),
+              }) => TodosCompanion.insert(
+                uuid: uuid,
+                title: title,
+                description: description,
+                expiresAt: expiresAt,
+                completedAt: completedAt,
+                scope: scope,
+                customOrder: customOrder,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$TodosTableReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback: ({uuid = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (uuid) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.uuid,
+                                referencedTable: $$TodosTableReferences
+                                    ._uuidTable(db),
+                                referencedColumn: $$TodosTableReferences
+                                    ._uuidTable(db)
+                                    .uuid,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TodosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TodosTable,
+      Todo,
+      $$TodosTableFilterComposer,
+      $$TodosTableOrderingComposer,
+      $$TodosTableAnnotationComposer,
+      $$TodosTableCreateCompanionBuilder,
+      $$TodosTableUpdateCompanionBuilder,
+      (Todo, $$TodosTableReferences),
+      Todo,
+      PrefetchHooks Function({bool uuid})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1410,4 +2370,6 @@ class $AppDatabaseManager {
   $$EntitiesTableTableManager get entities =>
       $$EntitiesTableTableManager(_db, _db.entities);
   $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
+  $$TodosTableTableManager get todos =>
+      $$TodosTableTableManager(_db, _db.todos);
 }
