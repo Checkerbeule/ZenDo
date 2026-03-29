@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 
-enum EntityType { task, tag }
+enum EntityType { todo, tag }
 
 @TableIndex(name: 'idx_entities_type', columns: {#type})
 @TableIndex(

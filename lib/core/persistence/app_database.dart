@@ -6,11 +6,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zen_do/core/persistence/entities.dart';
 import 'package:zen_do/features/tags/data/tags.dart';
+import 'package:zen_do/features/todos/data/todo_tags.dart';
 import 'package:zen_do/features/todos/data/todos.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Entities, Tags, Todos])
+@DriftDatabase(tables: [Entities, Tags, Todos, TodoTags])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 

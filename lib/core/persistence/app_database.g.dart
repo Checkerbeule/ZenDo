@@ -1242,12 +1242,224 @@ class TodosCompanion extends UpdateCompanion<Todo> {
   }
 }
 
+class $TodoTagsTable extends TodoTags with TableInfo<$TodoTagsTable, TodoTag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodoTagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _todoMeta = const VerificationMeta('todo');
+  @override
+  late final GeneratedColumn<String> todo = GeneratedColumn<String>(
+    'todo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES todos (uuid) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _tagMeta = const VerificationMeta('tag');
+  @override
+  late final GeneratedColumn<String> tag = GeneratedColumn<String>(
+    'tag',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES tags (uuid) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [todo, tag];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'todo_tags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TodoTag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('todo')) {
+      context.handle(
+        _todoMeta,
+        todo.isAcceptableOrUnknown(data['todo']!, _todoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_todoMeta);
+    }
+    if (data.containsKey('tag')) {
+      context.handle(
+        _tagMeta,
+        tag.isAcceptableOrUnknown(data['tag']!, _tagMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tagMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {todo, tag};
+  @override
+  TodoTag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoTag(
+      todo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}todo'],
+      )!,
+      tag: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tag'],
+      )!,
+    );
+  }
+
+  @override
+  $TodoTagsTable createAlias(String alias) {
+    return $TodoTagsTable(attachedDatabase, alias);
+  }
+}
+
+class TodoTag extends DataClass implements Insertable<TodoTag> {
+  final String todo;
+  final String tag;
+  const TodoTag({required this.todo, required this.tag});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['todo'] = Variable<String>(todo);
+    map['tag'] = Variable<String>(tag);
+    return map;
+  }
+
+  TodoTagsCompanion toCompanion(bool nullToAbsent) {
+    return TodoTagsCompanion(todo: Value(todo), tag: Value(tag));
+  }
+
+  factory TodoTag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoTag(
+      todo: serializer.fromJson<String>(json['todo']),
+      tag: serializer.fromJson<String>(json['tag']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'todo': serializer.toJson<String>(todo),
+      'tag': serializer.toJson<String>(tag),
+    };
+  }
+
+  TodoTag copyWith({String? todo, String? tag}) =>
+      TodoTag(todo: todo ?? this.todo, tag: tag ?? this.tag);
+  TodoTag copyWithCompanion(TodoTagsCompanion data) {
+    return TodoTag(
+      todo: data.todo.present ? data.todo.value : this.todo,
+      tag: data.tag.present ? data.tag.value : this.tag,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoTag(')
+          ..write('todo: $todo, ')
+          ..write('tag: $tag')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(todo, tag);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoTag && other.todo == this.todo && other.tag == this.tag);
+}
+
+class TodoTagsCompanion extends UpdateCompanion<TodoTag> {
+  final Value<String> todo;
+  final Value<String> tag;
+  final Value<int> rowid;
+  const TodoTagsCompanion({
+    this.todo = const Value.absent(),
+    this.tag = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TodoTagsCompanion.insert({
+    required String todo,
+    required String tag,
+    this.rowid = const Value.absent(),
+  }) : todo = Value(todo),
+       tag = Value(tag);
+  static Insertable<TodoTag> custom({
+    Expression<String>? todo,
+    Expression<String>? tag,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (todo != null) 'todo': todo,
+      if (tag != null) 'tag': tag,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TodoTagsCompanion copyWith({
+    Value<String>? todo,
+    Value<String>? tag,
+    Value<int>? rowid,
+  }) {
+    return TodoTagsCompanion(
+      todo: todo ?? this.todo,
+      tag: tag ?? this.tag,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (todo.present) {
+      map['todo'] = Variable<String>(todo.value);
+    }
+    if (tag.present) {
+      map['tag'] = Variable<String>(tag.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoTagsCompanion(')
+          ..write('todo: $todo, ')
+          ..write('tag: $tag, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $EntitiesTable entities = $EntitiesTable(this);
   late final $TagsTable tags = $TagsTable(this);
   late final $TodosTable todos = $TodosTable(this);
+  late final $TodoTagsTable todoTags = $TodoTagsTable(this);
   late final Index idxEntitiesType = Index(
     'idx_entities_type',
     'CREATE INDEX idx_entities_type ON entities (type)',
@@ -1280,6 +1492,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     entities,
     tags,
     todos,
+    todoTags,
     idxEntitiesType,
     idxEntitiesPendingSync,
     idxTagsCustomOrder,
@@ -1302,6 +1515,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('todos', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'todos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('todo_tags', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'tags',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('todo_tags', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2363,6 +2590,113 @@ typedef $$TodosTableProcessedTableManager =
       Todo,
       PrefetchHooks Function({bool uuid})
     >;
+typedef $$TodoTagsTableCreateCompanionBuilder =
+    TodoTagsCompanion Function({
+      required String todo,
+      required String tag,
+      Value<int> rowid,
+    });
+typedef $$TodoTagsTableUpdateCompanionBuilder =
+    TodoTagsCompanion Function({
+      Value<String> todo,
+      Value<String> tag,
+      Value<int> rowid,
+    });
+
+class $$TodoTagsTableFilterComposer
+    extends Composer<_$AppDatabase, $TodoTagsTable> {
+  $$TodoTagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+}
+
+class $$TodoTagsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodoTagsTable> {
+  $$TodoTagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+}
+
+class $$TodoTagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodoTagsTable> {
+  $$TodoTagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+}
+
+class $$TodoTagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TodoTagsTable,
+          TodoTag,
+          $$TodoTagsTableFilterComposer,
+          $$TodoTagsTableOrderingComposer,
+          $$TodoTagsTableAnnotationComposer,
+          $$TodoTagsTableCreateCompanionBuilder,
+          $$TodoTagsTableUpdateCompanionBuilder,
+          (TodoTag, BaseReferences<_$AppDatabase, $TodoTagsTable, TodoTag>),
+          TodoTag,
+          PrefetchHooks Function()
+        > {
+  $$TodoTagsTableTableManager(_$AppDatabase db, $TodoTagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TodoTagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodoTagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TodoTagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> todo = const Value.absent(),
+                Value<String> tag = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TodoTagsCompanion(todo: todo, tag: tag, rowid: rowid),
+          createCompanionCallback:
+              ({
+                required String todo,
+                required String tag,
+                Value<int> rowid = const Value.absent(),
+              }) =>
+                  TodoTagsCompanion.insert(todo: todo, tag: tag, rowid: rowid),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TodoTagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TodoTagsTable,
+      TodoTag,
+      $$TodoTagsTableFilterComposer,
+      $$TodoTagsTableOrderingComposer,
+      $$TodoTagsTableAnnotationComposer,
+      $$TodoTagsTableCreateCompanionBuilder,
+      $$TodoTagsTableUpdateCompanionBuilder,
+      (TodoTag, BaseReferences<_$AppDatabase, $TodoTagsTable, TodoTag>),
+      TodoTag,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2372,4 +2706,6 @@ class $AppDatabaseManager {
   $$TagsTableTableManager get tags => $$TagsTableTableManager(_db, _db.tags);
   $$TodosTableTableManager get todos =>
       $$TodosTableTableManager(_db, _db.todos);
+  $$TodoTagsTableTableManager get todoTags =>
+      $$TodoTagsTableTableManager(_db, _db.todoTags);
 }
