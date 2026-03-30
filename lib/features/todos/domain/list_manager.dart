@@ -1,5 +1,5 @@
 import 'package:logger/logger.dart';
-import 'package:zen_do/core/app/app_settings_service.dart';
+import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';

@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:zen_do/core/l10n/app_l10n_extension.dart';
+import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
-import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
+import 'package:zen_do/features/todos/domain/sort_option.dart';
 
 import '../../tags/l10n/tags_l10n_extension.dart';
-
-enum SortOption { custom, title, expirationDate, creationDate }
-
-enum SortOrder { ascending, descending }
 
 class SliverTodoSortFilterAppBar extends StatefulWidget {
   final SortOption sortOption;
@@ -232,7 +228,7 @@ class _SliverTodoSortFilterAppBarState
         ),
         MenuAnchor(
           menuChildren: <Widget>[
-            for (final sortOption in SortOption.values)
+            for (final sortOption in SortOption.uiOptions)
               if (!widget.excludedOptions.contains(sortOption))
                 MenuItemButton(
                   child: Row(
@@ -331,22 +327,6 @@ class _SliverTodoSortFilterAppBarState
       controller.close();
     } else {
       controller.open();
-    }
-  }
-}
-
-extension SortOptionX on SortOption {
-  String label(BuildContext context) {
-    final loc = TodosLocalizations.of(context);
-    switch (this) {
-      case SortOption.custom:
-        return context.appL10n.custom;
-      case SortOption.title:
-        return loc.todoTitle;
-      case SortOption.expirationDate:
-        return loc.expirationDate;
-      case SortOption.creationDate:
-        return loc.creationDate;
     }
   }
 }

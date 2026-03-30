@@ -1,7 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
+import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/data/todo_with_tags.dart';
+import 'package:zen_do/features/todos/domain/sort_option.dart';
 
 class TodoRepository {
   final AppDatabase db;
@@ -41,5 +44,70 @@ class TodoRepository {
             ),
           ));
     });
+  }
+
+  Future<Todo> read(String uuid) async {
+    return await (db.select(
+      db.todos,
+    )..where((todo) => todo.uuid.equals(uuid))).getSingle();
+  }
+
+  Stream<List<TodoWithTags>> watchAllByScope({
+    required ListScope scope,
+    required bool isCompleted,
+    SortOption? sortOption,
+    SortOrder? sortOrder,
+  }) {
+    final query = db.select(db.todos).join([
+      innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
+      leftOuterJoin(db.todoTags, db.todoTags.todo.equalsExp(db.todos.uuid)),
+      leftOuterJoin(db.tags, db.tags.uuid.equalsExp(db.todoTags.tag)),
+    ]);
+
+    query.where(
+      db.entities.isDeleted.equals(false) &
+          db.todos.scope.equalsValue(scope) &
+          (isCompleted
+              ? db.todos.completedAt.isNotNull()
+              : db.todos.completedAt.isNull()),
+    );
+
+    query.orderBy([_generateOrderingTerm(sortOption, sortOrder)]);
+
+    return query.watch().map((rows) {
+      final grouped = <Todo, Set<Tag>>{};
+
+      for (final row in rows) {
+        final todo = row.readTable(db.todos);
+        final tag = row.readTableOrNull(db.tags);
+
+        grouped.putIfAbsent(todo, () => <Tag>{});
+        if (tag != null) {
+          grouped[todo]!.add(tag);
+        }
+      }
+
+      return grouped.entries
+          .map((entry) => TodoWithTags(todo: entry.key, tags: entry.value))
+          .toList();
+    });
+  }
+
+  OrderingTerm _generateOrderingTerm(
+    SortOption? sortOption,
+    SortOrder? sortOrder,
+  ) {
+    final Expression orderingExpr = switch (sortOption) {
+      SortOption.custom => db.todos.customOrder,
+      SortOption.title => db.todos.title,
+      SortOption.expirationDate => db.todos.expiresAt,
+      SortOption.creationDate => db.entities.createdAt,
+      SortOption.completionDate => db.todos.completedAt,
+      null => db.todos.customOrder,
+    };
+
+    final OrderingMode orderingMode = sortOrder?.toDrift ?? OrderingMode.asc;
+
+    return OrderingTerm(expression: orderingExpr, mode: orderingMode);
   }
 }

@@ -1,3 +1,4 @@
+import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/persistence/entities.dart';
 import 'package:zen_do/core/persistence/entity_repository.dart';
@@ -5,6 +6,8 @@ import 'package:zen_do/core/utils/time_util.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_repository.dart';
 import 'package:zen_do/features/todos/data/todo_tags_repository.dart';
+import 'package:zen_do/features/todos/data/todo_with_tags.dart';
+import 'package:zen_do/features/todos/domain/sort_option.dart';
 
 class TodoService {
   final TodoRepository todoRepo;
@@ -22,7 +25,7 @@ class TodoService {
     required ListScope scope,
     DateTime? expiresAt,
     String? description,
-    List<String>? tagUuids,
+    Set<String>? tagUuids,
   }) async {
     return await entityRepo.createWithEntity(EntityType.todo, (
       String tagUuid,
@@ -52,5 +55,29 @@ class TodoService {
     } else {
       return DateTime.now().add(scope.duration).normalized;
     }
+  }
+
+  Stream<List<TodoWithTags>> watchAllOpenByScope({
+    required ListScope scope,
+    SortOption? sortOption,
+    SortOrder? sortOrder,
+  }) {
+    return todoRepo.watchAllByScope(
+      scope: scope,
+      isCompleted: false,
+      sortOption: sortOption,
+      sortOrder: sortOrder,
+    );
+  }
+
+    Stream<List<TodoWithTags>> watchAllCompletedByScope({
+    required ListScope scope,
+  }) {
+    return todoRepo.watchAllByScope(
+      scope: scope,
+      isCompleted: true,
+      sortOption: SortOption.completionDate,
+      sortOrder: SortOrder.descending,
+    );
   }
 }

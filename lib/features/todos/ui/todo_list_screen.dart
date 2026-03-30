@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
-import 'package:zen_do/core/app/app_settings_service.dart';
+import 'package:zen_do/core/domain/app_settings_service.dart';
+import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
+import 'package:zen_do/features/todos/domain/sort_option.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/features/todos/ui/todo_widget.dart';
@@ -64,6 +66,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
               ? a.creationDate.compareTo(b.creationDate)
               : b.creationDate.compareTo(a.creationDate),
         );
+        break;
+      default:
+        todos.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
         break;
     }
     return todos;
