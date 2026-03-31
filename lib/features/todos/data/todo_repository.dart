@@ -4,7 +4,7 @@ import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_with_tags.dart';
-import 'package:zen_do/features/todos/domain/sort_option.dart';
+import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
 class TodoRepository {
   final AppDatabase db;
@@ -55,8 +55,9 @@ class TodoRepository {
   Stream<List<TodoWithTags>> watchAllByScope({
     required ListScope scope,
     required bool isCompleted,
-    SortOption? sortOption,
+    TodoSortOption? sortOption,
     SortOrder? sortOrder,
+    Set<String>? tagUuidsFilter,
   }) {
     final query = db.select(db.todos).join([
       innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
@@ -71,6 +72,10 @@ class TodoRepository {
               ? db.todos.completedAt.isNotNull()
               : db.todos.completedAt.isNull()),
     );
+
+    if (tagUuidsFilter != null && tagUuidsFilter.isNotEmpty) {
+      query.where(db.todoTags.tag.isIn(tagUuidsFilter));
+    }
 
     query.orderBy([_generateOrderingTerm(sortOption, sortOrder)]);
 
@@ -94,15 +99,15 @@ class TodoRepository {
   }
 
   OrderingTerm _generateOrderingTerm(
-    SortOption? sortOption,
+    TodoSortOption? sortOption,
     SortOrder? sortOrder,
   ) {
     final Expression orderingExpr = switch (sortOption) {
-      SortOption.custom => db.todos.customOrder,
-      SortOption.title => db.todos.title,
-      SortOption.expirationDate => db.todos.expiresAt,
-      SortOption.creationDate => db.entities.createdAt,
-      SortOption.completionDate => db.todos.completedAt,
+      TodoSortOption.custom => db.todos.customOrder,
+      TodoSortOption.title => db.todos.title,
+      TodoSortOption.expirationDate => db.todos.expiresAt,
+      TodoSortOption.creationDate => db.entities.createdAt,
+      TodoSortOption.completionDate => db.todos.completedAt,
       null => db.todos.customOrder,
     };
 

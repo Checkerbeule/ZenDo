@@ -7,7 +7,7 @@ import 'package:zen_do/features/todos/data/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_repository.dart';
 import 'package:zen_do/features/todos/data/todo_tags_repository.dart';
 import 'package:zen_do/features/todos/data/todo_with_tags.dart';
-import 'package:zen_do/features/todos/domain/sort_option.dart';
+import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
 class TodoService {
   final TodoRepository todoRepo;
@@ -59,25 +59,29 @@ class TodoService {
 
   Stream<List<TodoWithTags>> watchAllOpenByScope({
     required ListScope scope,
-    SortOption? sortOption,
+    TodoSortOption? sortOption,
     SortOrder? sortOrder,
+    Set<String>? tagUuidsFilter,
   }) {
     return todoRepo.watchAllByScope(
       scope: scope,
       isCompleted: false,
       sortOption: sortOption,
       sortOrder: sortOrder,
+      tagUuidsFilter: tagUuidsFilter,
     );
   }
 
-    Stream<List<TodoWithTags>> watchAllCompletedByScope({
+  Stream<List<TodoWithTags>> watchAllCompletedByScope({
     required ListScope scope,
+    Set<String>? tagUuidsFilter,
   }) {
     return todoRepo.watchAllByScope(
       scope: scope,
       isCompleted: true,
-      sortOption: SortOption.completionDate,
+      sortOption: TodoSortOption.completionDate,
       sortOrder: SortOrder.descending,
+      tagUuidsFilter: tagUuidsFilter,
     );
   }
 }

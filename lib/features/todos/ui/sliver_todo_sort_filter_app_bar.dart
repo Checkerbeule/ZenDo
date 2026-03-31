@@ -4,15 +4,15 @@ import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
-import 'package:zen_do/features/todos/domain/sort_option.dart';
+import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
 import '../../tags/l10n/tags_l10n_extension.dart';
 
 class SliverTodoSortFilterAppBar extends StatefulWidget {
-  final SortOption sortOption;
+  final TodoSortOption sortOption;
   final SortOrder sortOrder;
-  final Set<SortOption> excludedOptions;
-  final void Function(SortOption option, SortOrder order) onSortChanged;
+  final Set<TodoSortOption> excludedOptions;
+  final void Function(TodoSortOption option, SortOrder order) onSortChanged;
   final Set<String> selectedTagUuids;
   final void Function(Set<String> selectedTagUuids) onFilterChanged;
 
@@ -20,7 +20,7 @@ class SliverTodoSortFilterAppBar extends StatefulWidget {
     super.key,
     required this.sortOption,
     required this.sortOrder,
-    Set<SortOption>? excludedOptions,
+    Set<TodoSortOption>? excludedOptions,
     required this.onSortChanged,
     required this.selectedTagUuids,
     required this.onFilterChanged,
@@ -228,7 +228,7 @@ class _SliverTodoSortFilterAppBarState
         ),
         MenuAnchor(
           menuChildren: <Widget>[
-            for (final sortOption in SortOption.uiOptions)
+            for (final sortOption in TodoSortOption.uiOptions)
               if (!widget.excludedOptions.contains(sortOption))
                 MenuItemButton(
                   child: Row(
@@ -240,7 +240,7 @@ class _SliverTodoSortFilterAppBarState
                       ),
                       if (widget.sortOption == sortOption) ...[
                         const SizedBox(width: 5),
-                        if (widget.sortOption == SortOption.custom)
+                        if (widget.sortOption == TodoSortOption.custom)
                           Icon(
                             Icons.swipe_vertical,
                             color: Theme.of(context).colorScheme.primary,
@@ -262,7 +262,7 @@ class _SliverTodoSortFilterAppBarState
                     ],
                   ),
                   onPressed: () {
-                    final order = widget.sortOption == SortOption.custom
+                    final order = widget.sortOption == TodoSortOption.custom
                         ? SortOrder.ascending
                         : widget.sortOption == sortOption &&
                               widget.sortOrder == SortOrder.ascending
@@ -280,7 +280,7 @@ class _SliverTodoSortFilterAppBarState
               child: Badge(
                 alignment: const Alignment(1, 0),
                 backgroundColor: Theme.of(context).colorScheme.secondary,
-                label: widget.sortOption == SortOption.custom
+                label: widget.sortOption == TodoSortOption.custom
                     ? const Icon(
                         Icons.swipe_vertical,
                         size: 12,
