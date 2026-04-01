@@ -43,13 +43,24 @@ class TagRepository {
   }
 
   Future<List<Tag>> readAll() {
-    return (db.select(db.tags).join([
-            innerJoin(db.entities, db.entities.uuid.equalsExp(db.tags.uuid)),
-          ])
-          ..where(db.entities.isDeleted.equals(false))
-          ..orderBy([OrderingTerm.asc(db.tags.customOrder)]))
-        .get()
-        .then((rows) => rows.map((row) => row.readTable(db.tags)).toList());
+    return readAllByUuids({});
+  }
+
+  Future<List<Tag>> readAllByUuids(Set<String> uuids) async {
+    final query = db.select(db.tags).join([
+      innerJoin(db.entities, db.entities.uuid.equalsExp(db.tags.uuid)),
+    ]);
+
+    query.where(db.entities.isDeleted.equals(false));
+
+    if (uuids.isNotEmpty) {
+      query.where(db.tags.uuid.isIn(uuids));
+    }
+
+    query.orderBy([OrderingTerm.asc(db.tags.customOrder)]);
+
+    final rows = await query.get();
+    return rows.map((row) => row.readTable(db.tags)).toList();
   }
 
   /// Retreive all [Tag]s from the database as a stream.

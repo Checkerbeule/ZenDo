@@ -11,12 +11,12 @@ class EntityRepository {
 
   /// Creates a new entity entry and returns its unique [uuid].
   /// Sets initial timestamps (UTC) for creation and update.
-  Future<String> create(EntityType type) async {
+  Future<Entity> create(EntityType type) async {
     final timestamp = DateTime.now().toUtc();
     final uuid = Uuid().v4();
-    await (db
+    return await (db
         .into(db.entities)
-        .insert(
+        .insertReturning(
           EntitiesCompanion.insert(
             uuid: uuid,
             type: type,
@@ -24,7 +24,6 @@ class EntityRepository {
             updatedAt: timestamp,
           ),
         ));
-    return uuid;
   }
 
   /// Orchestrates the creation of a new entity and its specific domain data
@@ -37,11 +36,11 @@ class EntityRepository {
   /// the statement's result upon successful completion of the transaction.
   Future<T> createWithEntity<T>(
     EntityType type,
-    Future<T> Function(String uuid) createStatement,
+    Future<T> Function(Entity entity) createStatement,
   ) async {
     return db.transaction(() async {
-      final uuid = await create(type);
-      return await createStatement(uuid);
+      final entity = await create(type);
+      return await createStatement(entity);
     });
   }
 

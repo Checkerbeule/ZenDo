@@ -11,6 +11,7 @@ class TodoTagsRepository {
     required Set<String> tagUuids,
   }) async {
     if (tagUuids.isEmpty) return;
+
     await db.batch((batch) async {
       for (final tagUuid in tagUuids) {
         batch.insert(

@@ -1531,6 +1531,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       result: [TableUpdate('todo_tags', kind: UpdateKind.delete)],
     ),
   ]);
+  @override
+  DriftDatabaseOptions get options =>
+      const DriftDatabaseOptions(storeDateTimeAsText: true);
 }
 
 typedef $$EntitiesTableCreateCompanionBuilder =

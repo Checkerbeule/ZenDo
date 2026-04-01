@@ -46,10 +46,10 @@ class TodoRepository {
     });
   }
 
-  Future<Todo> read(String uuid) async {
+  Future<Todo?> read(String uuid) async {
     return await (db.select(
       db.todos,
-    )..where((todo) => todo.uuid.equals(uuid))).getSingle();
+    )..where((todo) => todo.uuid.equals(uuid))).getSingleOrNull();
   }
 
   Stream<List<TodoWithTags>> watchAllByScope({
@@ -96,6 +96,10 @@ class TodoRepository {
           .map((entry) => TodoWithTags(todo: entry.key, tags: entry.value))
           .toList();
     });
+  }
+
+  Future<int> update(TodosCompanion todo) async {
+    return await (db.update(db.todos)..whereSamePrimaryKey(todo)).write(todo);
   }
 
   OrderingTerm _generateOrderingTerm(

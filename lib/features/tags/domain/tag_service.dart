@@ -12,10 +12,10 @@ class TagService {
 
   Future<String> create({required String name, required int color}) async {
     return await entityRepo.createWithEntity(EntityType.tag, (
-      String uuid,
+      Entity entity,
     ) async {
-      await tagRepo.create(uuid: uuid, name: name, color: color);
-      return uuid;
+      await tagRepo.create(uuid: entity.uuid, name: name, color: color);
+      return entity.uuid;
     });
   }
 

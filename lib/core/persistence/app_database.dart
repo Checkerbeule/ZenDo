@@ -13,10 +13,15 @@ part 'app_database.g.dart';
 
 @DriftDatabase(tables: [Entities, Tags, Todos, TodoTags])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
+  AppDatabase([QueryExecutor? executor])
+    : super(executor ?? _openConnection()) {
+    driftRuntimeOptions.defaultSerializer = ValueSerializer.defaults(
+      serializeDateTimeValuesAsString: true,
+    );
+  }
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
@@ -152,6 +157,28 @@ class AppDatabase extends _$AppDatabase {
               'CREATE UNIQUE INDEX idx_tags_custom_order ON tags (custom_order);',
             ),
           );
+        }
+
+        if (from < 5) {
+          for (final table in allTables) {
+            final dateTimeColumns = table.$columns.where(
+              (c) => c.type == DriftSqlType.dateTime,
+            );
+
+            if (dateTimeColumns.isNotEmpty) {
+              await m.alterTable(
+                TableMigration(
+                  table,
+                  columnTransformer: {
+                    for (final column in dateTimeColumns)
+                      column: DateTimeExpressions.fromUnixEpoch(
+                        column.dartCast<int>(),
+                      ),
+                  },
+                ),
+              );
+            }
+          }
         }
 
         await customStatement('PRAGMA foreign_keys = ON');
