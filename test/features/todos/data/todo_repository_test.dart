@@ -167,14 +167,14 @@ void main() {
       expect(dailyTodos.length, 5);
       expect(weeklyTodos.length, 5);
       expect(backlogTodos.length, 5);
-      for (final todoWithTag in dailyTodos) {
-        expect(todoWithTag.todo.scope, ListScope.daily);
+      for (final todo in dailyTodos) {
+        expect(todo.scope, ListScope.daily);
       }
-      for (final todoWithTag in weeklyTodos) {
-        expect(todoWithTag.todo.scope, ListScope.weekly);
+      for (final todo in weeklyTodos) {
+        expect(todo.scope, ListScope.weekly);
       }
-      for (final todoWithTag in backlogTodos) {
-        expect(todoWithTag.todo.scope, ListScope.backlog);
+      for (final todo in backlogTodos) {
+        expect(todo.scope, ListScope.backlog);
       }
     });
 
@@ -219,13 +219,13 @@ void main() {
           .first;
 
       expect(ascList.length, 3);
-      expect(ascList.first.todo.title, 'A Todo');
-      expect(ascList[1].todo.title, 'B Todo');
-      expect(ascList.last.todo.title, 'C Todo');
+      expect(ascList.first.title, 'A Todo');
+      expect(ascList[1].title, 'B Todo');
+      expect(ascList.last.title, 'C Todo');
       expect(descList.length, 3);
-      expect(descList.first.todo.title, 'C Todo');
-      expect(descList[1].todo.title, 'B Todo');
-      expect(descList.last.todo.title, 'A Todo');
+      expect(descList.first.title, 'C Todo');
+      expect(descList[1].title, 'B Todo');
+      expect(descList.last.title, 'A Todo');
     });
 
     test('TodoRepository watchAllByScope with ordering successful', () async {

@@ -3,7 +3,7 @@ import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
 import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo_with_tags.dart';
+import 'package:zen_do/features/todos/domain/todo_dto.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
 class TodoRepository {
@@ -52,7 +52,7 @@ class TodoRepository {
     )..where((todo) => todo.uuid.equals(uuid))).getSingleOrNull();
   }
 
-  Stream<List<TodoWithTags>> watchAllByScope({
+  Stream<List<TodoDto>> watchAllByScope({
     required ListScope scope,
     required bool isCompleted,
     TodoSortOption? sortOption,
@@ -74,27 +74,40 @@ class TodoRepository {
     );
 
     if (tagUuidsFilter != null && tagUuidsFilter.isNotEmpty) {
-      query.where(db.todoTags.tag.isIn(tagUuidsFilter));
+      final subquery = db.selectOnly(db.todoTags)
+        ..addColumns([db.todoTags.todo])
+        ..where(db.todoTags.tag.isIn(tagUuidsFilter));
+
+      query.where(db.todos.uuid.isInQuery(subquery));
     }
 
     query.orderBy([_generateOrderingTerm(sortOption, sortOrder)]);
 
     return query.watch().map((rows) {
-      final grouped = <Todo, Set<Tag>>{};
+      final todoMap = <String, ({Todo todo, Entity entity})>{};
+      final tagMap = <String, Set<String>>{};
 
       for (final row in rows) {
+        final entity = row.readTable(db.entities);
         final todo = row.readTable(db.todos);
         final tag = row.readTableOrNull(db.tags);
 
-        grouped.putIfAbsent(todo, () => <Tag>{});
+        todoMap.putIfAbsent(todo.uuid, () => (todo: todo, entity: entity));
         if (tag != null) {
-          grouped[todo]!.add(tag);
+          tagMap.putIfAbsent(todo.uuid, () => {}).add(tag.uuid);
         }
       }
 
-      return grouped.entries
-          .map((entry) => TodoWithTags(todo: entry.key, tags: entry.value))
-          .toList();
+      return todoMap.entries.map((entry) {
+        final todoWithMeta = entry.value;
+        final tagUuids = tagMap[entry.key] ?? {};
+
+        return TodoDto.fromDb(
+          todo: todoWithMeta.todo,
+          entity: todoWithMeta.entity,
+          tagUuids: tagUuids,
+        );
+      }).toList();
     });
   }
 
