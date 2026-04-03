@@ -4,7 +4,7 @@ import 'package:zen_do/core/persistence/app_database.dart';
 class TodoTagsRepository {
   final AppDatabase db;
 
-  TodoTagsRepository({required this.db});
+  TodoTagsRepository(this.db);
 
   Future<void> addAllTagsToTodo({
     required String todoUuid,
@@ -46,5 +46,39 @@ class TodoTagsRepository {
               todoTags.todo.equals(todoUuid) & todoTags.tag.equals(tagUuid),
         ))
         .go();
+  }
+
+  Future<int> updateTags(String todoUuid, Set<String> newTagUuids) async {
+    return await db.transaction(() async {
+      final existing = await (db.select(
+        db.todoTags,
+      )..where((t) => t.todo.equals(todoUuid))).get();
+
+      final existingUuids = existing.map((e) => e.tag).toSet();
+
+      final toDelete = existingUuids.difference(newTagUuids);
+      final toInsert = newTagUuids.difference(existingUuids);
+
+      int updates = 0;
+      if (toDelete.isNotEmpty) {
+        updates =
+            await (db.delete(db.todoTags)..where(
+                  (t) =>
+                      t.todo.equals(todoUuid) & t.tag.isIn(toDelete.toList()),
+                ))
+                .go();
+      }
+
+      if (toInsert.isNotEmpty) {
+        updates += toInsert.length;
+        await db.batch(
+          (b) => b.insertAll(db.todoTags, [
+            for (final tagUuid in toInsert)
+              TodoTagsCompanion.insert(todo: todoUuid, tag: tagUuid),
+          ]),
+        );
+      }
+      return updates;
+    });
   }
 }

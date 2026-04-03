@@ -1,25 +1,33 @@
 import 'package:async/async.dart';
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/persistence/entities.dart';
 import 'package:zen_do/core/persistence/entity_repository.dart';
+import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_repository.dart';
+import 'package:zen_do/features/todos/data/todo_tags_repository.dart';
+import 'package:zen_do/features/todos/domain/todo_dto.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
 void main() {
   late AppDatabase db;
   late TodoRepository todoRepo;
   late EntityRepository entityRepo;
+  late TagRepository tagRepo;
+  late TodoTagsRepository todoTagsRepo;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
     todoRepo = TodoRepository(db);
     entityRepo = EntityRepository(db);
+    tagRepo = TagRepository(db);
+    todoTagsRepo = TodoTagsRepository(db);
   });
 
   tearDown(() {
@@ -249,15 +257,91 @@ void main() {
 
       queue.cancel();
     });
+
+    test('TodoRepository watchAllByScope with ordering successful', () async {
+      final tagA = await entityRepo.createWithEntity(EntityType.tag, (
+        Entity e,
+      ) async {
+        await tagRepo.create(
+          uuid: e.uuid,
+          name: 'Tag A',
+          color: Colors.red.toARGB32(),
+        );
+        return e.uuid;
+      });
+      final tagB = await entityRepo.createWithEntity(EntityType.tag, (
+        Entity e,
+      ) async {
+        await tagRepo.create(
+          uuid: e.uuid,
+          name: 'Tag B',
+          color: Colors.green.toARGB32(),
+        );
+        return e.uuid;
+      });
+      final tagC = await entityRepo.createWithEntity(EntityType.tag, (
+        Entity e,
+      ) async {
+        await tagRepo.create(
+          uuid: e.uuid,
+          name: 'Tag C',
+          color: Colors.yellow.toARGB32(),
+        );
+        return e.uuid;
+      });
+      final todo_1 = await entityRepo.createWithEntity(EntityType.todo, (
+        Entity entity,
+      ) async {
+        return await todoRepo.create(
+          uuid: entity.uuid,
+          title: 'Todo 1',
+          scope: ListScope.daily,
+          expiresAt: DateTime.now().toUtc(),
+        );
+      });
+      await todoTagsRepo.addAllTagsToTodo(
+        todoUuid: todo_1.uuid,
+        tagUuids: {tagA, tagC},
+      );
+      final todo_2 = await entityRepo.createWithEntity(EntityType.todo, (
+        Entity entity,
+      ) async {
+        return await todoRepo.create(
+          uuid: entity.uuid,
+          title: 'Todo 2',
+          scope: ListScope.daily,
+          expiresAt: DateTime.now().toUtc(),
+        );
+      });
+      await todoTagsRepo.addAllTagsToTodo(
+        todoUuid: todo_2.uuid,
+        tagUuids: {tagB},
+      );
+
+      final loaded = await todoRepo
+          .watchAllByScope(
+            scope: ListScope.daily,
+            isCompleted: false,
+            tagUuidsFilter: {tagC},
+          )
+          .first;
+
+      expect(loaded.length, 1);
+      expect(loaded.first.title, 'Todo 1');
+      expect(loaded.first.tagUuids.length, 2);
+      expect(loaded.first.tagUuids.containsAll({tagA, tagC}), isTrue);
+    });
   });
 
   group('TodoRepository update tests', () {
     test('TodoRepository update successfuly', () async {
+      late final Entity entity;
       final Todo initialTodo = await entityRepo.createWithEntity(
         EntityType.todo,
-        (Entity entity) async {
+        (Entity e) async {
+          entity = e;
           return await todoRepo.create(
-            uuid: entity.uuid,
+            uuid: e.uuid,
             title: 'Todo',
             scope: ListScope.daily,
           );
@@ -272,7 +356,7 @@ void main() {
         customOrder: 'a2',
       );
 
-      todoRepo.update(todoToUpdate.toCompanion(true));
+      todoRepo.update(TodoDto.fromDb(todo: todoToUpdate, entity: entity));
       final updatedTodo = await todoRepo.read(todoToUpdate.uuid);
 
       expect(updatedTodo, isNotNull);
@@ -284,11 +368,13 @@ void main() {
     });
 
     test('TodoRepository update set values to null successfully', () async {
+      late final Entity entity;
       final Todo initialTodo = await entityRepo.createWithEntity(
         EntityType.todo,
-        (Entity entity) async {
+        (Entity e) async {
+          entity = e;
           return await todoRepo.create(
-            uuid: entity.uuid,
+            uuid: e.uuid,
             title: 'Todo',
             description: 'Desc',
             scope: ListScope.daily,
@@ -296,19 +382,18 @@ void main() {
           );
         },
       );
-      final todoToUpdate = initialTodo
-          .toCompanion(true)
+      final todoToUpdate = TodoDto.fromDb(todo: initialTodo, entity: entity)
           .copyWith(
-            title: Value('New title'),
-            description: Value(null),
-            scope: Value(ListScope.backlog),
-            expiresAt: Value(null),
+            title: 'New title',
+            description: null,
+            scope: ListScope.backlog,
+            expiresAt: null,
           );
 
       final updated = await todoRepo.update(todoToUpdate);
-      final updatedTodo = await todoRepo.read(todoToUpdate.uuid.value);
+      final updatedTodo = await todoRepo.read(todoToUpdate.uuid);
 
-      expect(updated, 1);
+      expect(updated, true);
       expect(updatedTodo, isNotNull);
       expect(updatedTodo!.title, 'New title');
       expect(updatedTodo.description, isNull);
@@ -317,17 +402,18 @@ void main() {
     });
 
     test('TodoRepository update on non existing todo fails', () async {
-      final nonExistinTodo = Todo(
+      final nonExistinTodo = TodoDto(
         uuid: Uuid().v4(),
         title: 'Not existing todo',
         scope: ListScope.daily,
         customOrder: 'a0',
+        createdAt: DateTime.now().toUtc(),
       );
 
-      final updated = await todoRepo.update(nonExistinTodo.toCompanion(true));
+      final updated = await todoRepo.update(nonExistinTodo);
       final updatedTodo = await todoRepo.read(nonExistinTodo.uuid);
 
-      expect(updated, 0);
+      expect(updated, false);
       expect(updatedTodo, isNull);
     });
   });

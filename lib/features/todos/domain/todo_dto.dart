@@ -6,6 +6,9 @@ part 'todo_dto.freezed.dart';
 
 @freezed
 abstract class TodoDto with _$TodoDto {
+  bool get hasTags => tagUuids.isNotEmpty;
+  bool get isCompleted => completedAt != null;
+
   const TodoDto._();
 
   const factory TodoDto({
@@ -37,7 +40,4 @@ abstract class TodoDto with _$TodoDto {
       tagUuids: tagUuids,
     );
   }
-
-  bool get hasTags => tagUuids.isNotEmpty;
-  bool get isCompleted => completedAt != null;
 }

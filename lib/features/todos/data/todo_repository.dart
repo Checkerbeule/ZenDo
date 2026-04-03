@@ -111,8 +111,8 @@ class TodoRepository {
     });
   }
 
-  Future<int> update(TodosCompanion todo) async {
-    return await (db.update(db.todos)..whereSamePrimaryKey(todo)).write(todo);
+  Future<bool> update(TodoDto todo) async {
+    return await db.update(db.todos).replace(_fromDto(todo));
   }
 
   OrderingTerm _generateOrderingTerm(
@@ -131,5 +131,17 @@ class TodoRepository {
     final OrderingMode orderingMode = sortOrder?.toDrift ?? OrderingMode.asc;
 
     return OrderingTerm(expression: orderingExpr, mode: orderingMode);
+  }
+
+  TodosCompanion _fromDto(TodoDto dto) {
+    return TodosCompanion(
+      uuid: Value(dto.uuid),
+      scope: Value(dto.scope),
+      title: Value(dto.title),
+      description: Value(dto.description),
+      customOrder: Value(dto.customOrder),
+      completedAt: Value(dto.completedAt),
+      expiresAt: Value(dto.expiresAt),
+    );
   }
 }
