@@ -100,7 +100,7 @@ void main() {
     test('TodoRepository read single todo successfully', () async {
       final title = 'Title';
       final description = 'Desc';
-      final expirationDate = DateTime.now();
+      final expirationDate = DateTime.now().toUtc();
 
       final createdTodo = await entityRepo.createWithEntity(EntityType.todo, (
         Entity entity,
@@ -125,6 +125,34 @@ void main() {
       expect(todo.expiresAt, expirationDate);
       expect(todo.customOrder, 'a0');
       expect(todo.completedAt, isNull);
+    });
+
+    test('TodoRepository read complleted todo successfully', () async {
+      late final Entity entity;
+      final createdTodo = await entityRepo.createWithEntity(EntityType.todo, (
+        Entity e,
+      ) async {
+        entity = e;
+        return await todoRepo.create(
+          uuid: e.uuid,
+          title: 'Completed todo',
+          scope: ListScope.daily,
+          expiresAt: DateTime.now().toUtc(),
+        );
+      });
+      final completedAt = DateTime.now().toUtc();
+      todoRepo.update(
+        TodoDto.fromDb(
+          todo: createdTodo,
+          entity: entity,
+        ).copyWith(completedAt: completedAt),
+      );
+
+      final todo = await todoRepo.read(createdTodo.uuid);
+
+      expect(todo, isNotNull);
+      expect(todo!.title, 'Completed todo');
+      expect(todo.completedAt, completedAt);
     });
 
     test('TodoRepository watchAllByScope successfully', () async {
@@ -186,6 +214,65 @@ void main() {
       }
     });
 
+    test('TodoRepository watchAllByScope ignores completed todos', () async {
+      late final Entity entity;
+      final createdTodo = await entityRepo.createWithEntity(EntityType.todo, (
+        Entity e,
+      ) async {
+        entity = e;
+        return await todoRepo.create(
+          uuid: e.uuid,
+          title: 'Completed todo',
+          scope: ListScope.daily,
+          expiresAt: DateTime.now().toUtc(),
+        );
+      });
+      todoRepo.update(
+        TodoDto.fromDb(
+          todo: createdTodo,
+          entity: entity,
+        ).copyWith(completedAt: DateTime.now().toUtc()),
+      );
+
+      final open = await todoRepo
+          .watchAllByScope(scope: ListScope.daily, isCompleted: false)
+          .firstOrNull;
+      final completed = await todoRepo
+          .watchAllByScope(scope: ListScope.daily, isCompleted: true)
+          .first;
+
+      expect(open!.length, 0);
+      expect(completed.length, 1);
+      expect(completed.first.title, 'Completed todo');
+    });
+
+    test(
+      'TodoRepository watchAllByScope updates stream successfully',
+      () async {
+        final todoStream = todoRepo.watchAllByScope(
+          scope: ListScope.daily,
+          isCompleted: false,
+        );
+        final queue = StreamQueue(todoStream);
+
+        expect(await queue.next, isEmpty);
+
+        await entityRepo.createWithEntity(EntityType.todo, (
+          Entity entity,
+        ) async {
+          return await todoRepo.create(
+            uuid: entity.uuid,
+            title: 'New todo',
+            scope: ListScope.daily,
+          );
+        });
+
+        expect(await queue.next, hasLength(1));
+
+        queue.cancel();
+      },
+    );
+
     test('TodoRepository watchAllByScope with ordering successful', () async {
       await entityRepo.createWithEntity(EntityType.todo, (Entity entity) async {
         return await todoRepo.create(
@@ -236,29 +323,7 @@ void main() {
       expect(descList.last.title, 'A Todo');
     });
 
-    test('TodoRepository watchAllByScope with ordering successful', () async {
-      final todoStream = todoRepo.watchAllByScope(
-        scope: ListScope.daily,
-        isCompleted: false,
-      );
-      final queue = StreamQueue(todoStream);
-
-      expect(await queue.next, isEmpty);
-
-      await entityRepo.createWithEntity(EntityType.todo, (Entity entity) async {
-        return await todoRepo.create(
-          uuid: entity.uuid,
-          title: 'New todo',
-          scope: ListScope.daily,
-        );
-      });
-
-      expect(await queue.next, hasLength(1));
-
-      queue.cancel();
-    });
-
-    test('TodoRepository watchAllByScope with ordering successful', () async {
+    test('TodoRepository watchAllByScope with tag filter successful', () async {
       final tagA = await entityRepo.createWithEntity(EntityType.tag, (
         Entity e,
       ) async {
@@ -334,7 +399,7 @@ void main() {
   });
 
   group('TodoRepository update tests', () {
-    test('TodoRepository update successfuly', () async {
+    test('TodoRepository update new values successfully', () async {
       late final Entity entity;
       final Todo initialTodo = await entityRepo.createWithEntity(
         EntityType.todo,
