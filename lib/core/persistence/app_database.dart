@@ -13,15 +13,21 @@ part 'app_database.g.dart';
 
 @DriftDatabase(tables: [Entities, Tags, Todos, TodoTags])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor])
-    : super(executor ?? _openConnection()) {
+  final bool seedInitalTags;
+
+  AppDatabase() : seedInitalTags = true, super(_openConnection()) {
+    _init();
+  }
+
+  AppDatabase.test(super.executor, {this.seedInitalTags = false}) {
+    _init();
+  }
+
+  void _init() {
     driftRuntimeOptions.defaultSerializer = ValueSerializer.defaults(
       serializeDateTimeValuesAsString: true,
     );
   }
-
-  @override
-  int get schemaVersion => 5;
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
@@ -33,12 +39,15 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
+  int get schemaVersion => 5;
+
+  @override
   MigrationStrategy get migration {
     return MigrationStrategy(
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON');
 
-        if (details.wasCreated) {
+        if (details.wasCreated && seedInitalTags) {
           await batch((batch) {
             final timestamp = DateTime.now().toUtc();
             final List<EntitiesCompanion> initialEntitiesForTags =

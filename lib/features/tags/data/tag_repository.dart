@@ -7,7 +7,7 @@ class TagRepository {
 
   TagRepository(this.db);
 
-  Future<int> create({
+  Future<Tag> create({
     required String uuid,
     required String name,
     required int color,
@@ -31,7 +31,7 @@ class TagRepository {
 
       return await db
           .into(db.tags)
-          .insert(
+          .insertReturning(
             TagsCompanion.insert(
               uuid: uuid,
               name: name,

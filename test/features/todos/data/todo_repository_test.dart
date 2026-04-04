@@ -23,15 +23,15 @@ void main() {
   late TodoTagsRepository todoTagsRepo;
 
   setUp(() {
-    db = AppDatabase(NativeDatabase.memory());
+    db = AppDatabase.test(NativeDatabase.memory());
     todoRepo = TodoRepository(db);
     entityRepo = EntityRepository(db);
     tagRepo = TagRepository(db);
     todoTagsRepo = TodoTagsRepository(db);
   });
 
-  tearDown(() {
-    db.close();
+  tearDown(() async {
+    await db.close();
   });
 
   group('TodoRepository create tests', () {

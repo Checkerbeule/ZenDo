@@ -81,4 +81,19 @@ class TodoTagsRepository {
       return updates;
     });
   }
+
+  Future<List<Tag>> readTagsFromTodo(String todoUuid) async {
+    final query = (db.select(db.tags).join([
+      leftOuterJoin(db.todoTags, db.todoTags.todo.equalsExp(db.tags.uuid)),
+    ]));
+
+    final subQuery = db.selectOnly(db.todoTags)
+      ..addColumns([db.todoTags.tag])
+      ..where(db.todoTags.todo.equals(todoUuid));
+
+    query.where(db.tags.uuid.isInQuery(subQuery));
+
+    final rows = await query.get();
+    return rows.map((row) => row.readTable(db.tags)).toList();
+  }
 }

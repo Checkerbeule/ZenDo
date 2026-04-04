@@ -95,4 +95,12 @@ class TodoService {
       tagUuidsFilter: tagUuidsFilter,
     );
   }
+
+  Future<bool> update(TodoDto todo) async {
+    return await entityRepo.updateWithTouch(todo.uuid, () async {
+      final isTodoUpdated = await todoRepo.update(todo);
+      await todoTagsRepo.updateTags(todo.uuid, todo.tagUuids);
+      return isTodoUpdated;
+    });
+  }
 }
