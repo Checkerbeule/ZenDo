@@ -1,11 +1,12 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
+import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
 abstract class AppSettingsService {
-  Future<void> saveSortOption(ListScope scope, SortOption sortOption);
-  SortOption? getSortOption(ListScope scope);
+  Future<void> saveSortOption(ListScope scope, TodoSortOption sortOption);
+  TodoSortOption? getSortOption(ListScope scope);
   Future<void> saveSortOrder(ListScope scope, SortOrder sortOrder);
   SortOrder? getSortOrder(ListScope scope);
 
@@ -42,7 +43,7 @@ class SharedPrefsAppSettingsService implements AppSettingsService {
   static const String _activeListScopesPrefKey = 'todo.manager.activeScopes';
 
   @override
-  Future<void> saveSortOption(ListScope scope, SortOption sortOption) async {
+  Future<void> saveSortOption(ListScope scope, TodoSortOption sortOption) async {
     await _sortOptionLock.synchronized(
       () async =>
           await prefs.setInt(_getSortOptionPrefKey(scope), sortOption.index),
@@ -50,9 +51,9 @@ class SharedPrefsAppSettingsService implements AppSettingsService {
   }
 
   @override
-  SortOption? getSortOption(ListScope scope) {
+  TodoSortOption? getSortOption(ListScope scope) {
     final index = prefs.getInt(_getSortOptionPrefKey(scope));
-    return index == null ? null : SortOption.values[index];
+    return index == null ? null : TodoSortOption.values[index];
   }
 
   @override

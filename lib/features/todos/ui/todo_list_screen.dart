@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
-import 'package:zen_do/core/app/app_settings_service.dart';
+import 'package:zen_do/core/domain/app_settings_service.dart';
+import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
+import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/features/todos/ui/todo_widget.dart';
@@ -29,11 +31,11 @@ class TodoListScreen extends StatefulWidget {
 
 class _TodoListScreenState extends State<TodoListScreen> {
   late final AppSettingsService settings;
-  SortOption sortOption = SortOption.custom;
+  TodoSortOption sortOption = TodoSortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
 
-  List<Todo> getSortedAndFilteredTodos(Set<String> tagFilter) {
-    final todos = List<Todo>.from(widget.list.todos);
+  List<HiveTodo> getSortedAndFilteredTodos(Set<String> tagFilter) {
+    final todos = List<HiveTodo>.from(widget.list.todos);
     if (tagFilter.isNotEmpty) {
       todos.retainWhere(
         (t) => t.tagUuids.any((tagUuid) => tagFilter.contains(tagUuid)),
@@ -41,29 +43,32 @@ class _TodoListScreenState extends State<TodoListScreen> {
     }
 
     switch (sortOption) {
-      case SortOption.custom:
+      case TodoSortOption.custom:
         todos.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
         break;
-      case SortOption.title:
+      case TodoSortOption.title:
         todos.sort(
           (a, b) => sortOrder == SortOrder.ascending
               ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
               : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
         );
         break;
-      case SortOption.expirationDate:
+      case TodoSortOption.expirationDate:
         todos.sort(
           (a, b) => sortOrder == SortOrder.ascending
               ? a.expirationDate!.compareTo(b.expirationDate!)
               : b.expirationDate!.compareTo(a.expirationDate!),
         );
         break;
-      case SortOption.creationDate:
+      case TodoSortOption.creationDate:
         todos.sort(
           (a, b) => sortOrder == SortOrder.ascending
               ? a.creationDate.compareTo(b.creationDate)
               : b.creationDate.compareTo(a.creationDate),
         );
+        break;
+      default:
+        todos.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
         break;
     }
     return todos;
@@ -95,8 +100,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
     final loc = TodosLocalizations.of(context);
     final list = widget.list;
     final listScope = list.scope;
-    final Set<SortOption> excludedSortOptions = listScope == ListScope.backlog
-        ? {SortOption.expirationDate}
+    final Set<TodoSortOption> excludedSortOptions = listScope == ListScope.backlog
+        ? {TodoSortOption.expirationDate}
         : {};
     final tagFilter = context.watch<TodoState>().tagFilter;
 
@@ -190,7 +195,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                           );
                         },
                         onReorder: (oldIndex, newIndex) {
-                          if (sortOption == SortOption.custom) {
+                          if (sortOption == TodoSortOption.custom) {
                             setState(() {
                               final moved = getSortedAndFilteredTodos(
                                 tagFilter,
@@ -210,7 +215,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                           )[index];
 
                           return ReorderableDelayedDragStartListener(
-                            enabled: sortOption == SortOption.custom,
+                            enabled: sortOption == TodoSortOption.custom,
                             key: ValueKey(todo.id),
                             index: index,
                             child: Dismissible(
@@ -434,7 +439,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
             mini: true,
             child: const Icon(Icons.add),
             onPressed: () async {
-              Todo? newTodo = await showModalBottomSheet(
+              HiveTodo? newTodo = await showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
                 builder: (context) => TodoEditSheet.newTodo(

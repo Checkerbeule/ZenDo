@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
-import 'package:zen_do/core/app/app_settings_service.dart';
+import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/ui/loading_screen.dart';
 import 'package:zen_do/features/settings/l10n/settings_l10n_extension.dart';
 import 'package:zen_do/features/todos/data/list_scope.dart';
