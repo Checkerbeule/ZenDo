@@ -59,10 +59,11 @@ class TodoRepository {
     )..where((todo) => todo.uuid.equals(uuid))).getSingleOrNull();
   }
 
-  /// Returns an reacive stream of all todos with a given [scope].<br>
+  /// Returns a reacive stream of all todos with a given [scope].<br>
   /// Loads todos, that are still open if [isCompleted] is 'false'.
   /// Loads todos, that allready done if [isCompleted] is 'true'.<br>
-  /// Returns a streamed List of [TodoDto]s with populated metadata and associated tags.<br>
+  /// Returns a streamed List of [TodoDto]s with populated metadata and associated tags.
+  /// Tags are only include if not marked as deleted<br>
   /// If [taguudsFilter] is provided, it filters the list of todos to match any of the given tag uuids.<br>
   /// If [sortOption] is provided, it orders the list by the given option.
   /// By default it orders the list by 'customOrder' ascending.
@@ -75,10 +76,12 @@ class TodoRepository {
     SortOrder? sortOrder,
     Set<String>? tagUuidsFilter,
   }) {
+    final tagEntities = db.alias(db.entities, 'tag_entities');
     final query = db.select(db.todos).join([
       innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
       leftOuterJoin(db.todoTags, db.todoTags.todo.equalsExp(db.todos.uuid)),
       leftOuterJoin(db.tags, db.tags.uuid.equalsExp(db.todoTags.tag)),
+      leftOuterJoin(tagEntities, tagEntities.uuid.equalsExp(db.tags.uuid)),
     ]);
 
     query.where(
@@ -86,7 +89,9 @@ class TodoRepository {
           db.todos.scope.equalsValue(scope) &
           (isCompleted
               ? db.todos.completedAt.isNotNull()
-              : db.todos.completedAt.isNull()),
+              : db.todos.completedAt.isNull()) &
+          (tagEntities.isDeleted.isNull() |
+              tagEntities.isDeleted.equals(false)),
     );
 
     if (tagUuidsFilter != null && tagUuidsFilter.isNotEmpty) {

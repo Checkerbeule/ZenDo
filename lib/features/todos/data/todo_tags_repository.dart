@@ -6,7 +6,7 @@ class TodoTagsRepository {
 
   TodoTagsRepository(this.db);
 
-  /// Add all tags to the given todo.
+  /// Adds all tags to the given todo.
   Future<void> addAllTagsToTodo({
     required String todoUuid,
     required Set<String> tagUuids,

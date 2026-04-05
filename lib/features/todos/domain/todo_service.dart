@@ -23,6 +23,9 @@ class TodoService {
     required this.tagRepo,
   });
 
+  /// Creates a new todo with the given attributes and persists it in the database.
+  /// Also links the given tags with the new todo.<br>
+  /// Returns the new todo as a [TodoDto].
   Future<TodoDto> create({
     required String title,
     required ListScope scope,
@@ -68,6 +71,12 @@ class TodoService {
     }
   }
 
+  /// Returns a reacive stream of all open todos with a given [scope].<br>
+  /// Returns a streamed List of [TodoDto]s with populated metadata and associated tags.<br>
+  /// If [taguudsFilter] is provided, it filters the list of todos to match any of the given tag uuids.<br>
+  /// If [sortOption] is provided, it orders the list by the given option.
+  /// By default it orders the list by 'customOrder' ascending.
+  /// If [sortOrder] is provided, it orders the list accordingly.
   Stream<List<TodoDto>> watchAllOpenByScope({
     required ListScope scope,
     TodoSortOption? sortOption,
@@ -83,6 +92,12 @@ class TodoService {
     );
   }
 
+  /// Returns a reacive stream of all completed todos with a given [scope].<br>
+  /// Returns a streamed List of [TodoDto]s with populated metadata and associated tags.<br>
+  /// If [taguudsFilter] is provided, it filters the list of todos to match any of the given tag uuids.<br>
+  /// If [sortOption] is provided, it orders the list by the given option.
+  /// By default it orders the list by 'customOrder' ascending.
+  /// If [sortOrder] is provided, it orders the list accordingly.
   Stream<List<TodoDto>> watchAllCompletedByScope({
     required ListScope scope,
     Set<String>? tagUuidsFilter,
@@ -96,6 +111,8 @@ class TodoService {
     );
   }
 
+  /// Updates the given todo in the database and marks it as 'updated' to sync to cloud.<br>
+  /// Returns true if succesfull, false otherwise.
   Future<bool> update(TodoDto todo) async {
     return await entityRepo.updateWithTouch(todo.uuid, () async {
       final isTodoUpdated = await todoRepo.update(todo);

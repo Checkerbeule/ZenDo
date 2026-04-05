@@ -247,6 +247,53 @@ void main() {
     });
 
     test(
+      'TodoRepository watchAllByScope ignores deleted tags linked with todos',
+      () async {
+        final todo = await entityRepo.createWithEntity(EntityType.todo, (
+          Entity e,
+        ) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Completed todo',
+            scope: ListScope.daily,
+            expiresAt: DateTime.now().toUtc(),
+          );
+        });
+        final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
+          Entity e,
+        ) async {
+          return await tagRepo.create(
+            uuid: e.uuid,
+            name: 'Tag 1',
+            color: Colors.red.toARGB32(),
+          );
+        });
+        final tag_2 = await entityRepo.createWithEntity(EntityType.tag, (
+          Entity e,
+        ) async {
+          return await tagRepo.create(
+            uuid: e.uuid,
+            name: 'Tag 2',
+            color: Colors.red.toARGB32(),
+          );
+        });
+        await todoTagsRepo.addAllTagsToTodo(
+          todoUuid: todo.uuid,
+          tagUuids: {tag_1.uuid, tag_2.uuid},
+        );
+        entityRepo.markAsDeleted(tag_1.uuid);
+
+        final todos = await todoRepo
+            .watchAllByScope(scope: ListScope.daily, isCompleted: false)
+            .firstOrNull;
+
+        expect(todos!.length, 1);
+        expect(todos.first.tagUuids.length, 1);
+        expect(todos.first.tagUuids.first, tag_2.uuid);
+      },
+    );
+
+    test(
       'TodoRepository watchAllByScope updates stream successfully',
       () async {
         final todoStream = todoRepo.watchAllByScope(
