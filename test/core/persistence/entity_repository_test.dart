@@ -104,7 +104,7 @@ void main() {
       final pending = await entityRepo.create(EntityType.tag);
       Entity? synced = await entityRepo.create(EntityType.tag);
       await entityRepo.markAsDeleted(pending.uuid);
-      await entityRepo.markAsDeleted(synced!.uuid);
+      await entityRepo.markAsDeleted(synced.uuid);
       synced = await entityRepo.read(synced.uuid);
       final now = DateTime.now().toUtc();
       await (db.update(db.entities)..where((e) => e.uuid.equals(synced!.uuid)))

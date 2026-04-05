@@ -40,10 +40,10 @@ class ZenDoApp extends StatelessWidget {
           dispose: (_, db) => db.close(),
         ),
         ProxyProvider<AppDatabase, EntityRepository>(
-          update: (_, db, __) => EntityRepository(db),
+          update: (_, db, _) => EntityRepository(db),
         ),
         ProxyProvider2<AppDatabase, EntityRepository, TagService>(
-          update: (_, db, entityRepo, __) =>
+          update: (_, db, entityRepo, _) =>
               TagService(tagRepo: TagRepository(db), entityRepo: entityRepo),
         ),
 
