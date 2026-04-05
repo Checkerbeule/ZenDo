@@ -11,6 +11,10 @@ class TodoRepository {
 
   TodoRepository(this.db);
 
+  /// Creates a new todo with the given attributes.<br>
+  /// Generates a new fractional index (customOrder),
+  /// so the new todo is placed at last position in a list of all todos.<br>
+  /// Returns the created todo.
   Future<Todo> create({
     required String uuid,
     required String title,
@@ -46,12 +50,24 @@ class TodoRepository {
     });
   }
 
+  /// Loads the todo with the given [uuid].<br>
+  /// Returns null if no todo with the given [uuid] was found.<br>
+  /// Note: Also loads todos, that are marked as deleted.
   Future<Todo?> read(String uuid) async {
     return await (db.select(
       db.todos,
     )..where((todo) => todo.uuid.equals(uuid))).getSingleOrNull();
   }
 
+  /// Returns an reacive stream of all todos with a given [scope].<br>
+  /// Loads todos, that are still open if [isCompleted] is 'false'.
+  /// Loads todos, that allready done if [isCompleted] is 'true'.<br>
+  /// Returns a streamed List of [TodoDto]s with populated metadata and associated tags.<br>
+  /// If [taguudsFilter] is provided, it filters the list of todos to match any of the given tag uuids.<br>
+  /// If [sortOption] is provided, it orders the list by the given option.
+  /// By default it orders the list by 'customOrder' ascending.
+  /// If [sortOrder] is provided, it orders the list accordingly.
+  /// Note: Only loads todos, that are NOT marked as deleted.
   Stream<List<TodoDto>> watchAllByScope({
     required ListScope scope,
     required bool isCompleted,
@@ -111,6 +127,7 @@ class TodoRepository {
     });
   }
 
+  /// Updates the given [todo] by replacing all present attributes.
   Future<bool> update(TodoDto todo) async {
     return await db.update(db.todos).replace(_fromDto(todo));
   }

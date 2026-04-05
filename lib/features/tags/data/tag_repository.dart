@@ -7,6 +7,10 @@ class TagRepository {
 
   TagRepository(this.db);
 
+  /// Creates a new tag with the given parameters.<br>
+  /// Generates a new fractional index and stores it in 'customOrder',
+  /// so the new tag is placed at last position in the list of all tags.<br>
+  /// Returns the created [Tag].
   Future<Tag> create({
     required String uuid,
     required String name,
@@ -42,10 +46,15 @@ class TagRepository {
     });
   }
 
+  /// Loads all tags and orders them by 'customOrder'.<br>
+  /// Note: Only loads tags that are NOT marked as deleted.
   Future<List<Tag>> readAll() {
     return readAllByUuids({});
   }
 
+  /// Loads all tags that match the given set [uuids]
+  /// and orders them by 'customOrder'.<br>
+  /// Note: Only loads tags that are NOT marked as deleted.
   Future<List<Tag>> readAllByUuids(Set<String> uuids) async {
     final query = db.select(db.tags).join([
       innerJoin(db.entities, db.entities.uuid.equalsExp(db.tags.uuid)),
@@ -63,8 +72,8 @@ class TagRepository {
     return rows.map((row) => row.readTable(db.tags)).toList();
   }
 
-  /// Retreive all [Tag]s from the database as a stream.
-  /// Ignores tags with a sync status of [SyncStatus.deleted].
+  /// Retreive all [Tag]s from the database as a stream.<br>
+  /// Note: Only loads tags that are NOT marked as deleted.
   Stream<List<Tag>> watchAll() {
     return (db.select(db.tags).join([
             innerJoin(db.entities, db.entities.uuid.equalsExp(db.tags.uuid)),
@@ -75,6 +84,7 @@ class TagRepository {
         .map((rows) => rows.map((row) => row.readTable(db.tags)).toList());
   }
 
+  /// Updates the given [tag] by replacing all present attributes.
   Future<bool> update(Tag tag) {
     return db.update(db.tags).replace(tag);
   }

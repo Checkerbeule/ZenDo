@@ -117,9 +117,7 @@ void main() {
   });
 
   test('TagRepository readAllByUuids sucessfully rads desired tags', () async {
-    final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
-      Entity e,
-    ) async {
+    await entityRepo.createWithEntity(EntityType.tag, (Entity e) async {
       return await tagRepo.create(
         uuid: e.uuid,
         name: 'Test Tag 1',
