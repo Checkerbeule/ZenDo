@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:zen_do/core/domain/sort_order.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
 abstract class AppSettingsService {
@@ -10,7 +10,7 @@ abstract class AppSettingsService {
   Future<void> saveSortOrder(ListScope scope, SortOrder sortOrder);
   SortOrder? getSortOrder(ListScope scope);
 
-  // TODO move critical settings about todo lists to drift DB
+  // TODO move critical settings about todos to drift DB
   Future<void> saveActiveListScopes(Set<ListScope> activeScopes);
   Set<ListScope>? getActiveListScopes();
   Future<void> addActiveScope(ListScope activeScope);

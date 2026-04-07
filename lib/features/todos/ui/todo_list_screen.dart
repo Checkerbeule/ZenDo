@@ -8,7 +8,7 @@ import 'package:sliver_tools/sliver_tools.dart';
 import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';

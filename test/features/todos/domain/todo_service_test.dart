@@ -1,15 +1,20 @@
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/persistence/entities.dart';
 import 'package:zen_do/core/persistence/entity_repository.dart';
 import 'package:zen_do/core/utils/time_util.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_repository.dart';
 import 'package:zen_do/features/todos/data/todo_tags_repository.dart';
 import 'package:zen_do/features/todos/domain/todo_service.dart';
+
+class SettingsServiceMock extends Mock implements AppSettingsService {}
 
 void main() {
   late AppDatabase db;
@@ -18,6 +23,7 @@ void main() {
   late TodoRepository todoRepo;
   late TagRepository tagRepo;
   late TodoTagsRepository todoTagsRepo;
+  late SettingsServiceMock settingsServiceMock;
 
   setUp(() {
     db = AppDatabase.test(NativeDatabase.memory());
@@ -25,12 +31,14 @@ void main() {
     entityRepo = EntityRepository(db);
     todoTagsRepo = TodoTagsRepository(db);
     tagRepo = TagRepository(db);
+    settingsServiceMock = SettingsServiceMock();
 
     todoService = TodoService(
       todoRepo: todoRepo,
       entityRepo: entityRepo,
       todoTagsRepo: todoTagsRepo,
       tagRepo: tagRepo,
+      settingsService: settingsServiceMock,
     );
   });
 
@@ -140,10 +148,7 @@ void main() {
   test(
     'TodoService watchAllCompletedByScope successfully retreives completed todos',
     () async {
-      await todoService.create(
-        title: 'Open Todo',
-        scope: ListScope.daily,
-      );
+      await todoService.create(title: 'Open Todo', scope: ListScope.daily);
       final completedTodo = await todoService.create(
         title: 'Comleted Todo',
         scope: ListScope.daily,
@@ -177,4 +182,28 @@ void main() {
       expect(entity!.updatedAt.isAfter(entity.createdAt), isNotNull);
     },
   );
+
+  test('TodoService watchExpiredCount ignores inactive ListScopes', () async {
+    final activeScopes = Set<ListScope>.from(ListScope.values)
+      ..remove(ListScope.monthly);
+    when(
+      () => settingsServiceMock.getActiveListScopes(),
+    ).thenReturn(activeScopes);
+    final expiredTodo = await entityRepo.createWithEntity(EntityType.todo, (
+      Entity e,
+    ) async {
+      return await todoRepo.create(
+        uuid: e.uuid,
+        title: 'Expired but in inactive scope',
+        scope: ListScope.monthly,
+      );
+    });
+    final expirationDate = DateTime.now().subtract(Duration(days: 1));
+    await (db.update(db.todos)..where((t) => t.uuid.isIn([expiredTodo.uuid])))
+        .write(TodosCompanion(expiresAt: Value(expirationDate)));
+
+    final expiredCount = await todoService.watchExpiredCount().first;
+
+    expect(expiredCount, 0);
+  });
 }

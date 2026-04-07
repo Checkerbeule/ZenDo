@@ -9,7 +9,7 @@ import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/persistence/entities.dart';
 import 'package:zen_do/core/persistence/entity_repository.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_repository.dart';
 import 'package:zen_do/features/todos/data/todo_tags_repository.dart';
 import 'package:zen_do/features/todos/domain/todo_dto.dart';
@@ -531,7 +531,7 @@ void main() {
   });
 
   test(
-    'TodoRepository markAsCompleted successfully sets completedAtTimestamp',
+    'TodoRepository markAsCompleted successfully sets completedAt timestamp',
     () async {
       final todo = await entityRepo.createWithEntity(EntityType.todo, (
         Entity e,
@@ -549,4 +549,131 @@ void main() {
       expect((await todoRepo.read(todo.uuid))!.completedAt, isNotNull);
     },
   );
+
+  test(
+    'TodoRepository restore successfully removes completedAt timestamp',
+    () async {
+      final todo = await entityRepo.createWithEntity(EntityType.todo, (
+        Entity e,
+      ) async {
+        return await todoRepo.create(
+          uuid: e.uuid,
+          title: 'Test Todo',
+          scope: ListScope.daily,
+        );
+      });
+      await todoRepo.markAsCompleted(todo.uuid);
+
+      final result = await todoRepo.restore(todo.uuid);
+
+      expect(result, 1);
+      expect((await todoRepo.read(todo.uuid))!.completedAt, isNull);
+    },
+  );
+
+  group('TodoRepository watchExpiredCount tests', () {
+    test(
+      'TodoRepository watchExpiredCount successfully retreives count of expired todos',
+      () async {
+        final expired_1 = await entityRepo.createWithEntity(EntityType.todo, (
+          Entity e,
+        ) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Expired 1',
+            scope: ListScope.daily,
+          );
+        });
+        final expired_2 = await entityRepo.createWithEntity(EntityType.todo, (
+          Entity e,
+        ) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Expired 2',
+            scope: ListScope.weekly,
+          );
+        });
+        final expired_3 = await entityRepo.createWithEntity(EntityType.todo, (
+          Entity e,
+        ) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Expired 3',
+            scope: ListScope.monthly,
+          );
+        });
+        final expired_4 = await entityRepo.createWithEntity(EntityType.todo, (
+          Entity e,
+        ) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Expired 4',
+            scope: ListScope.yearly,
+          );
+        });
+        final expired_5 = await entityRepo.createWithEntity(EntityType.todo, (
+          Entity e,
+        ) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Expired 5',
+            scope: ListScope.backlog,
+          );
+        });
+        final notExpired = await entityRepo.createWithEntity(EntityType.todo, (
+          Entity e,
+        ) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Not expired',
+            scope: ListScope.weekly,
+          );
+        });
+        final expirationDate = DateTime.now().subtract(Duration(days: 1));
+        await (db.update(db.todos)..where(
+              (t) => t.uuid.isIn([
+                expired_1.uuid,
+                expired_2.uuid,
+                expired_3.uuid,
+                expired_4.uuid,
+                expired_5.uuid,
+              ]),
+            ))
+            .write(TodosCompanion(expiresAt: Value(expirationDate)));
+
+        final expiredCount = await todoRepo
+            .watchExpiredCount(ListScope.values.toSet())
+            .first;
+
+        expect(expiredCount, 5);
+      },
+    );
+
+    test(
+      'TodoRepository watchExpiredCount ignores inactive ListScopes',
+      () async {
+        final expiredTodo = await entityRepo.createWithEntity(EntityType.todo, (
+          Entity e,
+        ) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Expired but in inactive scope',
+            scope: ListScope.monthly,
+          );
+        });
+        final expirationDate = DateTime.now().subtract(Duration(days: 1));
+        await (db.update(db.todos)
+              ..where((t) => t.uuid.isIn([expiredTodo.uuid])))
+            .write(TodosCompanion(expiresAt: Value(expirationDate)));
+
+        final activeScopes = Set<ListScope>.from(ListScope.values)
+          ..remove(ListScope.monthly);
+        final expiredCount = await todoRepo
+            .watchExpiredCount(activeScopes)
+            .first;
+
+        expect(expiredCount, 0);
+      },
+    );
+  });
 }

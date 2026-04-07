@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:zen_do/core/persistence/entities.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 
-export 'package:zen_do/features/todos/data/list_scope.dart';
+export 'package:zen_do/features/todos/domain/list_scope.dart';
 
 @TableIndex(name: 'idx_todos_scope_order', columns: {#scope, #customOrder})
 @TableIndex(name: 'idx_todos_completed', columns: {#scope, #completedAt})

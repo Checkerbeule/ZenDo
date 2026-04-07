@@ -21,6 +21,7 @@ abstract class TodoDto with _$TodoDto {
     required ListScope scope,
     required String customOrder,
     @Default({}) Set<String> tagUuids,
+    @Default(false) bool isMovingToNextScope,
   }) = _TodoDto;
 
   factory TodoDto.fromDb({
@@ -39,5 +40,13 @@ abstract class TodoDto with _$TodoDto {
       customOrder: todo.customOrder,
       tagUuids: tagUuids,
     );
+  }
+
+  bool get isExpired {
+    if (expiresAt == null) {
+      return false;
+    } else {
+      return DateTime.now().isAfter(expiresAt!);
+    }
   }
 }

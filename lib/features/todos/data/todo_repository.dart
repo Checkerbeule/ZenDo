@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
 import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/domain/todo_dto.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
@@ -139,7 +139,32 @@ class TodoRepository {
 
   Future<int> markAsCompleted(String uuid) async {
     return await (db.update(db.todos)..where((todo) => todo.uuid.equals(uuid)))
-        .write(TodosCompanion(completedAt: Value(DateTime.now().toUtc())));
+        .write(TodosCompanion(completedAt: Value(DateTime.now())));
+  }
+
+  Future<int> restore(String uuid) async {
+    return await (db.update(db.todos)..where((todo) => todo.uuid.equals(uuid)))
+        .write(TodosCompanion(completedAt: Value(null)));
+  }
+
+  Stream<int> watchExpiredCount(Set<ListScope> activeScopes) {
+    // TODO move active list scope settings to drift DB and select expiredCount via join on settings table
+    final scopeNames = activeScopes.map((scope) => scope.name);
+    final query = db.selectOnly(db.todos).join([
+      innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
+    ]);
+
+    final now = DateTime.now();
+    query.where(
+      db.entities.isDeleted.equals(false) &
+          db.todos.completedAt.isNull() &
+          db.todos.expiresAt.isSmallerOrEqualValue(now) &
+          db.todos.scope.isIn(scopeNames),
+    );
+
+    return (query..addColumns([countAll()])).watchSingle().map(
+      (row) => row.read<int>(countAll()) ?? 0,
+    );
   }
 
   OrderingTerm _generateOrderingTerm(

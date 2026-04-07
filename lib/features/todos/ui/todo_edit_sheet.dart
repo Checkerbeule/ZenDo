@@ -11,7 +11,7 @@ import 'package:zen_do/core/utils/time_util.dart';
 import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/l10n/tags_l10n_extension.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_manager.dart';

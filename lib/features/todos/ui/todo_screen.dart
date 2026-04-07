@@ -11,7 +11,7 @@ import 'package:zen_do/core/domain/page_type.dart';
 import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 import 'package:zen_do/core/ui/loading_screen.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_manager.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';

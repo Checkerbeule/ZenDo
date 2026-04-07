@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:hive/hive.dart';
 import 'package:zen_do/features/todos/data/hive_todo.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 import 'package:zen_do/core/utils/time_util.dart';
 
