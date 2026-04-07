@@ -29,7 +29,6 @@ class TodoService {
   Future<TodoDto> create({
     required String title,
     required ListScope scope,
-    DateTime? expiresAt,
     String? description,
     Set<String>? tagUuids,
   }) async {
@@ -122,5 +121,14 @@ class TodoService {
       );
       return isTodoUpdated;
     });
+  }
+
+  /// Marks the todo with the given uuid as completed
+  /// and updates the updatedAt timestamp to trigger cloud sync.
+  Future<bool> markAsCompleted(String uuid) async {
+    final updated = await entityRepo.updateWithTouch(uuid, () async {
+      return await todoRepo.markAsCompleted(uuid);
+    });
+    return updated == 1;
   }
 }

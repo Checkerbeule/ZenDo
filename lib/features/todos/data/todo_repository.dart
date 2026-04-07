@@ -137,6 +137,11 @@ class TodoRepository {
     return await db.update(db.todos).replace(_fromDto(todo));
   }
 
+  Future<int> markAsCompleted(String uuid) async {
+    return await (db.update(db.todos)..where((todo) => todo.uuid.equals(uuid)))
+        .write(TodosCompanion(completedAt: Value(DateTime.now().toUtc())));
+  }
+
   OrderingTerm _generateOrderingTerm(
     TodoSortOption? sortOption,
     SortOrder? sortOrder,

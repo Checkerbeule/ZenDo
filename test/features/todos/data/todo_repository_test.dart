@@ -529,4 +529,24 @@ void main() {
       expect(updatedTodo, isNull);
     });
   });
+
+  test(
+    'TodoRepository markAsCompleted successfully sets completedAtTimestamp',
+    () async {
+      final todo = await entityRepo.createWithEntity(EntityType.todo, (
+        Entity e,
+      ) async {
+        return await todoRepo.create(
+          uuid: e.uuid,
+          title: 'Test Todo',
+          scope: ListScope.daily,
+        );
+      });
+
+      final result = await todoRepo.markAsCompleted(todo.uuid);
+
+      expect(result, 1);
+      expect((await todoRepo.read(todo.uuid))!.completedAt, isNotNull);
+    },
+  );
 }
