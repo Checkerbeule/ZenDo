@@ -43,6 +43,7 @@ abstract class TodoDto with _$TodoDto {
   }
 
   bool get isExpired {
+    // TODO may not be required anymore if isMovingToNextScope is enough
     if (expiresAt == null) {
       return false;
     } else {

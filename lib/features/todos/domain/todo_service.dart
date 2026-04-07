@@ -117,28 +117,32 @@ class TodoService {
   }
 
   TodoDto _setIsMovingToNextScope(TodoDto todo) {
-    if (todo.expiresAt == null ||
-        todo.scope == ListScope.backlog ||
-        todo.scope == ListScope.daily) {
-      return todo;
-    }
-
     final indexOfListContainigTodo = sortedActiveScopes.indexOf(todo.scope);
-    if (indexOfListContainigTodo <= 0) {
+    if (indexOfListContainigTodo < 0) {
       return todo;
     }
 
-    final scopeToSubtract = sortedActiveScopes[indexOfListContainigTodo - 1];
-    final transferDate = todo.expiresAt!.subtract(scopeToSubtract.duration);
+    final scopeToSubtract =
+        indexOfListContainigTodo == 0 || todo.scope == ListScope.backlog
+        ? Duration.zero
+        : sortedActiveScopes[indexOfListContainigTodo - 1].duration;
+    final transferDate = todo.expiresAt!.subtract(scopeToSubtract);
     final isMovingToNextScope = DateTime.now().isAfter(transferDate);
 
     return todo.copyWith(isMovingToNextScope: isMovingToNextScope);
   }
 
   List<ListScope> get sortedActiveScopes {
-    final activeScopes = settingsService.getActiveListScopes()?.toList() ?? [];
+    final activeScopes = <ListScope>[
+      ...settingsService.getActiveListScopes()?.toList() ?? [],
+    ];
     activeScopes.sort();
     return activeScopes;
+  }
+
+  Stream<int> watchIsMovingCount(ListScope scope) {
+    // TODO implement
+    throw UnimplementedError();
   }
 
   /// Updates the given todo in the database and marks it as 'updated' to sync to cloud.<br>

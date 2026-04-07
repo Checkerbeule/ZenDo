@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 
-enum ListScope {
+enum ListScope implements Comparable<ListScope> {
   daily(Duration(days: 1), true),
   weekly(Duration(days: 7), true),
   monthly(Duration(days: 30), true),
@@ -13,6 +13,16 @@ enum ListScope {
   final bool isAutoTransfer;
 
   const ListScope(this.duration, this.isAutoTransfer);
+
+  @override
+  int compareTo(ListScope other) {
+    if (this == ListScope.backlog) {
+      return other == ListScope.backlog ? 0 : 1;
+    }
+    if (other == ListScope.backlog) return -1;
+
+    return duration.compareTo(other.duration);
+  }
 }
 
 extension ListScopeX on ListScope {

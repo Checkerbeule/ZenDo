@@ -620,7 +620,7 @@ void main() {
             scope: ListScope.backlog,
           );
         });
-        final notExpired = await entityRepo.createWithEntity(EntityType.todo, (
+        await entityRepo.createWithEntity(EntityType.todo, (
           Entity e,
         ) async {
           return await todoRepo.create(

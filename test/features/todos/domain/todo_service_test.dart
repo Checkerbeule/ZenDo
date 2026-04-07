@@ -121,29 +121,220 @@ void main() {
     expect(backlogTodo.expiresAt, isNull);
   });
 
-  test(
-    'TodoService watchAllOpendByScope successfully retreives open todos',
-    () async {
-      final openTodo = await todoService.create(
-        title: 'Open Todo',
-        scope: ListScope.daily,
-      );
-      final completedTodo = await todoService.create(
-        title: 'Comleted Todo',
-        scope: ListScope.daily,
-      );
-      await todoService.create(title: 'Weekly Todo', scope: ListScope.weekly);
-      todoService.markAsCompleted(completedTodo.uuid);
+  group('TodoService watchAllOpendByScope tests', () {
+    test(
+      'TodoService watchAllOpendByScope successfully retreives open todos',
+      () async {
+        final openTodo = await todoService.create(
+          title: 'Open Todo',
+          scope: ListScope.daily,
+        );
+        final completedTodo = await todoService.create(
+          title: 'Comleted Todo',
+          scope: ListScope.daily,
+        );
+        await todoService.create(title: 'Weekly Todo', scope: ListScope.weekly);
+        todoService.markAsCompleted(completedTodo.uuid);
 
-      final openTodos = await todoService
-          .watchAllOpenByScope(scope: ListScope.daily)
-          .first;
+        final openTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.daily)
+            .first;
 
-      expect(openTodos.length, 1);
-      expect(openTodos.first.title, openTodo.title);
-      expect(openTodos.first.uuid, openTodo.uuid);
-    },
-  );
+        expect(openTodos.length, 1);
+        expect(openTodos.first.title, openTodo.title);
+        expect(openTodos.first.uuid, openTodo.uuid);
+      },
+    );
+
+    test(
+      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with daily scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(Set<ListScope>.from(ListScope.values));
+        final expired = await todoService.create(
+          title: 'Expired Todo',
+          scope: ListScope.daily,
+        );
+        await todoService.create(
+          title: 'Not expired Todo',
+          scope: ListScope.daily,
+        );
+        await todoRepo.update(
+          expired.copyWith(
+            expiresAt: DateTime.now().normalized.subtract(Duration(days: 1)),
+          ),
+        );
+
+        final openTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.daily)
+            .first;
+
+        expect(openTodos.length, 2);
+        expect(openTodos.first.isMovingToNextScope, isTrue);
+        expect(openTodos.last.isMovingToNextScope, isFalse);
+      },
+    );
+
+    test(
+      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with weekly scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(Set<ListScope>.from(ListScope.values));
+        final expired = await todoService.create(
+          title: 'Expired Todo',
+          scope: ListScope.weekly,
+        );
+        await todoService.create(
+          title: 'Not expired Todo',
+          scope: ListScope.weekly,
+        );
+        await todoRepo.update(
+          expired.copyWith(
+            expiresAt: DateTime.now().normalized.add(ListScope.daily.duration),
+          ),
+        );
+
+        final openTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.weekly)
+            .first;
+
+        expect(openTodos.length, 2);
+        expect(openTodos.first.isMovingToNextScope, isTrue);
+        expect(openTodos.last.isMovingToNextScope, isFalse);
+      },
+    );
+
+    test(
+      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with monthly scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(Set<ListScope>.from(ListScope.values));
+        final expired = await todoService.create(
+          title: 'Expired Todo',
+          scope: ListScope.monthly,
+        );
+        await todoService.create(
+          title: 'Not expired Todo',
+          scope: ListScope.monthly,
+        );
+        await todoRepo.update(
+          expired.copyWith(
+            expiresAt: DateTime.now().normalized.add(ListScope.weekly.duration),
+          ),
+        );
+
+        final openTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.monthly)
+            .first;
+
+        expect(openTodos.length, 2);
+        expect(openTodos.first.isMovingToNextScope, isTrue);
+        expect(openTodos.last.isMovingToNextScope, isFalse);
+      },
+    );
+
+    test(
+      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with yearly scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(Set<ListScope>.from(ListScope.values));
+        final expired = await todoService.create(
+          title: 'Expired Todo',
+          scope: ListScope.yearly,
+        );
+        await todoService.create(
+          title: 'Not expired Todo',
+          scope: ListScope.yearly,
+        );
+        await todoRepo.update(
+          expired.copyWith(
+            expiresAt: DateTime.now().normalized.add(
+              ListScope.monthly.duration,
+            ),
+          ),
+        );
+
+        final openTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.yearly)
+            .first;
+
+        expect(openTodos.length, 2);
+        expect(openTodos.first.isMovingToNextScope, isTrue);
+        expect(openTodos.last.isMovingToNextScope, isFalse);
+      },
+    );
+
+    test(
+      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with backlog scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(Set<ListScope>.from(ListScope.values));
+        final backlogTodo = await todoService.create(
+          title: 'Backlog Todo',
+          scope: ListScope.backlog,
+        );
+        final backlogButExpired = await todoService.create(
+          title: 'Backlog Todo is expired',
+          scope: ListScope.backlog,
+        );
+        await todoRepo.update(
+          backlogTodo.copyWith(
+            expiresAt: DateTime.now().normalized.add(ListScope.yearly.duration),
+          ),
+        );
+        await todoRepo.update(
+          backlogButExpired.copyWith(
+            expiresAt: DateTime.now().normalized.subtract(Duration(days: 1)),
+          ),
+        );
+
+        final openTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.backlog)
+            .first;
+
+        expect(openTodos.length, 2);
+        expect(openTodos.first.isMovingToNextScope, isFalse);
+        expect(openTodos.last.isMovingToNextScope, isTrue);
+      },
+    );
+
+    test(
+      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with yearly scope with inactive monthly scope',
+      () async {
+        final activeScopes = Set<ListScope>.from(ListScope.values)
+          ..remove(ListScope.monthly);
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(activeScopes);
+        final expired = await todoService.create(
+          title: 'Expired Todo',
+          scope: ListScope.yearly,
+        );
+        await todoService.create(
+          title: 'Not expired Todo',
+          scope: ListScope.yearly,
+        );
+        await todoRepo.update(
+          expired.copyWith(
+            expiresAt: DateTime.now().normalized.add(ListScope.weekly.duration),
+          ),
+        );
+
+        final openTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.yearly)
+            .first;
+
+        expect(openTodos.length, 2);
+        expect(openTodos.first.isMovingToNextScope, isTrue);
+        expect(openTodos.last.isMovingToNextScope, isFalse);
+      },
+    );
+  });
 
   test(
     'TodoService watchAllCompletedByScope successfully retreives completed todos',
