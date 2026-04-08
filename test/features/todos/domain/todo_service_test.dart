@@ -358,6 +358,77 @@ void main() {
   );
 
   test(
+    'TodoService watchWillBeTransfered successfully retreives count of todos that will be transfered tomorrow or are expired',
+    () async {
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn(Set<ListScope>.from(ListScope.values));
+      final expiredTodo = await entityRepo.createWithEntity(EntityType.todo, (
+        Entity entity,
+      ) async {
+        return await todoRepo.create(
+          uuid: entity.uuid,
+          title: 'Expired',
+          scope: ListScope.weekly,
+          expiresAt: DateTime.now().toUtc(),
+        );
+      });
+      (db.update(
+        db.todos,
+      )..where((t) => db.todos.uuid.equals(expiredTodo.uuid))).write(
+        TodosCompanion(
+          expiresAt: Value(
+            DateTime.now().subtract(Duration(days: 1)).normalized,
+          ),
+        ),
+      );
+      final willBeTransfered = await entityRepo.createWithEntity(
+        EntityType.todo,
+        (Entity entity) async {
+          return await todoRepo.create(
+            uuid: entity.uuid,
+            title: 'Transfered',
+            scope: ListScope.weekly,
+            expiresAt: DateTime.now().toUtc(),
+          );
+        },
+      );
+      (db.update(
+        db.todos,
+      )..where((t) => db.todos.uuid.equals(willBeTransfered.uuid))).write(
+        TodosCompanion(
+          expiresAt: Value(
+            DateTime.now().add(ListScope.daily.duration).normalized,
+          ),
+        ),
+      );
+      final notTransfered = await entityRepo.createWithEntity(EntityType.todo, (
+        Entity entity,
+      ) async {
+        return await todoRepo.create(
+          uuid: entity.uuid,
+          title: 'Not transfered',
+          scope: ListScope.weekly,
+          expiresAt: DateTime.now().toUtc(),
+        );
+      });
+      (db.update(
+        db.todos,
+      )..where((t) => db.todos.uuid.equals(notTransfered.uuid))).write(
+        TodosCompanion(
+          expiresAt: Value(DateTime.now().add(Duration(days: 2)).normalized),
+        ),
+      );
+
+      final completedTodos = await todoService
+          .watchWillBeTransfered(ListScope.weekly)
+          .first;
+
+      expect(completedTodos, 2);
+    },
+  );
+
+  test(
     'TodoService markAsCompleted successfully updates updatedAt timestamp',
     () async {
       final todo = await todoService.create(

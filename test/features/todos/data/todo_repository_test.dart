@@ -191,13 +191,13 @@ void main() {
       }
 
       final dailyTodos = await todoRepo
-          .watchAllByScope(scope: ListScope.daily, isCompleted: false)
+          .watchDtosByScope(scope: ListScope.daily, isCompleted: false)
           .first;
       final weeklyTodos = await todoRepo
-          .watchAllByScope(scope: ListScope.weekly, isCompleted: false)
+          .watchDtosByScope(scope: ListScope.weekly, isCompleted: false)
           .first;
       final backlogTodos = await todoRepo
-          .watchAllByScope(scope: ListScope.backlog, isCompleted: false)
+          .watchDtosByScope(scope: ListScope.backlog, isCompleted: false)
           .first;
 
       expect(dailyTodos.length, 5);
@@ -235,10 +235,10 @@ void main() {
       );
 
       final open = await todoRepo
-          .watchAllByScope(scope: ListScope.daily, isCompleted: false)
+          .watchDtosByScope(scope: ListScope.daily, isCompleted: false)
           .firstOrNull;
       final completed = await todoRepo
-          .watchAllByScope(scope: ListScope.daily, isCompleted: true)
+          .watchDtosByScope(scope: ListScope.daily, isCompleted: true)
           .first;
 
       expect(open!.length, 0);
@@ -284,7 +284,7 @@ void main() {
         entityRepo.markAsDeleted(tag_1.uuid);
 
         final todos = await todoRepo
-            .watchAllByScope(scope: ListScope.daily, isCompleted: false)
+            .watchDtosByScope(scope: ListScope.daily, isCompleted: false)
             .firstOrNull;
 
         expect(todos!.length, 1);
@@ -296,7 +296,7 @@ void main() {
     test(
       'TodoRepository watchAllByScope updates stream successfully',
       () async {
-        final todoStream = todoRepo.watchAllByScope(
+        final todoStream = todoRepo.watchDtosByScope(
           scope: ListScope.daily,
           isCompleted: false,
         );
@@ -344,7 +344,7 @@ void main() {
       });
 
       final ascList = await todoRepo
-          .watchAllByScope(
+          .watchDtosByScope(
             scope: ListScope.daily,
             isCompleted: false,
             sortOption: TodoSortOption.title,
@@ -352,7 +352,7 @@ void main() {
           )
           .first;
       final descList = await todoRepo
-          .watchAllByScope(
+          .watchDtosByScope(
             scope: ListScope.daily,
             isCompleted: false,
             sortOption: TodoSortOption.title,
@@ -431,7 +431,7 @@ void main() {
       );
 
       final loaded = await todoRepo
-          .watchAllByScope(
+          .watchDtosByScope(
             scope: ListScope.daily,
             isCompleted: false,
             tagUuidsFilter: {tagC},
@@ -443,6 +443,49 @@ void main() {
       expect(loaded.first.tagUuids.length, 2);
       expect(loaded.first.tagUuids.containsAll({tagA, tagC}), isTrue);
     });
+
+    test(
+      'TodoRepository watchAllOpenByScope successfully reads open todos',
+      () async {
+        final openTodo = await entityRepo.createWithEntity(EntityType.todo, (
+          Entity entity,
+        ) async {
+          return await todoRepo.create(
+            uuid: entity.uuid,
+            title: 'Open',
+            scope: ListScope.daily,
+            expiresAt: DateTime.now().toUtc(),
+          );
+        });
+        final completedTodo = await entityRepo.createWithEntity(
+          EntityType.todo,
+          (Entity entity) async {
+            return await todoRepo.create(
+              uuid: entity.uuid,
+              title: 'Completed',
+              scope: ListScope.daily,
+            );
+          },
+        );
+        await todoRepo.markAsCompleted(completedTodo.uuid);
+        await entityRepo.createWithEntity(EntityType.todo, (
+          Entity entity,
+        ) async {
+          return await todoRepo.create(
+            uuid: entity.uuid,
+            title: 'Weekly',
+            scope: ListScope.weekly,
+          );
+        });
+
+        final loaded = await todoRepo
+            .watchAllOpenByScope(ListScope.daily)
+            .first;
+
+        expect(loaded.length, 1);
+        expect(loaded.first.uuid, openTodo.uuid);
+      },
+    );
   });
 
   group('TodoRepository update tests', () {
@@ -620,9 +663,7 @@ void main() {
             scope: ListScope.backlog,
           );
         });
-        await entityRepo.createWithEntity(EntityType.todo, (
-          Entity e,
-        ) async {
+        await entityRepo.createWithEntity(EntityType.todo, (Entity e) async {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Not expired',

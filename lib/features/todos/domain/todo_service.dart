@@ -85,7 +85,7 @@ class TodoService {
     SortOrder? sortOrder,
     Set<String>? tagUuidsFilter,
   }) {
-    final todoStream = todoRepo.watchAllByScope(
+    final todoStream = todoRepo.watchDtosByScope(
       scope: scope,
       isCompleted: false,
       sortOption: sortOption,
@@ -107,7 +107,7 @@ class TodoService {
     required ListScope scope,
     Set<String>? tagUuidsFilter,
   }) {
-    return todoRepo.watchAllByScope(
+    return todoRepo.watchDtosByScope(
       scope: scope,
       isCompleted: true,
       sortOption: TodoSortOption.completionDate,
@@ -117,19 +117,24 @@ class TodoService {
   }
 
   TodoDto _setIsMovingToNextScope(TodoDto todo) {
-    final indexOfListContainigTodo = sortedActiveScopes.indexOf(todo.scope);
-    if (indexOfListContainigTodo < 0) {
-      return todo;
+    final isMoving = _isMovingToNextScope(todo.scope, todo.expiresAt);
+
+    return isMoving ? todo.copyWith(isMovingToNextScope: true) : todo;
+  }
+
+  bool _isMovingToNextScope(ListScope scope, DateTime? expiresAt) {
+    if (expiresAt == null) return false;
+
+    final indexOfList = sortedActiveScopes.indexOf(scope);
+    if (indexOfList < 0) {
+      return false;
     }
 
-    final scopeToSubtract =
-        indexOfListContainigTodo == 0 || todo.scope == ListScope.backlog
+    final scopeToSubtract = indexOfList == 0 || scope == ListScope.backlog
         ? Duration.zero
-        : sortedActiveScopes[indexOfListContainigTodo - 1].duration;
-    final transferDate = todo.expiresAt!.subtract(scopeToSubtract);
-    final isMovingToNextScope = DateTime.now().isAfter(transferDate);
-
-    return todo.copyWith(isMovingToNextScope: isMovingToNextScope);
+        : sortedActiveScopes[indexOfList - 1].duration;
+    final transferDate = expiresAt.subtract(scopeToSubtract);
+    return DateTime.now().isAfter(transferDate);
   }
 
   List<ListScope> get sortedActiveScopes {
@@ -140,9 +145,12 @@ class TodoService {
     return activeScopes;
   }
 
-  Stream<int> watchIsMovingCount(ListScope scope) {
-    // TODO implement
-    throw UnimplementedError();
+  Stream<int> watchWillBeTransfered(ListScope scope) {
+    return todoRepo.watchAllOpenByScope(scope).map((todos) {
+      return todos
+          .where((todo) => _isMovingToNextScope(todo.scope, todo.expiresAt))
+          .length;
+    }).distinct();
   }
 
   /// Updates the given todo in the database and marks it as 'updated' to sync to cloud.<br>

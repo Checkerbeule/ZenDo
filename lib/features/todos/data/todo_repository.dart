@@ -69,7 +69,7 @@ class TodoRepository {
   /// By default it orders the list by 'customOrder' ascending.
   /// If [sortOrder] is provided, it orders the list accordingly.
   /// Note: Only loads todos, that are NOT marked as deleted.
-  Stream<List<TodoDto>> watchAllByScope({
+  Stream<List<TodoDto>> watchDtosByScope({
     required ListScope scope,
     required bool isCompleted,
     TodoSortOption? sortOption,
@@ -130,6 +130,25 @@ class TodoRepository {
         );
       }).toList();
     });
+  }
+
+  /// Returns a reacive stream of all open todos with a given [scope].<br>
+  /// Note: Only retreives the [Todo] enitties without metda and associated tags,
+  /// not the whole [TodoDto].
+  Stream<List<Todo>> watchAllOpenByScope(ListScope scope) {
+    final query = db.select(db.todos).join([
+      innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
+    ]);
+
+    query.where(
+      db.entities.isDeleted.equals(false) &
+          db.todos.completedAt.isNull() &
+          db.todos.scope.equals(scope.name),
+    );
+
+    return query.watch().map(
+      (rows) => rows.map((row) => row.readTable(db.todos)).toList(),
+    );
   }
 
   /// Updates the given [todo] by replacing all present attributes.
