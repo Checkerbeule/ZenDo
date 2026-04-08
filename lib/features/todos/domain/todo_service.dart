@@ -26,6 +26,14 @@ class TodoService {
     required this.settingsService,
   });
 
+  List<ListScope> get _sortedActiveScopes {
+    final activeScopes = <ListScope>[
+      ...settingsService.getActiveListScopes()?.toList() ?? [],
+    ];
+    activeScopes.sort();
+    return activeScopes;
+  }
+
   /// Creates a new todo with the given attributes and persists it in the database.
   /// Also links the given tags with the new todo.<br>
   /// Returns the new todo as a [TodoDto].
@@ -92,9 +100,7 @@ class TodoService {
       sortOrder: sortOrder,
       tagUuidsFilter: tagUuidsFilter,
     );
-    return todoStream.map(
-      (todos) => todos.map(_setIsMovingToNextScope).toList(),
-    );
+    return todoStream.map((todos) => todos.map(_setWillBeTransfered).toList());
   }
 
   /// Returns a reacive stream of all completed todos with a given [scope].<br>
@@ -116,39 +122,34 @@ class TodoService {
     );
   }
 
-  TodoDto _setIsMovingToNextScope(TodoDto todo) {
-    final isMoving = _isMovingToNextScope(todo.scope, todo.expiresAt);
+  TodoDto _setWillBeTransfered(TodoDto todo) {
+    final isMoving = _calcWillBeTransfered(todo.scope, todo.expiresAt);
 
-    return isMoving ? todo.copyWith(isMovingToNextScope: true) : todo;
+    return isMoving ? todo.copyWith(willBeTransferred: true) : todo;
   }
 
-  bool _isMovingToNextScope(ListScope scope, DateTime? expiresAt) {
+  bool _calcWillBeTransfered(ListScope scope, DateTime? expiresAt) {
     if (expiresAt == null) return false;
 
-    final indexOfList = sortedActiveScopes.indexOf(scope);
+    final indexOfList = _sortedActiveScopes.indexOf(scope);
     if (indexOfList < 0) {
       return false;
     }
 
     final scopeToSubtract = indexOfList == 0 || scope == ListScope.backlog
         ? Duration.zero
-        : sortedActiveScopes[indexOfList - 1].duration;
+        : _sortedActiveScopes[indexOfList - 1].duration;
     final transferDate = expiresAt.subtract(scopeToSubtract);
     return DateTime.now().isAfter(transferDate);
   }
 
-  List<ListScope> get sortedActiveScopes {
-    final activeScopes = <ListScope>[
-      ...settingsService.getActiveListScopes()?.toList() ?? [],
-    ];
-    activeScopes.sort();
-    return activeScopes;
-  }
-
+  /// Calculates the amount of todos that will be transferred or are expired for the given [scope]
+  /// and returns the value in a stream.<br>
+  /// Use this method to fill the badges on each todo list.
   Stream<int> watchWillBeTransfered(ListScope scope) {
     return todoRepo.watchAllOpenByScope(scope).map((todos) {
       return todos
-          .where((todo) => _isMovingToNextScope(todo.scope, todo.expiresAt))
+          .where((todo) => _calcWillBeTransfered(todo.scope, todo.expiresAt))
           .length;
     }).distinct();
   }
@@ -184,35 +185,68 @@ class TodoService {
     return updated == 1;
   }
 
+  /// Returns a reactive stream representing the amount of all expired todos in all lists.
   Stream<int> watchExpiredCount() {
     return todoRepo.watchExpiredCount(
       settingsService.getActiveListScopes() ?? ListScope.values.toSet(),
     );
   }
 
-  Stream<int> watchToBeTransferredOrExpiredCount(ListScope scope) {
+  Future<void> transferTodos() async {
+    // TODO implement
     throw UnimplementedError();
   }
 
-  Future<void> transferTodos() async {}
-
+  /// Sets the given [destinationScope] to the given [todo] and returns 'true' when
+  /// successful, false otherwise.
   Future<bool> moveToOtherList(TodoDto todo, ListScope destinationScope) async {
-    return false;
+    final indexOfDestinationScope = _sortedActiveScopes.indexOf(
+      destinationScope,
+    );
+    if (indexOfDestinationScope < 0) return false;
+
+    return await entityRepo.updateWithTouch(todo.uuid, () async {
+      return todoRepo.update(todo.copyWith(scope: destinationScope));
+    });
   }
 
+  /// Sets the next [ListScope] to the given [todo] and returns 'true' when
+  /// successful, false otherwise.
   Future<bool> moveToNextList(TodoDto todo) async {
-    return false;
+    final nextScope = getNextScope(todo.scope);
+    if (nextScope == null) return false;
+
+    return moveToOtherList(todo, nextScope);
   }
 
+  /// Sets the previous [ListScope] to the given [todo] and returns 'true' when
+  /// successful, false otherwise.
   Future<bool> moveToPreviousList(TodoDto todo) async {
-    return false;
+    final previousScope = getPreviousScope(todo.scope);
+    if (previousScope == null) return false;
+
+    return moveToOtherList(todo, previousScope);
   }
 
+  /// Calculates the previous (next higher) [ListScope] to the given [scope]
+  /// Returns 'null' when then given [scope] is the last scope in the
+  /// list of active scopes (e.g. [ListScope.backlog])
   ListScope? getPreviousScope(ListScope scope) {
-    return null;
+    final indexOfScope = _sortedActiveScopes.indexOf(scope);
+    if (indexOfScope < 0 || indexOfScope + 1 >= _sortedActiveScopes.length) {
+      return null;
+    }
+    return _sortedActiveScopes.elementAt(indexOfScope + 1);
   }
 
+  /// Calculates the next (next lower) [ListScope] to the given [scope].
+  /// Returns 'null' when then given [scope] is the first scope in the
+  /// list of active scopes (e.g. [ListScope.daily])
   ListScope? getNextScope(ListScope scope) {
-    return null;
+    final indexOfScope = _sortedActiveScopes.indexOf(scope);
+    if (indexOfScope <= 0) {
+      return null;
+    }
+    return _sortedActiveScopes.elementAt(indexOfScope - 1);
   }
 }

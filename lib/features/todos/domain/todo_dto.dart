@@ -21,7 +21,7 @@ abstract class TodoDto with _$TodoDto {
     required ListScope scope,
     required String customOrder,
     @Default({}) Set<String> tagUuids,
-    @Default(false) bool isMovingToNextScope,
+    @Default(false) bool willBeTransferred,
   }) = _TodoDto;
 
   factory TodoDto.fromDb({
@@ -43,7 +43,7 @@ abstract class TodoDto with _$TodoDto {
   }
 
   bool get isExpired {
-    // TODO may not be required anymore if isMovingToNextScope is enough
+    // TODO may not be required anymore if willBeTransferred is enough
     if (expiresAt == null) {
       return false;
     } else {

@@ -147,7 +147,7 @@ void main() {
     );
 
     test(
-      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with daily scope',
+      'TodoService watchAllOpendByScope properly sets willBeTransferred on todos with daily scope',
       () async {
         when(
           () => settingsServiceMock.getActiveListScopes(),
@@ -171,13 +171,13 @@ void main() {
             .first;
 
         expect(openTodos.length, 2);
-        expect(openTodos.first.isMovingToNextScope, isTrue);
-        expect(openTodos.last.isMovingToNextScope, isFalse);
+        expect(openTodos.first.willBeTransferred, isTrue);
+        expect(openTodos.last.willBeTransferred, isFalse);
       },
     );
 
     test(
-      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with weekly scope',
+      'TodoService watchAllOpendByScope properly sets willBeTransferred on todos with weekly scope',
       () async {
         when(
           () => settingsServiceMock.getActiveListScopes(),
@@ -201,13 +201,13 @@ void main() {
             .first;
 
         expect(openTodos.length, 2);
-        expect(openTodos.first.isMovingToNextScope, isTrue);
-        expect(openTodos.last.isMovingToNextScope, isFalse);
+        expect(openTodos.first.willBeTransferred, isTrue);
+        expect(openTodos.last.willBeTransferred, isFalse);
       },
     );
 
     test(
-      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with monthly scope',
+      'TodoService watchAllOpendByScope properly sets willBeTransferred on todos with monthly scope',
       () async {
         when(
           () => settingsServiceMock.getActiveListScopes(),
@@ -231,13 +231,13 @@ void main() {
             .first;
 
         expect(openTodos.length, 2);
-        expect(openTodos.first.isMovingToNextScope, isTrue);
-        expect(openTodos.last.isMovingToNextScope, isFalse);
+        expect(openTodos.first.willBeTransferred, isTrue);
+        expect(openTodos.last.willBeTransferred, isFalse);
       },
     );
 
     test(
-      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with yearly scope',
+      'TodoService watchAllOpendByScope properly sets willBeTransferred on todos with yearly scope',
       () async {
         when(
           () => settingsServiceMock.getActiveListScopes(),
@@ -263,13 +263,13 @@ void main() {
             .first;
 
         expect(openTodos.length, 2);
-        expect(openTodos.first.isMovingToNextScope, isTrue);
-        expect(openTodos.last.isMovingToNextScope, isFalse);
+        expect(openTodos.first.willBeTransferred, isTrue);
+        expect(openTodos.last.willBeTransferred, isFalse);
       },
     );
 
     test(
-      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with backlog scope',
+      'TodoService watchAllOpendByScope properly sets willBeTransferred on todos with backlog scope',
       () async {
         when(
           () => settingsServiceMock.getActiveListScopes(),
@@ -298,13 +298,13 @@ void main() {
             .first;
 
         expect(openTodos.length, 2);
-        expect(openTodos.first.isMovingToNextScope, isFalse);
-        expect(openTodos.last.isMovingToNextScope, isTrue);
+        expect(openTodos.first.willBeTransferred, isFalse);
+        expect(openTodos.last.willBeTransferred, isTrue);
       },
     );
 
     test(
-      'TodoService watchAllOpendByScope properly sets isMovingToNextScope on todos with yearly scope with inactive monthly scope',
+      'TodoService watchAllOpendByScope properly sets willBeTransferred on todos with yearly scope with inactive monthly scope',
       () async {
         final activeScopes = Set<ListScope>.from(ListScope.values)
           ..remove(ListScope.monthly);
@@ -330,8 +330,8 @@ void main() {
             .first;
 
         expect(openTodos.length, 2);
-        expect(openTodos.first.isMovingToNextScope, isTrue);
-        expect(openTodos.last.isMovingToNextScope, isFalse);
+        expect(openTodos.first.willBeTransferred, isTrue);
+        expect(openTodos.last.willBeTransferred, isFalse);
       },
     );
   });
@@ -467,5 +467,272 @@ void main() {
     final expiredCount = await todoService.watchExpiredCount().first;
 
     expect(expiredCount, 0);
+  });
+
+  group('TodoService moveToOtherList tests', () {
+    test(
+      'TodoService moveToOtherList successfully sets destination scope and updates timestamp',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(ListScope.values.toSet());
+        final todo = await todoService.create(
+          title: 'Test todo',
+          scope: ListScope.daily,
+        );
+
+        final moved = await todoService.moveToOtherList(todo, ListScope.yearly);
+
+        final dailyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.daily)
+            .first;
+        final yearlyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.yearly)
+            .first;
+        final entity = await entityRepo.read(todo.uuid);
+        expect(moved, isTrue);
+        expect(dailyTodos.length, 0);
+        expect(yearlyTodos.length, 1);
+        expect(yearlyTodos.first.uuid, todo.uuid);
+        expect(entity!.updatedAt.isAfter(entity.createdAt), isTrue);
+      },
+    );
+    test(
+      'TodoService moveToOtherList fails when destination scope is not active',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn({ListScope.daily});
+        final todo = await todoService.create(
+          title: 'Test todo',
+          scope: ListScope.daily,
+        );
+
+        final moved = await todoService.moveToOtherList(todo, ListScope.yearly);
+
+        final dailyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.daily)
+            .first;
+        expect(moved, isFalse);
+        expect(dailyTodos.length, 1);
+      },
+    );
+
+    test('TodoService moveToNextList successfully sets next scope', () async {
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn(ListScope.values.toSet());
+      final todo = await todoService.create(
+        title: 'Test todo',
+        scope: ListScope.monthly,
+      );
+
+      final moved = await todoService.moveToNextList(todo);
+
+      final monthlyTodos = await todoService
+          .watchAllOpenByScope(scope: ListScope.monthly)
+          .first;
+      final weeklyTodos = await todoService
+          .watchAllOpenByScope(scope: ListScope.weekly)
+          .first;
+      expect(moved, isTrue);
+      expect(monthlyTodos.length, 0);
+      expect(weeklyTodos.length, 1);
+      expect(weeklyTodos.first.uuid, todo.uuid);
+    });
+
+    test(
+      'TodoService moveToNextList fails when origin scope is daily scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(ListScope.values.toSet());
+        final todo = await todoService.create(
+          title: 'Test todo',
+          scope: ListScope.daily,
+        );
+
+        final moved = await todoService.moveToNextList(todo);
+
+        final dailyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.daily)
+            .first;
+        expect(moved, isFalse);
+        expect(dailyTodos.length, 1);
+      },
+    );
+
+    test(
+      'TodoService moveToPreviousList fails when origin scope is first scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn({ListScope.weekly});
+        final todo = await todoService.create(
+          title: 'Test todo',
+          scope: ListScope.weekly,
+        );
+
+        final moved = await todoService.moveToPreviousList(todo);
+
+        final weeklyTodos  = await todoService
+            .watchAllOpenByScope(scope: ListScope.weekly)
+            .first;
+        expect(moved, isFalse);
+        expect(weeklyTodos.length, 1);
+      },
+    );
+
+    test(
+      'TodoService moveToPreviousList successfully sets previous scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(ListScope.values.toSet());
+        final todo = await todoService.create(
+          title: 'Test todo',
+          scope: ListScope.monthly,
+        );
+
+        final moved = await todoService.moveToPreviousList(todo);
+
+        final monthlyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.monthly)
+            .first;
+        final yearlyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.yearly)
+            .first;
+        expect(moved, isTrue);
+        expect(monthlyTodos.length, 0);
+        expect(yearlyTodos.length, 1);
+        expect(yearlyTodos.first.uuid, todo.uuid);
+      },
+    );
+
+    test(
+      'TodoService moveToPreviousList fails when origin scope is backlog scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(ListScope.values.toSet());
+        final todo = await todoService.create(
+          title: 'Test todo',
+          scope: ListScope.backlog,
+        );
+
+        final moved = await todoService.moveToPreviousList(todo);
+
+        final backlogTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.backlog)
+            .first;
+        expect(moved, isFalse);
+        expect(backlogTodos.length, 1);
+      },
+    );
+
+    test(
+      'TodoService moveToPreviousList fails when origin scope is last scope',
+      () async {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn({ListScope.monthly});
+        final todo = await todoService.create(
+          title: 'Test todo',
+          scope: ListScope.monthly,
+        );
+
+        final moved = await todoService.moveToPreviousList(todo);
+
+        final monthlyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.monthly)
+            .first;
+        expect(moved, isFalse);
+        expect(monthlyTodos.length, 1);
+      },
+    );
+  });
+
+  group('TodoService getPreviousScope getNextScope tests', () {
+    test('TodoService getPrevieousList returns correct list', () {
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn(ListScope.values.toSet());
+
+      final weekly = todoService.getPreviousScope(ListScope.daily);
+      final monthly = todoService.getPreviousScope(ListScope.weekly);
+      final yearly = todoService.getPreviousScope(ListScope.monthly);
+      final backlog = todoService.getPreviousScope(ListScope.yearly);
+      final nall = todoService.getPreviousScope(ListScope.backlog);
+
+      expect(weekly, ListScope.weekly);
+      expect(monthly, ListScope.monthly);
+      expect(yearly, ListScope.yearly);
+      expect(backlog, ListScope.backlog);
+      expect(nall, isNull);
+    });
+
+    test('TodoService getPrevieousList skips not active lists', () {
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn({ListScope.yearly, ListScope.daily});
+
+      final yearly = todoService.getPreviousScope(ListScope.daily);
+
+      expect(yearly, ListScope.yearly);
+    });
+
+    test(
+      'TodoService getPreviousList returns null if provided scope is not active',
+      () {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn({ListScope.yearly, ListScope.daily});
+
+        final nall = todoService.getPreviousScope(ListScope.monthly);
+
+        expect(nall, isNull);
+      },
+    );
+
+    test('TodoService getNextList returns correct list', () {
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn(ListScope.values.toSet());
+
+      final yearly = todoService.getNextScope(ListScope.backlog);
+      final monthly = todoService.getNextScope(ListScope.yearly);
+      final weekly = todoService.getNextScope(ListScope.monthly);
+      final daily = todoService.getNextScope(ListScope.weekly);
+      final nall = todoService.getNextScope(ListScope.daily);
+
+      expect(yearly, ListScope.yearly);
+      expect(monthly, ListScope.monthly);
+      expect(weekly, ListScope.weekly);
+      expect(daily, ListScope.daily);
+      expect(nall, isNull);
+    });
+
+    test('TodoService getNextList skips not active lists', () {
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn({ListScope.yearly, ListScope.daily});
+
+      final daily = todoService.getNextScope(ListScope.yearly);
+
+      expect(daily, ListScope.daily);
+    });
+
+    test(
+      'TodoService getNextList returns null if provided scope is not active',
+      () {
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn({ListScope.yearly, ListScope.daily});
+
+        final nall = todoService.getNextScope(ListScope.monthly);
+
+        expect(nall, isNull);
+      },
+    );
   });
 }
