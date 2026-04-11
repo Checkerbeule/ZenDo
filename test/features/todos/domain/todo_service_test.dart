@@ -46,6 +46,23 @@ void main() {
     await db.close();
   });
 
+  Future<Todo> setupTodo({
+    required String title,
+    required ListScope scope,
+    String? description,
+    DateTime? expiry,
+  }) async {
+    return await entityRepo.createWithEntity(EntityType.todo, (Entity e) async {
+      return todoRepo.create(
+        uuid: e.uuid,
+        title: title,
+        scope: scope,
+        description: description,
+        expiresAt: expiry,
+      );
+    });
+  }
+
   test('TodoService create successfully', () async {
     final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
       Entity e,
@@ -114,10 +131,10 @@ void main() {
     );
 
     final now = DateTime.now();
-    expect(dailyTodo.expiresAt, now.add(Duration(days: 1)).normalized);
-    expect(weeklyTodo.expiresAt, now.add(Duration(days: 7)).normalized);
-    expect(monthlyTodo.expiresAt, now.add(Duration(days: 30)).normalized);
-    expect(yearlyTodo.expiresAt, now.add(Duration(days: 365)).normalized);
+    expect(dailyTodo.expiresAt, now.add(Duration(days: 1)).endOfDay);
+    expect(weeklyTodo.expiresAt, now.add(Duration(days: 7)).endOfDay);
+    expect(monthlyTodo.expiresAt, now.add(Duration(days: 30)).endOfDay);
+    expect(yearlyTodo.expiresAt, now.add(Duration(days: 365)).endOfDay);
     expect(backlogTodo.expiresAt, isNull);
   });
 
@@ -160,9 +177,9 @@ void main() {
           title: 'Not expired Todo',
           scope: ListScope.daily,
         );
-        await todoRepo.update(
+        await todoRepo.updateDto(
           expired.copyWith(
-            expiresAt: DateTime.now().normalized.subtract(Duration(days: 1)),
+            expiresAt: DateTime.now().endOfDay.subtract(Duration(days: 1)),
           ),
         );
 
@@ -179,6 +196,7 @@ void main() {
     test(
       'TodoService watchAllOpendByScope properly sets willBeTransferred on todos with weekly scope',
       () async {
+        // --- Arrange ---
         when(
           () => settingsServiceMock.getActiveListScopes(),
         ).thenReturn(Set<ListScope>.from(ListScope.values));
@@ -190,17 +208,19 @@ void main() {
           title: 'Not expired Todo',
           scope: ListScope.weekly,
         );
-        await todoRepo.update(
+        await todoRepo.updateDto(
           expired.copyWith(
-            expiresAt: DateTime.now().normalized.add(ListScope.daily.duration),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.daily.duration),
           ),
         );
 
+        // --- Act ---
         final openTodos = await todoService
             .watchAllOpenByScope(scope: ListScope.weekly)
             .first;
 
-        expect(openTodos.length, 2);
+        // --- Assert ---
+        expect(openTodos, hasLength(2));
         expect(openTodos.first.willBeTransferred, isTrue);
         expect(openTodos.last.willBeTransferred, isFalse);
       },
@@ -220,9 +240,9 @@ void main() {
           title: 'Not expired Todo',
           scope: ListScope.monthly,
         );
-        await todoRepo.update(
+        await todoRepo.updateDto(
           expired.copyWith(
-            expiresAt: DateTime.now().normalized.add(ListScope.weekly.duration),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.weekly.duration),
           ),
         );
 
@@ -250,11 +270,9 @@ void main() {
           title: 'Not expired Todo',
           scope: ListScope.yearly,
         );
-        await todoRepo.update(
+        await todoRepo.updateDto(
           expired.copyWith(
-            expiresAt: DateTime.now().normalized.add(
-              ListScope.monthly.duration,
-            ),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.monthly.duration),
           ),
         );
 
@@ -282,14 +300,14 @@ void main() {
           title: 'Backlog Todo is expired',
           scope: ListScope.backlog,
         );
-        await todoRepo.update(
+        await todoRepo.updateDto(
           backlogTodo.copyWith(
-            expiresAt: DateTime.now().normalized.add(ListScope.yearly.duration),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.yearly.duration),
           ),
         );
-        await todoRepo.update(
+        await todoRepo.updateDto(
           backlogButExpired.copyWith(
-            expiresAt: DateTime.now().normalized.subtract(Duration(days: 1)),
+            expiresAt: DateTime.now().endOfDay.subtract(Duration(days: 1)),
           ),
         );
 
@@ -319,9 +337,9 @@ void main() {
           title: 'Not expired Todo',
           scope: ListScope.yearly,
         );
-        await todoRepo.update(
+        await todoRepo.updateDto(
           expired.copyWith(
-            expiresAt: DateTime.now().normalized.add(ListScope.weekly.duration),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.weekly.duration),
           ),
         );
 
@@ -360,6 +378,7 @@ void main() {
   test(
     'TodoService watchWillBeTransfered successfully retreives count of todos that will be transfered tomorrow or are expired',
     () async {
+      // --- Arrange ---
       when(
         () => settingsServiceMock.getActiveListScopes(),
       ).thenReturn(Set<ListScope>.from(ListScope.values));
@@ -377,9 +396,7 @@ void main() {
         db.todos,
       )..where((t) => db.todos.uuid.equals(expiredTodo.uuid))).write(
         TodosCompanion(
-          expiresAt: Value(
-            DateTime.now().subtract(Duration(days: 1)).normalized,
-          ),
+          expiresAt: Value(DateTime.now().subtract(Duration(days: 1)).endOfDay),
         ),
       );
       final willBeTransfered = await entityRepo.createWithEntity(
@@ -398,7 +415,7 @@ void main() {
       )..where((t) => db.todos.uuid.equals(willBeTransfered.uuid))).write(
         TodosCompanion(
           expiresAt: Value(
-            DateTime.now().add(ListScope.daily.duration).normalized,
+            DateTime.now().add(ListScope.daily.duration).endOfDay,
           ),
         ),
       );
@@ -416,14 +433,16 @@ void main() {
         db.todos,
       )..where((t) => db.todos.uuid.equals(notTransfered.uuid))).write(
         TodosCompanion(
-          expiresAt: Value(DateTime.now().add(Duration(days: 2)).normalized),
+          expiresAt: Value(DateTime.now().add(Duration(days: 2)).endOfDay),
         ),
       );
 
+      // --- Act ---
       final completedTodos = await todoService
           .watchWillBeTransfered(ListScope.weekly)
           .first;
 
+      // --- Assert ---
       expect(completedTodos, 2);
     },
   );
@@ -467,6 +486,368 @@ void main() {
     final expiredCount = await todoService.watchExpiredCount().first;
 
     expect(expiredCount, 0);
+  });
+
+  group('TodoService transferTodos tests', () {
+    setUp(() {
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn(ListScope.values.toSet());
+    });
+
+    test('TodoService transferTodos: from weekly to daily list', () async {
+      // --- Arrange ---
+      final todoToTransfer = await setupTodo(
+        title: 'transfer',
+        scope: ListScope.weekly,
+        expiry: DateTime.now().endOfDay,
+      );
+      final todoNotToTransfer = await setupTodo(
+        title: 'do not transfer',
+        scope: ListScope.weekly,
+        expiry: DateTime.now().endOfDay.add(ListScope.daily.duration),
+      );
+
+      // --- Act ---
+      await todoService.transferTodos();
+
+      // --- Assert ---
+      final dailyTodos = await todoService
+          .watchAllOpenByScope(scope: ListScope.daily)
+          .first;
+      expect(dailyTodos, hasLength(1));
+      expect(dailyTodos.first.uuid, todoToTransfer.uuid);
+
+      final weeklyTodos = await todoService
+          .watchAllOpenByScope(scope: ListScope.weekly)
+          .first;
+      expect(weeklyTodos, hasLength(1));
+      expect(weeklyTodos.first.uuid, todoNotToTransfer.uuid);
+    });
+
+    test('TodoService transferTodos: from monthly to weekly list', () async {
+      // --- Arrange ---
+      final todoToTransfer = await setupTodo(
+        title: 'transfer',
+        scope: ListScope.monthly,
+        expiry: DateTime.now().endOfDay.add(Duration(days: 6)),
+      );
+      final todoNotToTransfer = await setupTodo(
+        title: 'do not transfer',
+        scope: ListScope.monthly,
+        expiry: DateTime.now().endOfDay.add(ListScope.weekly.duration),
+      );
+
+      // --- Act ---
+      await todoService.transferTodos();
+
+      // --- Assert ---
+      final weeklyTodos = await todoService
+          .watchAllOpenByScope(scope: ListScope.weekly)
+          .first;
+      expect(weeklyTodos, hasLength(1));
+      expect(weeklyTodos.first.uuid, todoToTransfer.uuid);
+
+      final monthlyTodos = await todoService
+          .watchAllOpenByScope(scope: ListScope.monthly)
+          .first;
+      expect(monthlyTodos, hasLength(1));
+      expect(monthlyTodos.first.uuid, todoNotToTransfer.uuid);
+    });
+
+    test('TodoService transferTodos: from yearly to monthly list', () async {
+      // --- Arrange ---
+      final todoToTransfer = await setupTodo(
+        title: 'transfer',
+        scope: ListScope.yearly,
+        expiry: DateTime.now().endOfDay.add(Duration(days: 29)),
+      );
+      final todoNotToTransfer = await setupTodo(
+        title: 'do not transfer',
+        scope: ListScope.yearly,
+        expiry: DateTime.now().endOfDay.add(ListScope.monthly.duration),
+      );
+
+      // --- Act ---
+      await todoService.transferTodos();
+
+      // --- Assert ---
+      final monthlyTodos = await todoService
+          .watchAllOpenByScope(scope: ListScope.monthly)
+          .first;
+      expect(monthlyTodos, hasLength(1));
+      expect(monthlyTodos.first.uuid, todoToTransfer.uuid);
+
+      final yearlyTodos = await todoService
+          .watchAllOpenByScope(scope: ListScope.yearly)
+          .first;
+      expect(yearlyTodos, hasLength(1));
+      expect(yearlyTodos.first.uuid, todoNotToTransfer.uuid);
+    });
+
+    test(
+      'TodoServcie transferTodos: no transfer from backlog to other list',
+      () async {
+        // --- Arrange ---
+        final backlogTodo = await setupTodo(
+          title: 'do not transfer',
+          scope: ListScope.backlog,
+        );
+
+        // --- Act ---
+        await todoService.transferTodos();
+
+        // --- Assert ---
+        final backlogTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.backlog)
+            .first;
+        expect(backlogTodos, hasLength(1));
+        expect(backlogTodos.first.uuid, backlogTodo.uuid);
+      },
+    );
+
+    test(
+      'TodoService transferTodos: expired todos stay in daily list',
+      () async {
+        // --- Arrange ---
+        final expiredDailyTodo = await setupTodo(
+          title: 'do not transfer',
+          scope: ListScope.daily,
+          expiry: DateTime.now().endOfDay.subtract(Duration(days: 1)),
+        );
+
+        // --- Act ---
+        await todoService.transferTodos();
+
+        // --- Assert ---
+        final dailyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.daily)
+            .first;
+        expect(dailyTodos, hasLength(1));
+        expect(dailyTodos.first.uuid, expiredDailyTodo.uuid);
+      },
+    );
+
+    test(
+      'TodoService transferTodos: expired todo moves from highest scope to lowest scope',
+      () async {
+        // --- Arrange ---
+        final todoToTransfer = await setupTodo(
+          title: 'transfer',
+          scope: ListScope.yearly,
+          expiry: DateTime.now().endOfDay.subtract(Duration(days: 1)),
+        );
+
+        // --- Act ---
+        await todoService.transferTodos();
+
+        // --- Assert ---
+        final yearlyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.yearly)
+            .first;
+        expect(yearlyTodos, isEmpty);
+
+        final dailyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.daily)
+            .first;
+        expect(dailyTodos, hasLength(1));
+        expect(dailyTodos.first.uuid, todoToTransfer.uuid);
+      },
+    );
+
+    test(
+      'TodoService transferTodos: todo expires in 6 days moves from highest scope to weekly',
+      () async {
+        // --- Arrange ---
+        final todoToTransfer = await setupTodo(
+          title: 'transfer',
+          scope: ListScope.yearly,
+          expiry: DateTime.now().endOfDay.add(Duration(days: 6)),
+        );
+
+        // --- Act ---
+        await todoService.transferTodos();
+
+        // --- Assert ---
+        final yearlyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.yearly)
+            .first;
+        expect(yearlyTodos, isEmpty);
+
+        final weeklyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.weekly)
+            .first;
+        expect(weeklyTodos, hasLength(1));
+        expect(weeklyTodos.first.uuid, todoToTransfer.uuid);
+      },
+    );
+
+    test(
+      'TodoService transferTodos: skip or ignore missing ListScope',
+      () async {
+        // --- Arrange ---
+        final activeScopes = ListScope.values.toSet()
+          ..remove(ListScope.monthly);
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(activeScopes);
+
+        final todoToTransfer = await setupTodo(
+          title: 'transfer',
+          scope: ListScope.yearly,
+          expiry: DateTime.now().endOfDay.add(Duration(days: 6)),
+        );
+        final todoNotToTransfer = await setupTodo(
+          title: 'transfer',
+          scope: ListScope.yearly,
+          expiry: DateTime.now().endOfDay.add(Duration(days: 7)),
+        );
+
+        // --- Act ---
+        await todoService.transferTodos();
+
+        // --- Assert ---
+        final yearlyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.yearly)
+            .first;
+        expect(yearlyTodos, hasLength(1));
+        expect(yearlyTodos.first.uuid, todoNotToTransfer.uuid);
+
+        final weeklyTodos = await todoService
+            .watchAllOpenByScope(scope: ListScope.weekly)
+            .first;
+        expect(weeklyTodos, hasLength(1));
+        expect(weeklyTodos.first.uuid, todoToTransfer.uuid);
+      },
+    );
+  });
+
+  group('TodoService calcFittingScope tests', () {
+    setUp(() {
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn(ListScope.values.toSet());
+    });
+
+    test('TodoService calcFittingScope today fits daily list', () {
+      // --- Act ---
+      final scope = todoService.calcFittingScope(DateTime.now().endOfDay);
+
+      // --- Assert ---
+      expect(scope, ListScope.daily);
+    });
+
+    test('TodoService calcFittingScope tomorrow fits daily list', () {
+      // --- Act ---
+      final scope = todoService.calcFittingScope(
+        DateTime.now().add(Duration(days: 1)).endOfDay,
+      );
+
+      // --- Assert ---
+      expect(scope, ListScope.daily);
+    });
+
+    test('TodoService calcFittingScope date fits weekly list', () {
+      // --- Act ---
+      final scope = todoService.calcFittingScope(
+        DateTime.now().add(ListScope.weekly.duration).endOfDay,
+      );
+
+      // --- Assert ---
+      expect(scope, ListScope.weekly);
+    });
+
+    test('TodoService calcFittingScope date fits monthly list', () {
+      // --- Act ---
+      final scope = todoService.calcFittingScope(
+        DateTime.now()
+            .add(ListScope.weekly.duration)
+            .add(Duration(days: 1))
+            .endOfDay,
+      );
+
+      // --- Assert ---
+      expect(scope, ListScope.monthly);
+    });
+
+    test('TodoService calcFittingScope date fits monthly list', () {
+      // --- Act ---
+      final scope = todoService.calcFittingScope(
+        DateTime.now().add(ListScope.monthly.duration).endOfDay,
+      );
+
+      // --- Assert ---
+      expect(scope, ListScope.monthly);
+    });
+
+    test('TodoService calcFittingScope date fits yearly list', () {
+      // --- Act ---
+      final scope = todoService.calcFittingScope(
+        DateTime.now()
+            .add(ListScope.monthly.duration)
+            .add(Duration(days: 1))
+            .endOfDay,
+      );
+
+      // --- Assert ---
+      expect(scope, ListScope.yearly);
+    });
+
+    test('TodoService calcFittingScope date fits yearly list', () {
+      // --- Act ---
+      final scope = todoService.calcFittingScope(
+        DateTime.now().add(ListScope.yearly.duration).endOfDay,
+      );
+
+      // --- Assert ---
+      expect(scope, ListScope.yearly);
+    });
+
+    test('TodoService calcFittingScope date fits backlog', () {
+      // --- Act ---
+      final scope = todoService.calcFittingScope(
+        DateTime.now().add(Duration(days: 366)).endOfDay,
+      );
+
+      // --- Assert ---
+      expect(scope, ListScope.backlog);
+    });
+
+    test('TodoService calcFittingScope skips none active scope', () {
+      // --- Arrange ---
+      final activeScopes = ListScope.values.toSet()..remove(ListScope.weekly);
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn(activeScopes);
+
+      // --- Act ---
+      final scope = todoService.calcFittingScope(
+        DateTime.now().add(Duration(days: 3)).endOfDay,
+      );
+
+      // --- Assert ---
+      expect(scope, ListScope.monthly);
+    });
+
+    test(
+      'TodoService calcFittingScope returns null if no fitting scope exists',
+      () {
+        // --- Arrange ---
+        final activeScopes = ListScope.values.toSet()
+          ..remove(ListScope.backlog);
+        when(
+          () => settingsServiceMock.getActiveListScopes(),
+        ).thenReturn(activeScopes);
+
+        // --- Act ---
+        final scope = todoService.calcFittingScope(
+          DateTime.now().add(Duration(days: 400)).endOfDay,
+        );
+
+        // --- Assert ---
+        expect(scope, null);
+      },
+    );
   });
 
   group('TodoService moveToOtherList tests', () {
@@ -575,7 +956,7 @@ void main() {
 
         final moved = await todoService.moveToPreviousList(todo);
 
-        final weeklyTodos  = await todoService
+        final weeklyTodos = await todoService
             .watchAllOpenByScope(scope: ListScope.weekly)
             .first;
         expect(moved, isFalse);

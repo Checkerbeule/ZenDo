@@ -50,7 +50,7 @@ class TodoService {
         uuid: entity.uuid,
         title: title,
         scope: scope,
-        expiresAt: calculateExpiry(scope),
+        expiresAt: calcExpiry(scope),
         description: description,
       );
 
@@ -71,14 +71,6 @@ class TodoService {
         tagUuids: validTagUuids,
       );
     });
-  }
-
-  DateTime? calculateExpiry(ListScope scope) {
-    if (scope == ListScope.backlog) {
-      return null;
-    } else {
-      return DateTime.now().add(scope.duration).normalized;
-    }
   }
 
   /// Returns a reacive stream of all open todos with a given [scope].<br>
@@ -122,12 +114,16 @@ class TodoService {
     );
   }
 
+  /// Sets the 'willBeTransferred' flag on the given [todo] if it will be
+  /// transfered tomorrow, or is expired.
   TodoDto _setWillBeTransfered(TodoDto todo) {
-    final isMoving = _calcWillBeTransfered(todo.scope, todo.expiresAt);
+    final willBeTransfered = _calcWillBeTransfered(todo.scope, todo.expiresAt);
 
-    return isMoving ? todo.copyWith(willBeTransferred: true) : todo;
+    return willBeTransfered ? todo.copyWith(willBeTransferred: true) : todo;
   }
 
+  /// Calculates if a todo with the given pair of [scope] and [expiresAt] will be
+  /// transfered tomorrow, or is expired.
   bool _calcWillBeTransfered(ListScope scope, DateTime? expiresAt) {
     if (expiresAt == null) return false;
 
@@ -140,7 +136,7 @@ class TodoService {
         ? Duration.zero
         : _sortedActiveScopes[indexOfList - 1].duration;
     final transferDate = expiresAt.subtract(scopeToSubtract);
-    return DateTime.now().isAfter(transferDate);
+    return !transferDate.isAfter(DateTime.now().endOfDay);
   }
 
   /// Calculates the amount of todos that will be transferred or are expired for the given [scope]
@@ -158,7 +154,7 @@ class TodoService {
   /// Returns true if succesfull, false otherwise.
   Future<bool> update(TodoDto todo) async {
     return await entityRepo.updateWithTouch(todo.uuid, () async {
-      final isTodoUpdated = await todoRepo.update(todo);
+      final isTodoUpdated = await todoRepo.updateDto(todo);
       await todoTagsRepo.updateTags(
         todoUuid: todo.uuid,
         newTagUuids: todo.tagUuids,
@@ -192,9 +188,65 @@ class TodoService {
     );
   }
 
+  /// Transferes all todos with an expiresAt date, that doesn't fit to the
+  /// current scope anymore. In that case the most fitting scopes is determined
+  /// and set to the todo. Also updates the updatedAt timestampt to trigger cloud sync.
   Future<void> transferTodos() async {
-    // TODO implement
-    throw UnimplementedError();
+    final scopesToTransferFrom = _sortedActiveScopes
+      ..remove(ListScope.backlog)
+      ..removeAt(0);
+    if (scopesToTransferFrom.isEmpty) return;
+
+    await todoRepo.db.transaction(() async {
+      final todos = await todoRepo.readAllOpenByScopes(
+        scopesToTransferFrom.toSet(),
+      );
+
+      for (final todo in todos) {
+        if (todo.expiresAt == null) continue;
+
+        final nextScope = getNextScope(todo.scope);
+        if (nextScope == null) continue;
+
+        final nextScopeExpiry = calcExpiry(nextScope);
+        if (todo.expiresAt!.isBefore(nextScopeExpiry!)) {
+          final fittingScope = calcFittingScope(todo.expiresAt!);
+          await entityRepo.updateWithTouch(todo.uuid, () async {
+            await todoRepo.update(todo.copyWith(scope: fittingScope));
+          });
+        }
+      }
+    });
+  }
+
+  /// Returns the most fitting ListScope for the given [expiresAt] date.
+  ListScope? calcFittingScope(DateTime expiresAt) {
+    final activeScopes = _sortedActiveScopes;
+    for (final scope in activeScopes) {
+      if (scope == ListScope.backlog) {
+        continue;
+      }
+
+      final expiryOfScope = calcExpiry(scope)!;
+      if (!expiresAt.isAfter(expiryOfScope)) {
+        return scope;
+      }
+    }
+
+    if (activeScopes.contains(ListScope.backlog)) {
+      return ListScope.backlog;
+    }
+    return null;
+  }
+
+  /// Calculates the expiration date based on the given [ListScope].
+  /// Returns null if the ListScope is Backlog.
+  DateTime? calcExpiry(ListScope scope) {
+    if (scope == ListScope.backlog) {
+      return null;
+    } else {
+      return DateTime.now().add(scope.duration).endOfDay;
+    }
   }
 
   /// Sets the given [destinationScope] to the given [todo] and returns 'true' when
@@ -206,7 +258,7 @@ class TodoService {
     if (indexOfDestinationScope < 0) return false;
 
     return await entityRepo.updateWithTouch(todo.uuid, () async {
-      return todoRepo.update(todo.copyWith(scope: destinationScope));
+      return todoRepo.updateDto(todo.copyWith(scope: destinationScope));
     });
   }
 

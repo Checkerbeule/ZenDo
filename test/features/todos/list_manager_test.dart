@@ -221,7 +221,7 @@ void main() {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().normalized,
+        DateTime.now().endOfDay,
       );
 
       expect(scope, ListScope.daily);
@@ -231,7 +231,7 @@ void main() {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().add(Duration(days: 1)).normalized,
+        DateTime.now().add(Duration(days: 1)).endOfDay,
       );
 
       expect(scope, ListScope.daily);
@@ -241,7 +241,7 @@ void main() {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().add(ListScope.weekly.duration).normalized,
+        DateTime.now().add(ListScope.weekly.duration).endOfDay,
       );
 
       expect(scope, ListScope.weekly);
@@ -254,7 +254,7 @@ void main() {
         DateTime.now()
             .add(ListScope.weekly.duration)
             .add(Duration(days: 1))
-            .normalized,
+            .endOfDay,
       );
 
       expect(scope, ListScope.monthly);
@@ -264,7 +264,7 @@ void main() {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().add(ListScope.monthly.duration).normalized,
+        DateTime.now().add(ListScope.monthly.duration).endOfDay,
       );
 
       expect(scope, ListScope.monthly);
@@ -277,7 +277,7 @@ void main() {
         DateTime.now()
             .add(ListScope.monthly.duration)
             .add(Duration(days: 1))
-            .normalized,
+            .endOfDay,
       );
 
       expect(scope, ListScope.yearly);
@@ -287,7 +287,7 @@ void main() {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().add(ListScope.yearly.duration).normalized,
+        DateTime.now().add(ListScope.yearly.duration).endOfDay,
       );
 
       expect(scope, ListScope.yearly);
@@ -297,7 +297,7 @@ void main() {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().add(Duration(days: 366)).normalized,
+        DateTime.now().add(Duration(days: 366)).endOfDay,
       );
 
       expect(scope, ListScope.backlog);
@@ -313,7 +313,7 @@ void main() {
       final manager = ListManager([], activeScopes: activeScopes);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().add(Duration(days: 3)).normalized,
+        DateTime.now().add(Duration(days: 3)).endOfDay,
       );
 
       expect(scope, ListScope.monthly);
@@ -331,7 +331,7 @@ void main() {
         final manager = ListManager([], activeScopes: activeScopes);
 
         final scope = manager.getScopeForExpirationDate(
-          DateTime.now().add(Duration(days: 400)).normalized,
+          DateTime.now().add(Duration(days: 400)).endOfDay,
         );
 
         expect(scope, null);
@@ -389,8 +389,8 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         dailyList.addTodo(todoToTransfer);
         dailyList.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized; // today
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay; // today
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.daily.duration,
         ); // tomorrow
         final manager = ListManager([dailyList]);
@@ -408,8 +408,8 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         weeklyList.addTodo(todoToTransfer);
         weeklyList.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized; // today
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay; // today
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.daily.duration,
         ); // tomorrow
         final manager = ListManager([weeklyList]);
@@ -427,10 +427,10 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         monthlyList.addTodo(todoToTransfer);
         monthlyList.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 6),
         ); // add weekly duration minus 1 day
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.weekly.duration,
         ); // add weekly duration
         final manager = ListManager([monthlyList]);
@@ -450,10 +450,10 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         yearlyList.addTodo(todoToTransfer);
         yearlyList.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 29),
         ); // add monthly duration minus 1 day
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.monthly.duration,
         ); // add monthly duration
         final manager = ListManager([yearlyList]);
@@ -476,8 +476,8 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized; // today
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay; // today
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.daily.duration,
         ); // tomorrow
 
@@ -497,10 +497,10 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 6),
         ); // add weekly duration minus 1 day
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.weekly.duration,
         ); // add weekly duration
 
@@ -520,10 +520,10 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 29),
         ); // add monthly duration minus 1 day
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.monthly.duration,
         ); // add monthly duration
 
@@ -572,7 +572,7 @@ void main() {
           final dailyList = TodoList(ListScope.daily);
           var expiredTodo = HiveTodo(title: 'expired todo');
           dailyList.addTodo(expiredTodo);
-          final expirationDate = DateTime.now().normalized.subtract(
+          final expirationDate = DateTime.now().endOfDay.subtract(
             Duration(days: 1),
           );
           expiredTodo.expirationDate = expirationDate;
@@ -595,7 +595,7 @@ void main() {
           final yearlyList = TodoList(ListScope.yearly);
           var expiredTodo = HiveTodo(title: 'expired todo');
           yearlyList.addTodo(expiredTodo);
-          expiredTodo.expirationDate = DateTime.now().normalized.subtract(
+          expiredTodo.expirationDate = DateTime.now().endOfDay.subtract(
             Duration(days: 1),
           );
 
@@ -623,7 +623,7 @@ void main() {
           final yearlyList = TodoList(ListScope.yearly);
           var todoToTransfer = HiveTodo(title: 'expires in 6 days');
           yearlyList.addTodo(todoToTransfer);
-          todoToTransfer.expirationDate = DateTime.now().normalized.add(
+          todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
             Duration(days: 6),
           );
 
@@ -648,7 +648,7 @@ void main() {
         final monthlyList = TodoList(ListScope.monthly);
         var todoToTransfer = HiveTodo(title: 'expired today');
         monthlyList.addTodo(todoToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized;
+        todoToTransfer.expirationDate = DateTime.now().endOfDay;
 
         var manager = ListManager([dailyList, monthlyList, weeklyList]);
         await manager.transferTodos();
@@ -672,10 +672,10 @@ void main() {
           final todo_2 = HiveTodo(title: 'todo 2');
           dailyList.addTodo(todo_1);
           dailyList.addTodo(todo_2);
-          todo_1.expirationDate = DateTime.now().normalized.add(
+          todo_1.expirationDate = DateTime.now().endOfDay.add(
             Duration(days: 1),
           ); // tomorrow
-          todo_2.expirationDate = DateTime.now().normalized.add(
+          todo_2.expirationDate = DateTime.now().endOfDay.add(
             Duration(days: 2),
           ); // day after tomorrow
           final manager = ListManager([
@@ -700,10 +700,10 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         weeklyList.addTodo(todoToTransfer);
         weeklyList.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.daily.duration,
         ); // tomorrow
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 2),
         ); // day after tomorrow
         final manager = ListManager([
@@ -728,10 +728,10 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         monthlyList.addTodo(todoToTransfer);
         monthlyList.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.weekly.duration,
         ); // in 7 days
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 8),
         ); // in 8 days
         final manager = ListManager([
@@ -756,10 +756,10 @@ void main() {
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         yearlyList.addTodo(todoToTransfer);
         yearlyList.addTodo(todoNotToTransfer);
-        todoToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
           ListScope.monthly.duration,
         ); // in 30 days
-        todoNotToTransfer.expirationDate = DateTime.now().normalized.add(
+        todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 31),
         ); // in 31 days
         final manager = ListManager([
@@ -786,10 +786,10 @@ void main() {
           final todo_2 = HiveTodo(title: 'do not transfer');
           backlog.addTodo(todo_1);
           backlog.addTodo(todo_2);
-          todo_1.expirationDate = DateTime.now().normalized.add(
+          todo_1.expirationDate = DateTime.now().endOfDay.add(
             ListScope.yearly.duration,
           ); // in 365 days
-          todo_2.expirationDate = DateTime.now().normalized.add(
+          todo_2.expirationDate = DateTime.now().endOfDay.add(
             Duration(days: 366),
           ); // in 366 days
           final manager = ListManager([
@@ -880,7 +880,7 @@ void main() {
         final manager = ListManager([]);
         final todo = HiveTodo(title: 'todo to move to next list');
         manager.getListByScope(ListScope.daily)!.addTodo(todo);
-        final expectedDate = DateTime.now().normalized.add(Duration(days: 365));
+        final expectedDate = DateTime.now().endOfDay.add(Duration(days: 365));
 
         final moved = await manager.moveAndUpdateTodo(
           todo: todo,

@@ -47,7 +47,7 @@ class TodoList implements Comparable<TodoList> {
     if (scope == ListScope.backlog) {
       return null;
     } else {
-      return DateTime.now().add(scope.duration).normalized;
+      return DateTime.now().add(scope.duration).endOfDay;
     }
   }
 

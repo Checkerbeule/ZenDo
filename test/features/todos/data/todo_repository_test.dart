@@ -141,7 +141,7 @@ void main() {
         );
       });
       final completedAt = DateTime.now().toUtc();
-      todoRepo.update(
+      todoRepo.updateDto(
         TodoDto.fromDb(
           todo: createdTodo,
           entity: entity,
@@ -227,7 +227,7 @@ void main() {
           expiresAt: DateTime.now().toUtc(),
         );
       });
-      todoRepo.update(
+      todoRepo.updateDto(
         TodoDto.fromDb(
           todo: createdTodo,
           entity: entity,
@@ -511,7 +511,7 @@ void main() {
         customOrder: 'a2',
       );
 
-      todoRepo.update(TodoDto.fromDb(todo: todoToUpdate, entity: entity));
+      todoRepo.updateDto(TodoDto.fromDb(todo: todoToUpdate, entity: entity));
       final updatedTodo = await todoRepo.read(todoToUpdate.uuid);
 
       expect(updatedTodo, isNotNull);
@@ -545,7 +545,7 @@ void main() {
             expiresAt: null,
           );
 
-      final updated = await todoRepo.update(todoToUpdate);
+      final updated = await todoRepo.updateDto(todoToUpdate);
       final updatedTodo = await todoRepo.read(todoToUpdate.uuid);
 
       expect(updated, true);
@@ -565,7 +565,7 @@ void main() {
         createdAt: DateTime.now().toUtc(),
       );
 
-      final updated = await todoRepo.update(nonExistinTodo);
+      final updated = await todoRepo.updateDto(nonExistinTodo);
       final updatedTodo = await todoRepo.read(nonExistinTodo.uuid);
 
       expect(updated, false);

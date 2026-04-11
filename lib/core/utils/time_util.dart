@@ -61,7 +61,7 @@ extension DateTimeX on DateTime {
     return '$weekday. $date';
   }
 
-  /// Normalizes the DateTime to remove time components (hours, minutes, seconds, milliseconds).
-  /// Exampele: 2024-06-15 14:30:45.123 -> 2024-06-15 00:00:00.000
-  DateTime get normalized => DateTime(year, month, day);
+  /// Sets hours, minutes and seconds to the end of the day.
+  /// Exampele: 2024-06-15 14:30:45.123 -> 2024-06-15 23:59:59.000
+  DateTime get endOfDay => DateTime(year, month, day, 23, 59, 59);
 }

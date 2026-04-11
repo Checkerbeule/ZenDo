@@ -161,7 +161,7 @@ void main() {
           final dailyList = TodoList(ListScope.daily);
           final todo = HiveTodo(title: 'todo expires tomorrow');
           dailyList.addTodo(todo);
-          final expectedDate = DateTime.now().add(Duration(days: 1)).normalized;
+          final expectedDate = DateTime.now().add(Duration(days: 1)).endOfDay;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -185,7 +185,7 @@ void main() {
           final weeklyList = TodoList(ListScope.weekly);
           final todo = HiveTodo(title: 'todo expires in 7 days');
           weeklyList.addTodo(todo);
-          final expectedDate = DateTime.now().add(Duration(days: 7)).normalized;
+          final expectedDate = DateTime.now().add(Duration(days: 7)).endOfDay;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -200,7 +200,7 @@ void main() {
           monthlyList.addTodo(todo);
           final expectedDate = DateTime.now()
               .add(Duration(days: 30))
-              .normalized;
+              .endOfDay;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -215,7 +215,7 @@ void main() {
           yearlyList.addTodo(todo);
           final expectedDate = DateTime.now()
               .add(Duration(days: 365))
-              .normalized;
+              .endOfDay;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -235,7 +235,7 @@ void main() {
         () async {
           final list = TodoList(ListScope.daily);
           final todo = HiveTodo(title: 'todo with custom expirationDate');
-          final now = DateTime.now().normalized;
+          final now = DateTime.now().endOfDay;
           todo.expirationDate = now;
 
           final added = await list.addTodo(todo);
@@ -250,7 +250,7 @@ void main() {
         () async {
           final list = TodoList(ListScope.daily);
           final todo = HiveTodo(title: 'todo with custom expirationDate');
-          final now = DateTime.now().add(Duration(days: 1)).normalized;
+          final now = DateTime.now().add(Duration(days: 1)).endOfDay;
           todo.expirationDate = now;
 
           final added = await list.addTodo(todo);
@@ -265,7 +265,7 @@ void main() {
         () async {
           final list = TodoList(ListScope.daily);
           final todo = HiveTodo(title: 'todo with custom expirationDate');
-          final now = DateTime.now().add(Duration(days: 2)).normalized;
+          final now = DateTime.now().add(Duration(days: 2)).endOfDay;
           todo.expirationDate = now;
 
           final added = await list.addTodo(todo);

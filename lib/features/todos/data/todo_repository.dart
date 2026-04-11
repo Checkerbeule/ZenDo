@@ -59,6 +59,23 @@ class TodoRepository {
     )..where((todo) => todo.uuid.equals(uuid))).getSingleOrNull();
   }
 
+  /// Loads all open todos that match the given set of [scopes].<br>
+  /// Use this method to load all todos for the transfer algorythm.<br>
+  /// Note: todos marked as deleted will be ignored.
+  Future<List<Todo>> readAllOpenByScopes(Set<ListScope> scopes) async {
+    final scopeNames = scopes.map((scope) => scope.name);
+    final results =
+        await (db.select(db.todos).join([
+              innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
+            ])..where(
+              db.entities.isDeleted.equals(false) &
+                  db.todos.scope.isIn(scopeNames),
+            ))
+            .get();
+
+    return results.map((row) => row.readTable(db.todos)).toList();
+  }
+
   /// Returns a reacive stream of all todos with a given [scope].<br>
   /// Loads todos, that are still open if [isCompleted] is 'false'.
   /// Loads todos, that allready done if [isCompleted] is 'true'.<br>
@@ -152,8 +169,13 @@ class TodoRepository {
   }
 
   /// Updates the given [todo] by replacing all present attributes.
-  Future<bool> update(TodoDto todo) async {
+  Future<bool> updateDto(TodoDto todo) async {
     return await db.update(db.todos).replace(_fromDto(todo));
+  }
+
+  /// Updates the given [todo] by replacing all present attributes.
+  Future<bool> update(Todo todo) async {
+    return await db.update(db.todos).replace(todo.toCompanion(false));
   }
 
   Future<int> markAsCompleted(String uuid) async {
