@@ -1,18 +1,12 @@
-import 'dart:math';
-
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
-import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zen_do/core/persistence/entities.dart';
-import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 import 'package:zen_do/features/tags/data/tags.dart';
-import 'package:zen_do/features/todos/data/hive_todo.dart';
-import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/data/todo_tags.dart';
 import 'package:zen_do/features/todos/data/todos.dart';
 
@@ -190,8 +184,8 @@ class AppDatabase extends _$AppDatabase {
                   table,
                   columnTransformer: {
                     for (final column in dateTimeColumns)
-                      column: DateTimeExpressions.fromUnixEpoch(
-                        column.dartCast<int>(),
+                      column: CustomExpression<DateTime>(
+                        "COALESCE(datetime(${column.name}, 'unixepoch'), CURRENT_TIMESTAMP)",
                       ),
                   },
                 ),
