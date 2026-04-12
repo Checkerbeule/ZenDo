@@ -64,7 +64,7 @@ void main() {
           uuid: entity.uuid,
           title: title,
           description: description,
-          scope: ListScope.daily,
+          scope: ListScope.day,
           expiresAt: expirationDate,
         );
       });
@@ -73,7 +73,7 @@ void main() {
       expect(todo.uuid, isNotEmpty);
       expect(todo.title, title);
       expect(todo.description, description);
-      expect(todo.scope, ListScope.daily);
+      expect(todo.scope, ListScope.day);
       expect(todo.expiresAt, expirationDate);
       expect(todo.customOrder, 'a0');
       expect(todo.completedAt, isNull);
@@ -88,7 +88,7 @@ void main() {
           return await todoRepo.create(
             uuid: entity.uuid,
             title: 'Todo 1',
-            scope: ListScope.daily,
+            scope: ListScope.day,
           );
         });
 
@@ -98,13 +98,13 @@ void main() {
           return await todoRepo.create(
             uuid: entity.uuid,
             title: 'Todo 1',
-            scope: ListScope.daily,
+            scope: ListScope.day,
           );
         });
 
         expect(todo_1.uuid, isNotNull);
         expect(todo_1.uuid, isNotEmpty);
-        expect(todo_1.scope, ListScope.daily);
+        expect(todo_1.scope, ListScope.day);
         expect(todo_1.customOrder, 'a0');
         expect(todo_1.completedAt, isNull);
 
@@ -126,7 +126,7 @@ void main() {
           uuid: entity.uuid,
           title: title,
           description: description,
-          scope: ListScope.daily,
+          scope: ListScope.day,
           expiresAt: expirationDate,
         );
       });
@@ -138,7 +138,7 @@ void main() {
       expect(todo.uuid, isNotEmpty);
       expect(todo.title, title);
       expect(todo.description, description);
-      expect(todo.scope, ListScope.daily);
+      expect(todo.scope, ListScope.day);
       expect(todo.expiresAt, expirationDate);
       expect(todo.customOrder, 'a0');
       expect(todo.completedAt, isNull);
@@ -153,7 +153,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Completed todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
           expiresAt: DateTime.now().toUtc(),
         );
       });
@@ -180,7 +180,7 @@ void main() {
           return await todoRepo.create(
             uuid: entity.uuid,
             title: 'Daily todo $i',
-            scope: ListScope.daily,
+            scope: ListScope.day,
           );
         });
       }
@@ -191,7 +191,7 @@ void main() {
           return await todoRepo.create(
             uuid: entity.uuid,
             title: 'Weekly todo $i',
-            scope: ListScope.weekly,
+            scope: ListScope.week,
           );
         });
       }
@@ -208,10 +208,10 @@ void main() {
       }
 
       final dailyTodos = await todoRepo
-          .watchDtosByScope(scope: ListScope.daily, isCompleted: false)
+          .watchDtosByScope(scope: ListScope.day, isCompleted: false)
           .first;
       final weeklyTodos = await todoRepo
-          .watchDtosByScope(scope: ListScope.weekly, isCompleted: false)
+          .watchDtosByScope(scope: ListScope.week, isCompleted: false)
           .first;
       final backlogTodos = await todoRepo
           .watchDtosByScope(scope: ListScope.backlog, isCompleted: false)
@@ -221,10 +221,10 @@ void main() {
       expect(weeklyTodos.length, 5);
       expect(backlogTodos.length, 5);
       for (final todo in dailyTodos) {
-        expect(todo.scope, ListScope.daily);
+        expect(todo.scope, ListScope.day);
       }
       for (final todo in weeklyTodos) {
-        expect(todo.scope, ListScope.weekly);
+        expect(todo.scope, ListScope.week);
       }
       for (final todo in backlogTodos) {
         expect(todo.scope, ListScope.backlog);
@@ -240,7 +240,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Completed todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
           expiresAt: DateTime.now().toUtc(),
         );
       });
@@ -252,10 +252,10 @@ void main() {
       );
 
       final open = await todoRepo
-          .watchDtosByScope(scope: ListScope.daily, isCompleted: false)
+          .watchDtosByScope(scope: ListScope.day, isCompleted: false)
           .firstOrNull;
       final completed = await todoRepo
-          .watchDtosByScope(scope: ListScope.daily, isCompleted: true)
+          .watchDtosByScope(scope: ListScope.day, isCompleted: true)
           .first;
 
       expect(open!.length, 0);
@@ -272,7 +272,7 @@ void main() {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Completed todo',
-            scope: ListScope.daily,
+            scope: ListScope.day,
             expiresAt: DateTime.now().toUtc(),
           );
         });
@@ -301,7 +301,7 @@ void main() {
         entityRepo.markAsDeleted(tag_1.uuid);
 
         final todos = await todoRepo
-            .watchDtosByScope(scope: ListScope.daily, isCompleted: false)
+            .watchDtosByScope(scope: ListScope.day, isCompleted: false)
             .firstOrNull;
 
         expect(todos!.length, 1);
@@ -314,7 +314,7 @@ void main() {
       'TodoRepository watchAllByScope updates stream successfully',
       () async {
         final todoStream = todoRepo.watchDtosByScope(
-          scope: ListScope.daily,
+          scope: ListScope.day,
           isCompleted: false,
         );
         final queue = StreamQueue(todoStream);
@@ -327,7 +327,7 @@ void main() {
           return await todoRepo.create(
             uuid: entity.uuid,
             title: 'New todo',
-            scope: ListScope.daily,
+            scope: ListScope.day,
           );
         });
 
@@ -342,27 +342,27 @@ void main() {
         return await todoRepo.create(
           uuid: entity.uuid,
           title: 'B Todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       await entityRepo.createWithEntity(EntityType.todo, (Entity entity) async {
         return await todoRepo.create(
           uuid: entity.uuid,
           title: 'A Todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       await entityRepo.createWithEntity(EntityType.todo, (Entity entity) async {
         return await todoRepo.create(
           uuid: entity.uuid,
           title: 'C Todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
 
       final ascList = await todoRepo
           .watchDtosByScope(
-            scope: ListScope.daily,
+            scope: ListScope.day,
             isCompleted: false,
             sortOption: TodoSortOption.title,
             sortOrder: SortOrder.ascending,
@@ -370,7 +370,7 @@ void main() {
           .first;
       final descList = await todoRepo
           .watchDtosByScope(
-            scope: ListScope.daily,
+            scope: ListScope.day,
             isCompleted: false,
             sortOption: TodoSortOption.title,
             sortOrder: SortOrder.descending,
@@ -424,7 +424,7 @@ void main() {
         return await todoRepo.create(
           uuid: entity.uuid,
           title: 'Todo 1',
-          scope: ListScope.daily,
+          scope: ListScope.day,
           expiresAt: DateTime.now().toUtc(),
         );
       });
@@ -438,7 +438,7 @@ void main() {
         return await todoRepo.create(
           uuid: entity.uuid,
           title: 'Todo 2',
-          scope: ListScope.daily,
+          scope: ListScope.day,
           expiresAt: DateTime.now().toUtc(),
         );
       });
@@ -449,7 +449,7 @@ void main() {
 
       final loaded = await todoRepo
           .watchDtosByScope(
-            scope: ListScope.daily,
+            scope: ListScope.day,
             isCompleted: false,
             tagUuidsFilter: {tagC},
           )
@@ -470,7 +470,7 @@ void main() {
           return await todoRepo.create(
             uuid: entity.uuid,
             title: 'Open',
-            scope: ListScope.daily,
+            scope: ListScope.day,
             expiresAt: DateTime.now().toUtc(),
           );
         });
@@ -480,7 +480,7 @@ void main() {
             return await todoRepo.create(
               uuid: entity.uuid,
               title: 'Completed',
-              scope: ListScope.daily,
+              scope: ListScope.day,
             );
           },
         );
@@ -491,12 +491,12 @@ void main() {
           return await todoRepo.create(
             uuid: entity.uuid,
             title: 'Weekly',
-            scope: ListScope.weekly,
+            scope: ListScope.week,
           );
         });
 
         final loaded = await todoRepo
-            .watchAllOpenByScope(ListScope.daily)
+            .watchAllOpenByScope(ListScope.day)
             .first;
 
         expect(loaded.length, 1);
@@ -509,18 +509,15 @@ void main() {
     'TodoRepository readAllOpenByScopes successfully reads open todos and ignores inactive scopes',
     () async {
       // --- Arrange ---
-      final dailyTodo = await setupTodo(title: 'Daily', scope: ListScope.daily);
+      final dailyTodo = await setupTodo(title: 'Daily', scope: ListScope.day);
       final weeklyTodo = await setupTodo(
         title: 'Weekly',
-        scope: ListScope.weekly,
+        scope: ListScope.week,
       );
-      final monthlyTodo = await setupTodo(
-        title: 'Monthly',
-        scope: ListScope.monthly,
-      );
+      await setupTodo(title: 'Monthly', scope: ListScope.month);
       final yearlyTodo = await setupTodo(
         title: 'Yearly',
-        scope: ListScope.yearly,
+        scope: ListScope.year,
       );
       final backlogTodo = await setupTodo(
         title: 'Backlog',
@@ -528,11 +525,11 @@ void main() {
       );
       final completedTodo = await setupTodo(
         title: 'Completed',
-        scope: ListScope.daily,
+        scope: ListScope.day,
       );
       final deletedTodo = await setupTodo(
         title: 'Deleted',
-        scope: ListScope.daily,
+        scope: ListScope.day,
       );
 
       await todoRepo.markAsCompleted(completedTodo.uuid);
@@ -540,7 +537,7 @@ void main() {
 
       // --- Act ---
       final activeScopes = Set<ListScope>.from(ListScope.values)
-        ..remove(ListScope.monthly);
+        ..remove(ListScope.month);
       final loadedTodos = await todoRepo.readAllOpenByScopes(activeScopes);
 
       // --- Assert ---
@@ -562,7 +559,7 @@ void main() {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Todo',
-            scope: ListScope.daily,
+            scope: ListScope.day,
           );
         },
       );
@@ -570,7 +567,7 @@ void main() {
       final todoToUpdate = initialTodo.copyWith(
         title: 'New title',
         description: Value('Desc'),
-        scope: ListScope.yearly,
+        scope: ListScope.year,
         completedAt: Value(now),
         customOrder: 'a2',
       );
@@ -581,7 +578,7 @@ void main() {
       expect(updatedTodo, isNotNull);
       expect(updatedTodo!.title, 'New title');
       expect(updatedTodo.description, 'Desc');
-      expect(updatedTodo.scope, ListScope.yearly);
+      expect(updatedTodo.scope, ListScope.year);
       expect(updatedTodo.completedAt, now);
       expect(updatedTodo.customOrder, 'a2');
     });
@@ -596,7 +593,7 @@ void main() {
             uuid: e.uuid,
             title: 'Todo',
             description: 'Desc',
-            scope: ListScope.daily,
+            scope: ListScope.day,
             expiresAt: DateTime.now().toUtc(),
           );
         },
@@ -624,7 +621,7 @@ void main() {
       final nonExistinTodo = TodoDto(
         $uuid: Uuid().v4(),
         title: 'Not existing todo',
-        scope: ListScope.daily,
+        scope: ListScope.day,
         customOrder: 'a0',
         $createdAt: DateTime.now().toUtc(),
       );
@@ -643,7 +640,7 @@ void main() {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Todo',
-            scope: ListScope.daily,
+            scope: ListScope.day,
           );
         },
       );
@@ -651,7 +648,7 @@ void main() {
       final todoToUpdate = initialTodo.copyWith(
         title: 'New title',
         description: Value('Desc'),
-        scope: ListScope.yearly,
+        scope: ListScope.year,
         completedAt: Value(now),
         customOrder: 'a2',
       );
@@ -662,7 +659,7 @@ void main() {
       expect(updatedTodo, isNotNull);
       expect(updatedTodo!.title, 'New title');
       expect(updatedTodo.description, 'Desc');
-      expect(updatedTodo.scope, ListScope.yearly);
+      expect(updatedTodo.scope, ListScope.year);
       expect(updatedTodo.completedAt, now);
       expect(updatedTodo.customOrder, 'a2');
     });
@@ -675,7 +672,7 @@ void main() {
             uuid: e.uuid,
             title: 'Todo',
             description: 'Desc',
-            scope: ListScope.daily,
+            scope: ListScope.day,
             expiresAt: DateTime.now().toUtc(),
           );
         },
@@ -702,7 +699,7 @@ void main() {
       final nonExistinTodo = Todo(
         uuid: Uuid().v4(),
         title: 'Not existing todo',
-        scope: ListScope.daily,
+        scope: ListScope.day,
         customOrder: 'a0',
       );
 
@@ -723,7 +720,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Test Todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
 
@@ -743,7 +740,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Test Todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       await todoRepo.markAsCompleted(todo.uuid);
@@ -765,7 +762,7 @@ void main() {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Expired 1',
-            scope: ListScope.daily,
+            scope: ListScope.day,
           );
         });
         final expired_2 = await entityRepo.createWithEntity(EntityType.todo, (
@@ -774,7 +771,7 @@ void main() {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Expired 2',
-            scope: ListScope.weekly,
+            scope: ListScope.week,
           );
         });
         final expired_3 = await entityRepo.createWithEntity(EntityType.todo, (
@@ -783,7 +780,7 @@ void main() {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Expired 3',
-            scope: ListScope.monthly,
+            scope: ListScope.month,
           );
         });
         final expired_4 = await entityRepo.createWithEntity(EntityType.todo, (
@@ -792,7 +789,7 @@ void main() {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Expired 4',
-            scope: ListScope.yearly,
+            scope: ListScope.year,
           );
         });
         final expired_5 = await entityRepo.createWithEntity(EntityType.todo, (
@@ -808,7 +805,7 @@ void main() {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Not expired',
-            scope: ListScope.weekly,
+            scope: ListScope.week,
           );
         });
         final expirationDate = DateTime.now().subtract(Duration(days: 1));
@@ -840,7 +837,7 @@ void main() {
           return await todoRepo.create(
             uuid: e.uuid,
             title: 'Expired but in inactive scope',
-            scope: ListScope.monthly,
+            scope: ListScope.month,
           );
         });
         final expirationDate = DateTime.now().subtract(Duration(days: 1));
@@ -849,7 +846,7 @@ void main() {
             .write(TodosCompanion(expiresAt: Value(expirationDate)));
 
         final activeScopes = Set<ListScope>.from(ListScope.values)
-          ..remove(ListScope.monthly);
+          ..remove(ListScope.month);
         final expiredCount = await todoRepo
             .watchExpiredCount(activeScopes)
             .first;

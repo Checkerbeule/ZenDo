@@ -85,7 +85,7 @@ void main() {
 
     final dto = await todoService.create(
       title: 'Test Todo',
-      scope: ListScope.daily,
+      scope: ListScope.day,
       description: 'Desc',
       tagUuids: {tag_1.uuid, tag_2.uuid},
     );
@@ -94,7 +94,7 @@ void main() {
     final todoTags = await todoTagsRepo.readTagsFromTodo(dto.uuid);
     expect(dto.title, 'Test Todo');
     expect(dto.description, 'Desc');
-    expect(dto.scope, ListScope.daily);
+    expect(dto.scope, ListScope.day);
     expect(dto.expiresAt, isNotNull);
     expect(dto.createdAt, isNotNull);
     expect(dto.hasTags, isTrue);
@@ -111,19 +111,19 @@ void main() {
   test('TodoService create successfully calculates expiresAt date', () async {
     final dailyTodo = await todoService.create(
       title: 'Test Todo',
-      scope: ListScope.daily,
+      scope: ListScope.day,
     );
     final weeklyTodo = await todoService.create(
       title: 'Test Todo',
-      scope: ListScope.weekly,
+      scope: ListScope.week,
     );
     final monthlyTodo = await todoService.create(
       title: 'Test Todo',
-      scope: ListScope.monthly,
+      scope: ListScope.month,
     );
     final yearlyTodo = await todoService.create(
       title: 'Test Todo',
-      scope: ListScope.yearly,
+      scope: ListScope.year,
     );
     final backlogTodo = await todoService.create(
       title: 'Test Todo',
@@ -144,17 +144,17 @@ void main() {
       () async {
         final openTodo = await todoService.create(
           title: 'Open Todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
         final completedTodo = await todoService.create(
           title: 'Comleted Todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
-        await todoService.create(title: 'Weekly Todo', scope: ListScope.weekly);
+        await todoService.create(title: 'Weekly Todo', scope: ListScope.week);
         todoService.markAsCompleted(completedTodo.uuid);
 
         final openTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.daily)
+            .watchAllOpenByScope(scope: ListScope.day)
             .first;
 
         expect(openTodos.length, 1);
@@ -171,11 +171,11 @@ void main() {
         ).thenReturn(Set<ListScope>.from(ListScope.values));
         final expired = await todoService.create(
           title: 'Expired Todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
         await todoService.create(
           title: 'Not expired Todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
         await todoRepo.updateDto(
           expired.copyWith(
@@ -184,7 +184,7 @@ void main() {
         );
 
         final openTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.daily)
+            .watchAllOpenByScope(scope: ListScope.day)
             .first;
 
         expect(openTodos.length, 2);
@@ -202,21 +202,21 @@ void main() {
         ).thenReturn(Set<ListScope>.from(ListScope.values));
         final expired = await todoService.create(
           title: 'Expired Todo',
-          scope: ListScope.weekly,
+          scope: ListScope.week,
         );
         await todoService.create(
           title: 'Not expired Todo',
-          scope: ListScope.weekly,
+          scope: ListScope.week,
         );
         await todoRepo.updateDto(
           expired.copyWith(
-            expiresAt: DateTime.now().endOfDay.add(ListScope.daily.duration),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.day.duration),
           ),
         );
 
         // --- Act ---
         final openTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.weekly)
+            .watchAllOpenByScope(scope: ListScope.week)
             .first;
 
         // --- Assert ---
@@ -234,20 +234,20 @@ void main() {
         ).thenReturn(Set<ListScope>.from(ListScope.values));
         final expired = await todoService.create(
           title: 'Expired Todo',
-          scope: ListScope.monthly,
+          scope: ListScope.month,
         );
         await todoService.create(
           title: 'Not expired Todo',
-          scope: ListScope.monthly,
+          scope: ListScope.month,
         );
         await todoRepo.updateDto(
           expired.copyWith(
-            expiresAt: DateTime.now().endOfDay.add(ListScope.weekly.duration),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.week.duration),
           ),
         );
 
         final openTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.monthly)
+            .watchAllOpenByScope(scope: ListScope.month)
             .first;
 
         expect(openTodos.length, 2);
@@ -264,20 +264,20 @@ void main() {
         ).thenReturn(Set<ListScope>.from(ListScope.values));
         final expired = await todoService.create(
           title: 'Expired Todo',
-          scope: ListScope.yearly,
+          scope: ListScope.year,
         );
         await todoService.create(
           title: 'Not expired Todo',
-          scope: ListScope.yearly,
+          scope: ListScope.year,
         );
         await todoRepo.updateDto(
           expired.copyWith(
-            expiresAt: DateTime.now().endOfDay.add(ListScope.monthly.duration),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.month.duration),
           ),
         );
 
         final openTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.yearly)
+            .watchAllOpenByScope(scope: ListScope.year)
             .first;
 
         expect(openTodos.length, 2);
@@ -302,7 +302,7 @@ void main() {
         );
         await todoRepo.updateDto(
           backlogTodo.copyWith(
-            expiresAt: DateTime.now().endOfDay.add(ListScope.yearly.duration),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.year.duration),
           ),
         );
         await todoRepo.updateDto(
@@ -325,26 +325,26 @@ void main() {
       'TodoService watchAllOpendByScope properly sets willBeTransferred on todos with yearly scope with inactive monthly scope',
       () async {
         final activeScopes = Set<ListScope>.from(ListScope.values)
-          ..remove(ListScope.monthly);
+          ..remove(ListScope.month);
         when(
           () => settingsServiceMock.getActiveListScopes(),
         ).thenReturn(activeScopes);
         final expired = await todoService.create(
           title: 'Expired Todo',
-          scope: ListScope.yearly,
+          scope: ListScope.year,
         );
         await todoService.create(
           title: 'Not expired Todo',
-          scope: ListScope.yearly,
+          scope: ListScope.year,
         );
         await todoRepo.updateDto(
           expired.copyWith(
-            expiresAt: DateTime.now().endOfDay.add(ListScope.weekly.duration),
+            expiresAt: DateTime.now().endOfDay.add(ListScope.week.duration),
           ),
         );
 
         final openTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.yearly)
+            .watchAllOpenByScope(scope: ListScope.year)
             .first;
 
         expect(openTodos.length, 2);
@@ -357,16 +357,16 @@ void main() {
   test(
     'TodoService watchAllCompletedByScope successfully retreives completed todos',
     () async {
-      await todoService.create(title: 'Open Todo', scope: ListScope.daily);
+      await todoService.create(title: 'Open Todo', scope: ListScope.day);
       final completedTodo = await todoService.create(
         title: 'Comleted Todo',
-        scope: ListScope.daily,
+        scope: ListScope.day,
       );
-      await todoService.create(title: 'Weekly Todo', scope: ListScope.weekly);
+      await todoService.create(title: 'Weekly Todo', scope: ListScope.week);
       todoService.markAsCompleted(completedTodo.uuid);
 
       final completedTodos = await todoService
-          .watchAllCompletedByScope(scope: ListScope.daily)
+          .watchAllCompletedByScope(scope: ListScope.day)
           .first;
 
       expect(completedTodos.length, 1);
@@ -388,7 +388,7 @@ void main() {
         return await todoRepo.create(
           uuid: entity.uuid,
           title: 'Expired',
-          scope: ListScope.weekly,
+          scope: ListScope.week,
           expiresAt: DateTime.now().toUtc(),
         );
       });
@@ -405,7 +405,7 @@ void main() {
           return await todoRepo.create(
             uuid: entity.uuid,
             title: 'Transfered',
-            scope: ListScope.weekly,
+            scope: ListScope.week,
             expiresAt: DateTime.now().toUtc(),
           );
         },
@@ -415,7 +415,7 @@ void main() {
       )..where((t) => db.todos.uuid.equals(willBeTransfered.uuid))).write(
         TodosCompanion(
           expiresAt: Value(
-            DateTime.now().add(ListScope.daily.duration).endOfDay,
+            DateTime.now().add(ListScope.day.duration).endOfDay,
           ),
         ),
       );
@@ -425,7 +425,7 @@ void main() {
         return await todoRepo.create(
           uuid: entity.uuid,
           title: 'Not transfered',
-          scope: ListScope.weekly,
+          scope: ListScope.week,
           expiresAt: DateTime.now().toUtc(),
         );
       });
@@ -439,7 +439,7 @@ void main() {
 
       // --- Act ---
       final completedTodos = await todoService
-          .watchWillBeTransfered(ListScope.weekly)
+          .watchWillBeTransfered(ListScope.week)
           .first;
 
       // --- Assert ---
@@ -449,7 +449,7 @@ void main() {
 
   test('TodoService watchExpiredCount ignores inactive ListScopes', () async {
     final activeScopes = Set<ListScope>.from(ListScope.values)
-      ..remove(ListScope.monthly);
+      ..remove(ListScope.month);
     when(
       () => settingsServiceMock.getActiveListScopes(),
     ).thenReturn(activeScopes);
@@ -459,7 +459,7 @@ void main() {
       return await todoRepo.create(
         uuid: e.uuid,
         title: 'Expired but in inactive scope',
-        scope: ListScope.monthly,
+        scope: ListScope.month,
       );
     });
     final expirationDate = DateTime.now().subtract(Duration(days: 1));
@@ -477,7 +477,7 @@ void main() {
       // --- Arrange ----
       final todo = await todoService.create(
         title: 'Test todo',
-        scope: ListScope.monthly,
+        scope: ListScope.month,
       );
 
       // --- Act ---
@@ -499,7 +499,7 @@ void main() {
     () async {
       final todo = await todoService.create(
         title: 'Test todo',
-        scope: ListScope.daily,
+        scope: ListScope.day,
       );
 
       await todoService.markAsCompleted(todo.uuid);
@@ -517,7 +517,7 @@ void main() {
       // --- Arrange ---
       final todo = await todoService.create(
         title: 'Test todo',
-        scope: ListScope.daily,
+        scope: ListScope.day,
       );
       await todoService.markAsCompleted(todo.uuid);
       final updatedAtAfterCompleted = (await entityRepo.read(
@@ -546,13 +546,13 @@ void main() {
       // --- Arrange ---
       final todoToTransfer = await setupTodo(
         title: 'transfer',
-        scope: ListScope.weekly,
+        scope: ListScope.week,
         expiry: DateTime.now().endOfDay,
       );
       final todoNotToTransfer = await setupTodo(
         title: 'do not transfer',
-        scope: ListScope.weekly,
-        expiry: DateTime.now().endOfDay.add(ListScope.daily.duration),
+        scope: ListScope.week,
+        expiry: DateTime.now().endOfDay.add(ListScope.day.duration),
       );
 
       // --- Act ---
@@ -560,13 +560,13 @@ void main() {
 
       // --- Assert ---
       final dailyTodos = await todoService
-          .watchAllOpenByScope(scope: ListScope.daily)
+          .watchAllOpenByScope(scope: ListScope.day)
           .first;
       expect(dailyTodos, hasLength(1));
       expect(dailyTodos.first.uuid, todoToTransfer.uuid);
 
       final weeklyTodos = await todoService
-          .watchAllOpenByScope(scope: ListScope.weekly)
+          .watchAllOpenByScope(scope: ListScope.week)
           .first;
       expect(weeklyTodos, hasLength(1));
       expect(weeklyTodos.first.uuid, todoNotToTransfer.uuid);
@@ -576,13 +576,13 @@ void main() {
       // --- Arrange ---
       final todoToTransfer = await setupTodo(
         title: 'transfer',
-        scope: ListScope.monthly,
+        scope: ListScope.month,
         expiry: DateTime.now().endOfDay.add(Duration(days: 6)),
       );
       final todoNotToTransfer = await setupTodo(
         title: 'do not transfer',
-        scope: ListScope.monthly,
-        expiry: DateTime.now().endOfDay.add(ListScope.weekly.duration),
+        scope: ListScope.month,
+        expiry: DateTime.now().endOfDay.add(ListScope.week.duration),
       );
 
       // --- Act ---
@@ -590,13 +590,13 @@ void main() {
 
       // --- Assert ---
       final weeklyTodos = await todoService
-          .watchAllOpenByScope(scope: ListScope.weekly)
+          .watchAllOpenByScope(scope: ListScope.week)
           .first;
       expect(weeklyTodos, hasLength(1));
       expect(weeklyTodos.first.uuid, todoToTransfer.uuid);
 
       final monthlyTodos = await todoService
-          .watchAllOpenByScope(scope: ListScope.monthly)
+          .watchAllOpenByScope(scope: ListScope.month)
           .first;
       expect(monthlyTodos, hasLength(1));
       expect(monthlyTodos.first.uuid, todoNotToTransfer.uuid);
@@ -606,13 +606,13 @@ void main() {
       // --- Arrange ---
       final todoToTransfer = await setupTodo(
         title: 'transfer',
-        scope: ListScope.yearly,
+        scope: ListScope.year,
         expiry: DateTime.now().endOfDay.add(Duration(days: 29)),
       );
       final todoNotToTransfer = await setupTodo(
         title: 'do not transfer',
-        scope: ListScope.yearly,
-        expiry: DateTime.now().endOfDay.add(ListScope.monthly.duration),
+        scope: ListScope.year,
+        expiry: DateTime.now().endOfDay.add(ListScope.month.duration),
       );
 
       // --- Act ---
@@ -620,13 +620,13 @@ void main() {
 
       // --- Assert ---
       final monthlyTodos = await todoService
-          .watchAllOpenByScope(scope: ListScope.monthly)
+          .watchAllOpenByScope(scope: ListScope.month)
           .first;
       expect(monthlyTodos, hasLength(1));
       expect(monthlyTodos.first.uuid, todoToTransfer.uuid);
 
       final yearlyTodos = await todoService
-          .watchAllOpenByScope(scope: ListScope.yearly)
+          .watchAllOpenByScope(scope: ListScope.year)
           .first;
       expect(yearlyTodos, hasLength(1));
       expect(yearlyTodos.first.uuid, todoNotToTransfer.uuid);
@@ -659,7 +659,7 @@ void main() {
         // --- Arrange ---
         final expiredDailyTodo = await setupTodo(
           title: 'do not transfer',
-          scope: ListScope.daily,
+          scope: ListScope.day,
           expiry: DateTime.now().endOfDay.subtract(Duration(days: 1)),
         );
 
@@ -668,7 +668,7 @@ void main() {
 
         // --- Assert ---
         final dailyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.daily)
+            .watchAllOpenByScope(scope: ListScope.day)
             .first;
         expect(dailyTodos, hasLength(1));
         expect(dailyTodos.first.uuid, expiredDailyTodo.uuid);
@@ -681,7 +681,7 @@ void main() {
         // --- Arrange ---
         final todoToTransfer = await setupTodo(
           title: 'transfer',
-          scope: ListScope.yearly,
+          scope: ListScope.year,
           expiry: DateTime.now().endOfDay.subtract(Duration(days: 1)),
         );
 
@@ -690,12 +690,12 @@ void main() {
 
         // --- Assert ---
         final yearlyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.yearly)
+            .watchAllOpenByScope(scope: ListScope.year)
             .first;
         expect(yearlyTodos, isEmpty);
 
         final dailyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.daily)
+            .watchAllOpenByScope(scope: ListScope.day)
             .first;
         expect(dailyTodos, hasLength(1));
         expect(dailyTodos.first.uuid, todoToTransfer.uuid);
@@ -708,7 +708,7 @@ void main() {
         // --- Arrange ---
         final todoToTransfer = await setupTodo(
           title: 'transfer',
-          scope: ListScope.yearly,
+          scope: ListScope.year,
           expiry: DateTime.now().endOfDay.add(Duration(days: 6)),
         );
 
@@ -717,12 +717,12 @@ void main() {
 
         // --- Assert ---
         final yearlyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.yearly)
+            .watchAllOpenByScope(scope: ListScope.year)
             .first;
         expect(yearlyTodos, isEmpty);
 
         final weeklyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.weekly)
+            .watchAllOpenByScope(scope: ListScope.week)
             .first;
         expect(weeklyTodos, hasLength(1));
         expect(weeklyTodos.first.uuid, todoToTransfer.uuid);
@@ -734,19 +734,19 @@ void main() {
       () async {
         // --- Arrange ---
         final activeScopes = ListScope.values.toSet()
-          ..remove(ListScope.monthly);
+          ..remove(ListScope.month);
         when(
           () => settingsServiceMock.getActiveListScopes(),
         ).thenReturn(activeScopes);
 
         final todoToTransfer = await setupTodo(
           title: 'transfer',
-          scope: ListScope.yearly,
+          scope: ListScope.year,
           expiry: DateTime.now().endOfDay.add(Duration(days: 6)),
         );
         final todoNotToTransfer = await setupTodo(
           title: 'transfer',
-          scope: ListScope.yearly,
+          scope: ListScope.year,
           expiry: DateTime.now().endOfDay.add(Duration(days: 7)),
         );
 
@@ -755,13 +755,13 @@ void main() {
 
         // --- Assert ---
         final yearlyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.yearly)
+            .watchAllOpenByScope(scope: ListScope.year)
             .first;
         expect(yearlyTodos, hasLength(1));
         expect(yearlyTodos.first.uuid, todoNotToTransfer.uuid);
 
         final weeklyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.weekly)
+            .watchAllOpenByScope(scope: ListScope.week)
             .first;
         expect(weeklyTodos, hasLength(1));
         expect(weeklyTodos.first.uuid, todoToTransfer.uuid);
@@ -781,7 +781,7 @@ void main() {
       final scope = todoService.calcFittingScope(DateTime.now().endOfDay);
 
       // --- Assert ---
-      expect(scope, ListScope.daily);
+      expect(scope, ListScope.day);
     });
 
     test('TodoService calcFittingScope tomorrow fits daily list', () {
@@ -791,63 +791,63 @@ void main() {
       );
 
       // --- Assert ---
-      expect(scope, ListScope.daily);
+      expect(scope, ListScope.day);
     });
 
     test('TodoService calcFittingScope date fits weekly list', () {
       // --- Act ---
       final scope = todoService.calcFittingScope(
-        DateTime.now().add(ListScope.weekly.duration).endOfDay,
+        DateTime.now().add(ListScope.week.duration).endOfDay,
       );
 
       // --- Assert ---
-      expect(scope, ListScope.weekly);
+      expect(scope, ListScope.week);
     });
 
     test('TodoService calcFittingScope date fits monthly list', () {
       // --- Act ---
       final scope = todoService.calcFittingScope(
         DateTime.now()
-            .add(ListScope.weekly.duration)
+            .add(ListScope.week.duration)
             .add(Duration(days: 1))
             .endOfDay,
       );
 
       // --- Assert ---
-      expect(scope, ListScope.monthly);
+      expect(scope, ListScope.month);
     });
 
     test('TodoService calcFittingScope date fits monthly list', () {
       // --- Act ---
       final scope = todoService.calcFittingScope(
-        DateTime.now().add(ListScope.monthly.duration).endOfDay,
+        DateTime.now().add(ListScope.month.duration).endOfDay,
       );
 
       // --- Assert ---
-      expect(scope, ListScope.monthly);
+      expect(scope, ListScope.month);
     });
 
     test('TodoService calcFittingScope date fits yearly list', () {
       // --- Act ---
       final scope = todoService.calcFittingScope(
         DateTime.now()
-            .add(ListScope.monthly.duration)
+            .add(ListScope.month.duration)
             .add(Duration(days: 1))
             .endOfDay,
       );
 
       // --- Assert ---
-      expect(scope, ListScope.yearly);
+      expect(scope, ListScope.year);
     });
 
     test('TodoService calcFittingScope date fits yearly list', () {
       // --- Act ---
       final scope = todoService.calcFittingScope(
-        DateTime.now().add(ListScope.yearly.duration).endOfDay,
+        DateTime.now().add(ListScope.year.duration).endOfDay,
       );
 
       // --- Assert ---
-      expect(scope, ListScope.yearly);
+      expect(scope, ListScope.year);
     });
 
     test('TodoService calcFittingScope date fits backlog', () {
@@ -862,7 +862,7 @@ void main() {
 
     test('TodoService calcFittingScope skips none active scope', () {
       // --- Arrange ---
-      final activeScopes = ListScope.values.toSet()..remove(ListScope.weekly);
+      final activeScopes = ListScope.values.toSet()..remove(ListScope.week);
       when(
         () => settingsServiceMock.getActiveListScopes(),
       ).thenReturn(activeScopes);
@@ -873,7 +873,7 @@ void main() {
       );
 
       // --- Assert ---
-      expect(scope, ListScope.monthly);
+      expect(scope, ListScope.month);
     });
 
     test(
@@ -906,16 +906,16 @@ void main() {
         ).thenReturn(ListScope.values.toSet());
         final todo = await todoService.create(
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
 
-        final moved = await todoService.moveToOtherList(todo, ListScope.yearly);
+        final moved = await todoService.moveToOtherList(todo, ListScope.year);
 
         final dailyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.daily)
+            .watchAllOpenByScope(scope: ListScope.day)
             .first;
         final yearlyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.yearly)
+            .watchAllOpenByScope(scope: ListScope.year)
             .first;
         final entity = await entityRepo.read(todo.uuid);
         expect(moved, isTrue);
@@ -930,16 +930,16 @@ void main() {
       () async {
         when(
           () => settingsServiceMock.getActiveListScopes(),
-        ).thenReturn({ListScope.daily});
+        ).thenReturn({ListScope.day});
         final todo = await todoService.create(
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
 
-        final moved = await todoService.moveToOtherList(todo, ListScope.yearly);
+        final moved = await todoService.moveToOtherList(todo, ListScope.year);
 
         final dailyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.daily)
+            .watchAllOpenByScope(scope: ListScope.day)
             .first;
         expect(moved, isFalse);
         expect(dailyTodos.length, 1);
@@ -952,16 +952,16 @@ void main() {
       ).thenReturn(ListScope.values.toSet());
       final todo = await todoService.create(
         title: 'Test todo',
-        scope: ListScope.monthly,
+        scope: ListScope.month,
       );
 
       final moved = await todoService.moveToNextList(todo);
 
       final monthlyTodos = await todoService
-          .watchAllOpenByScope(scope: ListScope.monthly)
+          .watchAllOpenByScope(scope: ListScope.month)
           .first;
       final weeklyTodos = await todoService
-          .watchAllOpenByScope(scope: ListScope.weekly)
+          .watchAllOpenByScope(scope: ListScope.week)
           .first;
       expect(moved, isTrue);
       expect(monthlyTodos.length, 0);
@@ -977,13 +977,13 @@ void main() {
         ).thenReturn(ListScope.values.toSet());
         final todo = await todoService.create(
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
 
         final moved = await todoService.moveToNextList(todo);
 
         final dailyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.daily)
+            .watchAllOpenByScope(scope: ListScope.day)
             .first;
         expect(moved, isFalse);
         expect(dailyTodos.length, 1);
@@ -995,16 +995,16 @@ void main() {
       () async {
         when(
           () => settingsServiceMock.getActiveListScopes(),
-        ).thenReturn({ListScope.weekly});
+        ).thenReturn({ListScope.week});
         final todo = await todoService.create(
           title: 'Test todo',
-          scope: ListScope.weekly,
+          scope: ListScope.week,
         );
 
         final moved = await todoService.moveToPreviousList(todo);
 
         final weeklyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.weekly)
+            .watchAllOpenByScope(scope: ListScope.week)
             .first;
         expect(moved, isFalse);
         expect(weeklyTodos.length, 1);
@@ -1019,16 +1019,16 @@ void main() {
         ).thenReturn(ListScope.values.toSet());
         final todo = await todoService.create(
           title: 'Test todo',
-          scope: ListScope.monthly,
+          scope: ListScope.month,
         );
 
         final moved = await todoService.moveToPreviousList(todo);
 
         final monthlyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.monthly)
+            .watchAllOpenByScope(scope: ListScope.month)
             .first;
         final yearlyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.yearly)
+            .watchAllOpenByScope(scope: ListScope.year)
             .first;
         expect(moved, isTrue);
         expect(monthlyTodos.length, 0);
@@ -1063,16 +1063,16 @@ void main() {
       () async {
         when(
           () => settingsServiceMock.getActiveListScopes(),
-        ).thenReturn({ListScope.monthly});
+        ).thenReturn({ListScope.month});
         final todo = await todoService.create(
           title: 'Test todo',
-          scope: ListScope.monthly,
+          scope: ListScope.month,
         );
 
         final moved = await todoService.moveToPreviousList(todo);
 
         final monthlyTodos = await todoService
-            .watchAllOpenByScope(scope: ListScope.monthly)
+            .watchAllOpenByScope(scope: ListScope.month)
             .first;
         expect(moved, isFalse);
         expect(monthlyTodos.length, 1);
@@ -1086,15 +1086,15 @@ void main() {
         () => settingsServiceMock.getActiveListScopes(),
       ).thenReturn(ListScope.values.toSet());
 
-      final weekly = todoService.getPreviousScope(ListScope.daily);
-      final monthly = todoService.getPreviousScope(ListScope.weekly);
-      final yearly = todoService.getPreviousScope(ListScope.monthly);
-      final backlog = todoService.getPreviousScope(ListScope.yearly);
+      final weekly = todoService.getPreviousScope(ListScope.day);
+      final monthly = todoService.getPreviousScope(ListScope.week);
+      final yearly = todoService.getPreviousScope(ListScope.month);
+      final backlog = todoService.getPreviousScope(ListScope.year);
       final nall = todoService.getPreviousScope(ListScope.backlog);
 
-      expect(weekly, ListScope.weekly);
-      expect(monthly, ListScope.monthly);
-      expect(yearly, ListScope.yearly);
+      expect(weekly, ListScope.week);
+      expect(monthly, ListScope.month);
+      expect(yearly, ListScope.year);
       expect(backlog, ListScope.backlog);
       expect(nall, isNull);
     });
@@ -1102,11 +1102,11 @@ void main() {
     test('TodoService getPrevieousList skips not active lists', () {
       when(
         () => settingsServiceMock.getActiveListScopes(),
-      ).thenReturn({ListScope.yearly, ListScope.daily});
+      ).thenReturn({ListScope.year, ListScope.day});
 
-      final yearly = todoService.getPreviousScope(ListScope.daily);
+      final yearly = todoService.getPreviousScope(ListScope.day);
 
-      expect(yearly, ListScope.yearly);
+      expect(yearly, ListScope.year);
     });
 
     test(
@@ -1114,9 +1114,9 @@ void main() {
       () {
         when(
           () => settingsServiceMock.getActiveListScopes(),
-        ).thenReturn({ListScope.yearly, ListScope.daily});
+        ).thenReturn({ListScope.year, ListScope.day});
 
-        final nall = todoService.getPreviousScope(ListScope.monthly);
+        final nall = todoService.getPreviousScope(ListScope.month);
 
         expect(nall, isNull);
       },
@@ -1128,26 +1128,26 @@ void main() {
       ).thenReturn(ListScope.values.toSet());
 
       final yearly = todoService.getNextScope(ListScope.backlog);
-      final monthly = todoService.getNextScope(ListScope.yearly);
-      final weekly = todoService.getNextScope(ListScope.monthly);
-      final daily = todoService.getNextScope(ListScope.weekly);
-      final nall = todoService.getNextScope(ListScope.daily);
+      final monthly = todoService.getNextScope(ListScope.year);
+      final weekly = todoService.getNextScope(ListScope.month);
+      final daily = todoService.getNextScope(ListScope.week);
+      final nall = todoService.getNextScope(ListScope.day);
 
-      expect(yearly, ListScope.yearly);
-      expect(monthly, ListScope.monthly);
-      expect(weekly, ListScope.weekly);
-      expect(daily, ListScope.daily);
+      expect(yearly, ListScope.year);
+      expect(monthly, ListScope.month);
+      expect(weekly, ListScope.week);
+      expect(daily, ListScope.day);
       expect(nall, isNull);
     });
 
     test('TodoService getNextList skips not active lists', () {
       when(
         () => settingsServiceMock.getActiveListScopes(),
-      ).thenReturn({ListScope.yearly, ListScope.daily});
+      ).thenReturn({ListScope.year, ListScope.day});
 
-      final daily = todoService.getNextScope(ListScope.yearly);
+      final daily = todoService.getNextScope(ListScope.year);
 
-      expect(daily, ListScope.daily);
+      expect(daily, ListScope.day);
     });
 
     test(
@@ -1155,9 +1155,9 @@ void main() {
       () {
         when(
           () => settingsServiceMock.getActiveListScopes(),
-        ).thenReturn({ListScope.yearly, ListScope.daily});
+        ).thenReturn({ListScope.year, ListScope.day});
 
-        final nall = todoService.getNextScope(ListScope.monthly);
+        final nall = todoService.getNextScope(ListScope.month);
 
         expect(nall, isNull);
       },

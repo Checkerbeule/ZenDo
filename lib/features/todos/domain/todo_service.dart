@@ -298,7 +298,7 @@ class TodoService {
 
   /// Calculates the next (next lower) [ListScope] to the given [scope].
   /// Returns 'null' when then given [scope] is the first scope in the
-  /// list of active scopes (e.g. [ListScope.daily])
+  /// list of active scopes (e.g. [ListScope.day])
   ListScope? getNextScope(ListScope scope) {
     final indexOfScope = _sortedActiveScopes.indexOf(scope);
     if (indexOfScope <= 0) {

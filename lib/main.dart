@@ -9,6 +9,7 @@ import 'package:zen_do/core/l10n/localizations_delegates.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/persistence/entity_repository.dart';
 import 'package:zen_do/core/persistence/hive/hive_initializer.dart';
+import 'package:zen_do/core/persistence/hive_to_drift_migration_service.dart';
 import 'package:zen_do/core/theme/theme.dart';
 import 'package:zen_do/core/ui/coming_soon_screen.dart';
 import 'package:zen_do/features/settings/ui/settings_screen.dart';
@@ -25,7 +26,23 @@ void main() async {
 
   WidgetsBinding.instance.addObserver(ZenDoLifecycleListener());
 
-  runApp(const ZenDoApp());
+  final database = AppDatabase();
+
+  try {
+    database.executor.ensureOpen(database);
+    final migrationService = HiveToDriftMigrationService(database);
+    await migrationService.migrate();
+  } catch (e) {
+    logger.e("Migration from Hive to Drift failed: $e");
+  }
+
+  runApp(
+    Provider<AppDatabase>(
+      create: (_) => database,
+      dispose: (_, db) => db.close(),
+      child: const ZenDoApp(),
+    ),
+  );
 }
 
 class ZenDoApp extends StatelessWidget {
@@ -35,10 +52,10 @@ class ZenDoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<AppDatabase>(
-          create: (_) => AppDatabase(),
-          dispose: (_, db) => db.close(),
-        ),
+        // Provider<AppDatabase>(
+        //   create: (_) => AppDatabase(),
+        //   dispose: (_, db) => db.close(),
+        // ),
         ProxyProvider<AppDatabase, EntityRepository>(
           update: (_, db, _) => EntityRepository(db),
         ),

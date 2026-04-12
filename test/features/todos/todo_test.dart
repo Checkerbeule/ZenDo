@@ -74,7 +74,7 @@ void main() {
         creationDate: creationDate,
         description: description,
         expirationDate: expirationDate,
-        listScope: ListScope.daily,
+        listScope: ListScope.day,
         title: title,
         tagUuids: tagUuids,
       );

@@ -89,13 +89,13 @@ class ListManager {
   }
 
   /// Returns true if the given [todo] in the list of the given [currentScope] due to be transferred tomorrow.
-  /// Returns false if the given [todo] is located in [ListScope.backlog] or [ListScope.daily],
+  /// Returns false if the given [todo] is located in [ListScope.backlog] or [ListScope.day],
   ///  the [todo] has no expiration date or the [todo] has no listScope.
   bool toBeTransferredTomorrow(HiveTodo todo) {
     if (todo.expirationDate == null ||
         todo.listScope == null ||
         todo.listScope == ListScope.backlog ||
-        todo.listScope == ListScope.daily) {
+        todo.listScope == ListScope.day) {
       return false;
     }
 

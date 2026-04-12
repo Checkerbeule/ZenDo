@@ -1,15 +1,24 @@
+import 'dart:math';
+
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
+import 'package:hive/hive.dart';
+import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:zen_do/core/persistence/entities.dart';
+import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 import 'package:zen_do/features/tags/data/tags.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
+import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/data/todo_tags.dart';
 import 'package:zen_do/features/todos/data/todos.dart';
 
 part 'app_database.g.dart';
+
+final Logger logger = Logger(level: Level.debug);
 
 @DriftDatabase(tables: [Entities, Tags, Todos, TodoTags])
 class AppDatabase extends _$AppDatabase {
@@ -39,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -169,7 +178,8 @@ class AppDatabase extends _$AppDatabase {
         }
 
         if (from < 5) {
-          for (final table in allTables) {
+          final List<TableInfo> tables = [entities, tags];
+          for (final table in tables) {
             final dateTimeColumns = table.$columns.where(
               (c) => c.type == DriftSqlType.dateTime,
             );
@@ -188,6 +198,30 @@ class AppDatabase extends _$AppDatabase {
               );
             }
           }
+        }
+
+        if (from < 6) {
+          await m.createTable(todos);
+          await m.createIndex(
+            Index(
+              'idx_todos_scope_order',
+              'CREATE INDEX idx_todos_scope_order ON todos (scope, custom_order);',
+            ),
+          );
+          await m.createIndex(
+            Index(
+              'idx_todos_completed',
+              'CREATE INDEX idx_todos_completed ON todos (scope, completed_at);',
+            ),
+          );
+          await m.createIndex(
+            Index(
+              'idx_todos_expires',
+              'CREATE INDEX idx_todos_expires ON todos (scope, expires_at);',
+            ),
+          );
+
+          await m.createTable(todoTags);
         }
 
         await customStatement('PRAGMA foreign_keys = ON');

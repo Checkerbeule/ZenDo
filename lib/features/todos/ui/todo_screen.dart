@@ -58,9 +58,9 @@ class TodoState extends ChangeNotifier {
       activeScopes = loadedScopes;
     } else {
       activeScopes = {
-        ListScope.daily,
-        ListScope.weekly,
-        ListScope.yearly,
+        ListScope.day,
+        ListScope.week,
+        ListScope.year,
         ListScope.backlog,
       };
       settings.saveActiveListScopes(activeScopes);

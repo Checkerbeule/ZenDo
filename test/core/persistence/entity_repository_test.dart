@@ -199,7 +199,7 @@ void main() {
       ) async {
         final todo = await todoRepo.create(
           uuid: e.uuid,
-          scope: ListScope.daily,
+          scope: ListScope.day,
           title: 'Test Todo',
         );
         await todoTagsRepo.addAllTagsToTodo(

@@ -12,10 +12,10 @@ import '../../core/persistence/mocks/mocks.mocks.dart';
 
 void main() {
   test('ListManager get allLists, returns sorted lists', () {
-    final dailyList = TodoList(ListScope.daily);
-    final weeklyList = TodoList(ListScope.weekly);
-    final monthlyList = TodoList(ListScope.monthly);
-    final yearlyList = TodoList(ListScope.yearly);
+    final dailyList = TodoList(ListScope.day);
+    final weeklyList = TodoList(ListScope.week);
+    final monthlyList = TodoList(ListScope.month);
+    final yearlyList = TodoList(ListScope.year);
     final backlog = TodoList(ListScope.backlog);
 
     var manager = ListManager([
@@ -39,10 +39,10 @@ void main() {
     final lists = manager.lists;
 
     expect(manager.lists.length, ListScope.values.length);
-    expect(lists.first.scope, ListScope.daily);
-    expect(lists[1].scope, ListScope.weekly);
-    expect(lists[2].scope, ListScope.monthly);
-    expect(lists[3].scope, ListScope.yearly);
+    expect(lists.first.scope, ListScope.day);
+    expect(lists[1].scope, ListScope.week);
+    expect(lists[2].scope, ListScope.month);
+    expect(lists[3].scope, ListScope.year);
     expect(lists.last.scope, ListScope.backlog);
     expect(lists.first.todos.length, 0);
     expect(lists[1].todos.length, 0);
@@ -55,31 +55,31 @@ void main() {
     'ListManager initialize wit no list and a set of ListTypes, returns all empty lists with the given ListType set',
     () {
       final activeScopes = <ListScope>{
-        ListScope.daily,
-        ListScope.weekly,
-        ListScope.yearly,
+        ListScope.day,
+        ListScope.week,
+        ListScope.year,
         ListScope.backlog,
       };
       final manager = ListManager([], activeScopes: activeScopes);
       final lists = manager.lists;
 
       expect(manager.lists.length, activeScopes.length);
-      expect(lists.first.scope, ListScope.daily);
-      expect(lists[1].scope, ListScope.weekly);
-      expect(lists[2].scope, ListScope.yearly);
+      expect(lists.first.scope, ListScope.day);
+      expect(lists[1].scope, ListScope.week);
+      expect(lists[2].scope, ListScope.year);
       expect(lists.last.scope, ListScope.backlog);
     },
   );
 
   test('ListManager addList successfully', () {
-    final dailyList = TodoList(ListScope.daily);
+    final dailyList = TodoList(ListScope.day);
     final backlog = TodoList(ListScope.backlog);
 
     var manager = ListManager(
       [dailyList, backlog],
-      activeScopes: {ListScope.daily, ListScope.backlog},
+      activeScopes: {ListScope.day, ListScope.backlog},
     );
-    final monthlyListToAdd = TodoList(ListScope.monthly);
+    final monthlyListToAdd = TodoList(ListScope.month);
     final added = manager.addList(monthlyListToAdd);
     final lists = manager.lists;
 
@@ -91,14 +91,14 @@ void main() {
   });
 
   test('ListManager addList with dublicate scope returns false ', () {
-    final dailyList_1 = TodoList(ListScope.daily);
+    final dailyList_1 = TodoList(ListScope.day);
     final backlog = TodoList(ListScope.backlog);
 
     var manager = ListManager(
       [dailyList_1, backlog],
-      activeScopes: {ListScope.daily, ListScope.backlog},
+      activeScopes: {ListScope.day, ListScope.backlog},
     );
-    final dailyList_2 = TodoList(ListScope.daily);
+    final dailyList_2 = TodoList(ListScope.day);
     final added = manager.addList(dailyList_2);
     final lists = manager.lists;
 
@@ -111,31 +111,31 @@ void main() {
   test('ListManager getListByScope returns correct list', () {
     final manager = ListManager([]);
 
-    final list = manager.getListByScope(ListScope.monthly);
+    final list = manager.getListByScope(ListScope.month);
 
     expect(list, isNotNull);
-    expect(list!.scope, ListScope.monthly);
+    expect(list!.scope, ListScope.month);
   });
 
   test('ListManager getListByScope returns null on nonexisting list', () {
     final manager = ListManager(
       [],
-      activeScopes: {ListScope.daily, ListScope.backlog},
+      activeScopes: {ListScope.day, ListScope.backlog},
     );
 
-    final list = manager.getListByScope(ListScope.monthly);
+    final list = manager.getListByScope(ListScope.month);
 
     expect(list, isNull);
   });
 
   group('ListManager getPreviousList getNextList tests', () {
     test('ListManager getPrevieousList returns correct list', () {
-      final dailyList = TodoList(ListScope.daily);
-      final weeklyList = TodoList(ListScope.weekly);
+      final dailyList = TodoList(ListScope.day);
+      final weeklyList = TodoList(ListScope.week);
       final backlog = TodoList(ListScope.backlog);
       final activeScopes = {
-        ListScope.daily,
-        ListScope.weekly,
+        ListScope.day,
+        ListScope.week,
         ListScope.backlog,
       };
       final manager = ListManager([
@@ -144,7 +144,7 @@ void main() {
         dailyList,
       ], activeScopes: activeScopes);
 
-      final previousList = manager.getPreviousList(ListScope.weekly);
+      final previousList = manager.getPreviousList(ListScope.week);
 
       expect(previousList, backlog);
     });
@@ -152,12 +152,12 @@ void main() {
     test(
       'ListManager getPrevieousList returns null if current list is last list',
       () {
-        final dailyList = TodoList(ListScope.daily);
-        final weeklyList = TodoList(ListScope.weekly);
+        final dailyList = TodoList(ListScope.day);
+        final weeklyList = TodoList(ListScope.week);
         final backlog = TodoList(ListScope.backlog);
         final activeScopes = {
-          ListScope.daily,
-          ListScope.weekly,
+          ListScope.day,
+          ListScope.week,
           ListScope.backlog,
         };
         final manager = ListManager([
@@ -173,12 +173,12 @@ void main() {
     );
 
     test('ListManager getNextList returns correct list', () {
-      final dailyList = TodoList(ListScope.daily);
-      final weeklyList = TodoList(ListScope.weekly);
+      final dailyList = TodoList(ListScope.day);
+      final weeklyList = TodoList(ListScope.week);
       final backlog = TodoList(ListScope.backlog);
       final activeScopes = {
-        ListScope.daily,
-        ListScope.weekly,
+        ListScope.day,
+        ListScope.week,
         ListScope.backlog,
       };
       final manager = ListManager([
@@ -187,7 +187,7 @@ void main() {
         dailyList,
       ], activeScopes: activeScopes);
 
-      final previousList = manager.getNextList(ListScope.weekly);
+      final previousList = manager.getNextList(ListScope.week);
 
       expect(previousList, dailyList);
     });
@@ -195,12 +195,12 @@ void main() {
     test(
       'ListManager getNextList returns null if current list is first list',
       () {
-        final dailyList = TodoList(ListScope.daily);
-        final weeklyList = TodoList(ListScope.weekly);
+        final dailyList = TodoList(ListScope.day);
+        final weeklyList = TodoList(ListScope.week);
         final backlog = TodoList(ListScope.backlog);
         final activeScopes = {
-          ListScope.daily,
-          ListScope.weekly,
+          ListScope.day,
+          ListScope.week,
           ListScope.backlog,
         };
         final manager = ListManager([
@@ -209,7 +209,7 @@ void main() {
           backlog,
         ], activeScopes: activeScopes);
 
-        final previousList = manager.getNextList(ListScope.daily);
+        final previousList = manager.getNextList(ListScope.day);
 
         expect(previousList, isNull);
       },
@@ -224,7 +224,7 @@ void main() {
         DateTime.now().endOfDay,
       );
 
-      expect(scope, ListScope.daily);
+      expect(scope, ListScope.day);
     });
 
     test('ListManager getScopeForExpirationDate tomorrow fits daily list', () {
@@ -234,17 +234,17 @@ void main() {
         DateTime.now().add(Duration(days: 1)).endOfDay,
       );
 
-      expect(scope, ListScope.daily);
+      expect(scope, ListScope.day);
     });
 
     test('ListManager getScopeForExpirationDate date fits weekly list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().add(ListScope.weekly.duration).endOfDay,
+        DateTime.now().add(ListScope.week.duration).endOfDay,
       );
 
-      expect(scope, ListScope.weekly);
+      expect(scope, ListScope.week);
     });
 
     test('ListManager getScopeForExpirationDate date fits monthly list', () {
@@ -252,22 +252,22 @@ void main() {
 
       final scope = manager.getScopeForExpirationDate(
         DateTime.now()
-            .add(ListScope.weekly.duration)
+            .add(ListScope.week.duration)
             .add(Duration(days: 1))
             .endOfDay,
       );
 
-      expect(scope, ListScope.monthly);
+      expect(scope, ListScope.month);
     });
 
     test('ListManager getScopeForExpirationDate date fits monthly list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().add(ListScope.monthly.duration).endOfDay,
+        DateTime.now().add(ListScope.month.duration).endOfDay,
       );
 
-      expect(scope, ListScope.monthly);
+      expect(scope, ListScope.month);
     });
 
     test('ListManager getScopeForExpirationDate date fits yearly list', () {
@@ -275,22 +275,22 @@ void main() {
 
       final scope = manager.getScopeForExpirationDate(
         DateTime.now()
-            .add(ListScope.monthly.duration)
+            .add(ListScope.month.duration)
             .add(Duration(days: 1))
             .endOfDay,
       );
 
-      expect(scope, ListScope.yearly);
+      expect(scope, ListScope.year);
     });
 
     test('ListManager getScopeForExpirationDate date fits yearly list', () {
       final manager = ListManager([]);
 
       final scope = manager.getScopeForExpirationDate(
-        DateTime.now().add(ListScope.yearly.duration).endOfDay,
+        DateTime.now().add(ListScope.year.duration).endOfDay,
       );
 
-      expect(scope, ListScope.yearly);
+      expect(scope, ListScope.year);
     });
 
     test('ListManager getScopeForExpirationDate date fits backlog', () {
@@ -305,9 +305,9 @@ void main() {
 
     test('ListManager getScopeForExpirationDate skips none active scope', () {
       final activeScopes = {
-        ListScope.daily,
-        ListScope.monthly,
-        ListScope.yearly,
+        ListScope.day,
+        ListScope.month,
+        ListScope.year,
         ListScope.backlog,
       };
       final manager = ListManager([], activeScopes: activeScopes);
@@ -316,17 +316,17 @@ void main() {
         DateTime.now().add(Duration(days: 3)).endOfDay,
       );
 
-      expect(scope, ListScope.monthly);
+      expect(scope, ListScope.month);
     });
 
     test(
       'ListManager getScopeForExpirationDate returns null if no fitting scope exists',
       () {
         final activeScopes = {
-          ListScope.daily,
-          ListScope.weekly,
-          ListScope.monthly,
-          ListScope.yearly,
+          ListScope.day,
+          ListScope.week,
+          ListScope.month,
+          ListScope.year,
         };
         final manager = ListManager([], activeScopes: activeScopes);
 
@@ -367,7 +367,7 @@ void main() {
     test(
       'ListManager isTodoTitleVacant returns false even with leading and tailing spaces',
       () {
-        final dailyList = TodoList(ListScope.daily);
+        final dailyList = TodoList(ListScope.day);
         final title = 'title';
         final todo = HiveTodo(title: title);
         dailyList.addTodo(todo);
@@ -375,7 +375,7 @@ void main() {
 
         final isVacant = manager.isTodoTitleVacant(
           '   $title   ',
-          ListScope.daily,
+          ListScope.day,
         );
 
         expect(isVacant, isFalse);
@@ -384,45 +384,45 @@ void main() {
 
     group('ListManager getTodosToTransfer tests', () {
       test('ListManager getTodosToTransfer: from daily list', () {
-        final dailyList = TodoList(ListScope.daily);
+        final dailyList = TodoList(ListScope.day);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         dailyList.addTodo(todoToTransfer);
         dailyList.addTodo(todoNotToTransfer);
         todoToTransfer.expirationDate = DateTime.now().endOfDay; // today
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.daily.duration,
+          ListScope.day.duration,
         ); // tomorrow
         final manager = ListManager([dailyList]);
 
         expect(dailyList.todos.length, 2);
         expect(
-          manager.getTodosToTransfer(dailyList.todos, ListScope.daily).length,
+          manager.getTodosToTransfer(dailyList.todos, ListScope.day).length,
           1,
         );
       });
 
       test('ListManager getTodosToTransfer: from weekly list', () {
-        final weeklyList = TodoList(ListScope.weekly);
+        final weeklyList = TodoList(ListScope.week);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         weeklyList.addTodo(todoToTransfer);
         weeklyList.addTodo(todoNotToTransfer);
         todoToTransfer.expirationDate = DateTime.now().endOfDay; // today
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.daily.duration,
+          ListScope.day.duration,
         ); // tomorrow
         final manager = ListManager([weeklyList]);
 
         expect(weeklyList.todos.length, 2);
         expect(
-          manager.getTodosToTransfer(weeklyList.todos, ListScope.daily).length,
+          manager.getTodosToTransfer(weeklyList.todos, ListScope.day).length,
           1,
         );
       });
 
       test('ListManager getTodosToTransfer: from montly list', () {
-        final monthlyList = TodoList(ListScope.monthly);
+        final monthlyList = TodoList(ListScope.month);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         monthlyList.addTodo(todoToTransfer);
@@ -431,21 +431,21 @@ void main() {
           Duration(days: 6),
         ); // add weekly duration minus 1 day
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.weekly.duration,
+          ListScope.week.duration,
         ); // add weekly duration
         final manager = ListManager([monthlyList]);
 
         expect(monthlyList.todos.length, 2);
         expect(
           manager
-              .getTodosToTransfer(monthlyList.todos, ListScope.weekly)
+              .getTodosToTransfer(monthlyList.todos, ListScope.week)
               .length,
           1,
         );
       });
 
       test('ListManager getTodosToTransfer: from yearly list', () {
-        final yearlyList = TodoList(ListScope.yearly);
+        final yearlyList = TodoList(ListScope.year);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         yearlyList.addTodo(todoToTransfer);
@@ -454,14 +454,14 @@ void main() {
           Duration(days: 29),
         ); // add monthly duration minus 1 day
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.monthly.duration,
+          ListScope.month.duration,
         ); // add monthly duration
         final manager = ListManager([yearlyList]);
 
         expect(yearlyList.todos.length, 2);
         expect(
           manager
-              .getTodosToTransfer(yearlyList.todos, ListScope.monthly)
+              .getTodosToTransfer(yearlyList.todos, ListScope.month)
               .length,
           1,
         );
@@ -470,15 +470,15 @@ void main() {
 
     group('ListManager transferTodos tests', () {
       test('ListManager transferTodos: from weekly to daily list', () async {
-        final transferFrom = TodoList(ListScope.weekly);
-        final transferTo = TodoList(ListScope.daily);
+        final transferFrom = TodoList(ListScope.week);
+        final transferTo = TodoList(ListScope.day);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
         transferFrom.addTodo(todoNotToTransfer);
         todoToTransfer.expirationDate = DateTime.now().endOfDay; // today
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.daily.duration,
+          ListScope.day.duration,
         ); // tomorrow
 
         var manager = ListManager([transferTo, transferFrom]);
@@ -491,8 +491,8 @@ void main() {
       });
 
       test('ListManager transferTodos: from monthly to weekly list', () async {
-        final transferFrom = TodoList(ListScope.monthly);
-        final transferTo = TodoList(ListScope.weekly);
+        final transferFrom = TodoList(ListScope.month);
+        final transferTo = TodoList(ListScope.week);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
@@ -501,7 +501,7 @@ void main() {
           Duration(days: 6),
         ); // add weekly duration minus 1 day
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.weekly.duration,
+          ListScope.week.duration,
         ); // add weekly duration
 
         var manager = ListManager([transferTo, transferFrom]);
@@ -514,8 +514,8 @@ void main() {
       });
 
       test('ListManager transferTodos: from yearly to monthly list', () async {
-        final transferFrom = TodoList(ListScope.yearly);
-        final transferTo = TodoList(ListScope.monthly);
+        final transferFrom = TodoList(ListScope.year);
+        final transferTo = TodoList(ListScope.month);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         transferFrom.addTodo(todoToTransfer);
@@ -524,7 +524,7 @@ void main() {
           Duration(days: 29),
         ); // add monthly duration minus 1 day
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.monthly.duration,
+          ListScope.month.duration,
         ); // add monthly duration
 
         var manager = ListManager([transferTo, transferFrom]);
@@ -537,8 +537,8 @@ void main() {
       });
 
       test('ListManager transferTodos: todo stays in list', () async {
-        final transferFrom = TodoList(ListScope.weekly);
-        final transferTo = TodoList(ListScope.daily);
+        final transferFrom = TodoList(ListScope.week);
+        final transferTo = TodoList(ListScope.day);
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         transferFrom.addTodo(todoNotToTransfer);
 
@@ -553,7 +553,7 @@ void main() {
         'ListManager transferTodos: no transfer from backlog to other list',
         () async {
           final backlog = TodoList(ListScope.backlog);
-          final transferTo = TodoList(ListScope.weekly);
+          final transferTo = TodoList(ListScope.week);
           final backlogTodo = HiveTodo(title: 'do not transfer');
           backlog.addTodo(backlogTodo);
 
@@ -568,8 +568,8 @@ void main() {
       test(
         'ListManager transferTodos: todos stay in dailyList but todo is expired',
         () async {
-          final weeklkyList = TodoList(ListScope.weekly);
-          final dailyList = TodoList(ListScope.daily);
+          final weeklkyList = TodoList(ListScope.week);
+          final dailyList = TodoList(ListScope.day);
           var expiredTodo = HiveTodo(title: 'expired todo');
           dailyList.addTodo(expiredTodo);
           final expirationDate = DateTime.now().endOfDay.subtract(
@@ -589,10 +589,10 @@ void main() {
       test(
         'ListManager transferTodos: todo expired yesterday moves from highest scope to dailyList',
         () async {
-          final dailyList = TodoList(ListScope.daily);
-          final weeklyList = TodoList(ListScope.weekly);
-          final monthlyList = TodoList(ListScope.monthly);
-          final yearlyList = TodoList(ListScope.yearly);
+          final dailyList = TodoList(ListScope.day);
+          final weeklyList = TodoList(ListScope.week);
+          final monthlyList = TodoList(ListScope.month);
+          final yearlyList = TodoList(ListScope.year);
           var expiredTodo = HiveTodo(title: 'expired todo');
           yearlyList.addTodo(expiredTodo);
           expiredTodo.expirationDate = DateTime.now().endOfDay.subtract(
@@ -617,10 +617,10 @@ void main() {
       test(
         'ListManager transferTodos: todo expires in 6 days moves from highest scope to weekly',
         () async {
-          final dailyList = TodoList(ListScope.daily);
-          final weeklyList = TodoList(ListScope.weekly);
-          final monthlyList = TodoList(ListScope.monthly);
-          final yearlyList = TodoList(ListScope.yearly);
+          final dailyList = TodoList(ListScope.day);
+          final weeklyList = TodoList(ListScope.week);
+          final monthlyList = TodoList(ListScope.month);
+          final yearlyList = TodoList(ListScope.year);
           var todoToTransfer = HiveTodo(title: 'expires in 6 days');
           yearlyList.addTodo(todoToTransfer);
           todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
@@ -643,9 +643,9 @@ void main() {
       );
 
       test('ListManager transferTodos: skip missing ListScope', () async {
-        final dailyList = TodoList(ListScope.daily);
-        final weeklyList = TodoList(ListScope.weekly);
-        final monthlyList = TodoList(ListScope.monthly);
+        final dailyList = TodoList(ListScope.day);
+        final weeklyList = TodoList(ListScope.week);
+        final monthlyList = TodoList(ListScope.month);
         var todoToTransfer = HiveTodo(title: 'expired today');
         monthlyList.addTodo(todoToTransfer);
         todoToTransfer.expirationDate = DateTime.now().endOfDay;
@@ -663,10 +663,10 @@ void main() {
       test(
         'ListManager toBeTransferredTomorrow: todos from daily list are never transferred',
         () {
-          final dailyList = TodoList(ListScope.daily);
-          final weeklyList = TodoList(ListScope.weekly);
-          final monthlyList = TodoList(ListScope.monthly);
-          final yearlyList = TodoList(ListScope.yearly);
+          final dailyList = TodoList(ListScope.day);
+          final weeklyList = TodoList(ListScope.week);
+          final monthlyList = TodoList(ListScope.month);
+          final yearlyList = TodoList(ListScope.year);
           final backlog = TodoList(ListScope.backlog);
           final todo_1 = HiveTodo(title: 'todo 1');
           final todo_2 = HiveTodo(title: 'todo 2');
@@ -691,17 +691,17 @@ void main() {
       );
 
       test('ListManager toBeTransferredTomorrow: from weekly list', () {
-        final dailyList = TodoList(ListScope.daily);
-        final weeklyList = TodoList(ListScope.weekly);
-        final monthlyList = TodoList(ListScope.monthly);
-        final yearlyList = TodoList(ListScope.yearly);
+        final dailyList = TodoList(ListScope.day);
+        final weeklyList = TodoList(ListScope.week);
+        final monthlyList = TodoList(ListScope.month);
+        final yearlyList = TodoList(ListScope.year);
         final backlog = TodoList(ListScope.backlog);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         weeklyList.addTodo(todoToTransfer);
         weeklyList.addTodo(todoNotToTransfer);
         todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.daily.duration,
+          ListScope.day.duration,
         ); // tomorrow
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 2),
@@ -719,17 +719,17 @@ void main() {
       });
 
       test('ListManager toBeTransferredTomorrow: from monthly list', () {
-        final dailyList = TodoList(ListScope.daily);
-        final weeklyList = TodoList(ListScope.weekly);
-        final monthlyList = TodoList(ListScope.monthly);
-        final yearlyList = TodoList(ListScope.yearly);
+        final dailyList = TodoList(ListScope.day);
+        final weeklyList = TodoList(ListScope.week);
+        final monthlyList = TodoList(ListScope.month);
+        final yearlyList = TodoList(ListScope.year);
         final backlog = TodoList(ListScope.backlog);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         monthlyList.addTodo(todoToTransfer);
         monthlyList.addTodo(todoNotToTransfer);
         todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.weekly.duration,
+          ListScope.week.duration,
         ); // in 7 days
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 8),
@@ -747,17 +747,17 @@ void main() {
       });
 
       test('ListManager toBeTransferredTomorrow: from yearly list', () {
-        final dailyList = TodoList(ListScope.daily);
-        final weeklyList = TodoList(ListScope.weekly);
-        final monthlyList = TodoList(ListScope.monthly);
-        final yearlyList = TodoList(ListScope.yearly);
+        final dailyList = TodoList(ListScope.day);
+        final weeklyList = TodoList(ListScope.week);
+        final monthlyList = TodoList(ListScope.month);
+        final yearlyList = TodoList(ListScope.year);
         final backlog = TodoList(ListScope.backlog);
         final todoToTransfer = HiveTodo(title: 'transfer');
         final todoNotToTransfer = HiveTodo(title: 'do not transfer');
         yearlyList.addTodo(todoToTransfer);
         yearlyList.addTodo(todoNotToTransfer);
         todoToTransfer.expirationDate = DateTime.now().endOfDay.add(
-          ListScope.monthly.duration,
+          ListScope.month.duration,
         ); // in 30 days
         todoNotToTransfer.expirationDate = DateTime.now().endOfDay.add(
           Duration(days: 31),
@@ -777,17 +777,17 @@ void main() {
       test(
         'ListManager toBeTransferredTomorrow: todos from backlog are never transferred',
         () {
-          final dailyList = TodoList(ListScope.daily);
-          final weeklyList = TodoList(ListScope.weekly);
-          final monthlyList = TodoList(ListScope.monthly);
-          final yearlyList = TodoList(ListScope.yearly);
+          final dailyList = TodoList(ListScope.day);
+          final weeklyList = TodoList(ListScope.week);
+          final monthlyList = TodoList(ListScope.month);
+          final yearlyList = TodoList(ListScope.year);
           final backlog = TodoList(ListScope.backlog);
           final todo_1 = HiveTodo(title: 'transfer');
           final todo_2 = HiveTodo(title: 'do not transfer');
           backlog.addTodo(todo_1);
           backlog.addTodo(todo_2);
           todo_1.expirationDate = DateTime.now().endOfDay.add(
-            ListScope.yearly.duration,
+            ListScope.year.duration,
           ); // in 365 days
           todo_2.expirationDate = DateTime.now().endOfDay.add(
             Duration(days: 366),
@@ -810,14 +810,14 @@ void main() {
       test('ListManager moveToNextList sucessfully', () async {
         final manager = ListManager([]);
         final todo = HiveTodo(title: 'todo to move to next list');
-        manager.getListByScope(ListScope.monthly)!.addTodo(todo);
+        manager.getListByScope(ListScope.month)!.addTodo(todo);
 
         final moved = await manager.moveToNextList(todo);
 
         expect(moved, isTrue);
-        expect(manager.getListByScope(ListScope.monthly)!.todos.length, 0);
-        expect(manager.getListByScope(ListScope.weekly)!.todos.length, 1);
-        expect(manager.getListByScope(ListScope.weekly)!.todos.first, todo);
+        expect(manager.getListByScope(ListScope.month)!.todos.length, 0);
+        expect(manager.getListByScope(ListScope.week)!.todos.length, 1);
+        expect(manager.getListByScope(ListScope.week)!.todos.first, todo);
       });
 
       test(
@@ -827,33 +827,33 @@ void main() {
           final title = 'todo to move to next list';
           final todo_1 = HiveTodo(title: title);
           final todo_2 = HiveTodo(title: title);
-          manager.getListByScope(ListScope.monthly)!.addTodo(todo_1);
-          manager.getListByScope(ListScope.weekly)!.addTodo(todo_2);
+          manager.getListByScope(ListScope.month)!.addTodo(todo_1);
+          manager.getListByScope(ListScope.week)!.addTodo(todo_2);
 
           final moved = await manager.moveToNextList(todo_1);
 
           expect(moved, isFalse);
-          expect(manager.getListByScope(ListScope.monthly)!.todos.length, 1);
+          expect(manager.getListByScope(ListScope.month)!.todos.length, 1);
           expect(
-            manager.getListByScope(ListScope.monthly)!.todos.first,
+            manager.getListByScope(ListScope.month)!.todos.first,
             todo_1,
           );
-          expect(manager.getListByScope(ListScope.weekly)!.todos.length, 1);
-          expect(manager.getListByScope(ListScope.weekly)!.todos.first, todo_2);
+          expect(manager.getListByScope(ListScope.week)!.todos.length, 1);
+          expect(manager.getListByScope(ListScope.week)!.todos.first, todo_2);
         },
       );
 
       test('ListManager moveToPreviousList sucessfully', () async {
         final manager = ListManager([]);
         final todo = HiveTodo(title: 'todo to move to next list');
-        manager.getListByScope(ListScope.daily)!.addTodo(todo);
+        manager.getListByScope(ListScope.day)!.addTodo(todo);
 
         final moved = await manager.moveToPreviousList(todo);
 
         expect(moved, isTrue);
-        expect(manager.getListByScope(ListScope.daily)!.todos.length, 0);
-        expect(manager.getListByScope(ListScope.weekly)!.todos.length, 1);
-        expect(manager.getListByScope(ListScope.weekly)!.todos.first, todo);
+        expect(manager.getListByScope(ListScope.day)!.todos.length, 0);
+        expect(manager.getListByScope(ListScope.week)!.todos.length, 1);
+        expect(manager.getListByScope(ListScope.week)!.todos.first, todo);
       });
 
       test(
@@ -863,36 +863,36 @@ void main() {
           final title = 'todo to move to next list';
           final todo_1 = HiveTodo(title: title);
           final todo_2 = HiveTodo(title: title);
-          manager.getListByScope(ListScope.daily)!.addTodo(todo_1);
-          manager.getListByScope(ListScope.weekly)!.addTodo(todo_2);
+          manager.getListByScope(ListScope.day)!.addTodo(todo_1);
+          manager.getListByScope(ListScope.week)!.addTodo(todo_2);
 
           final moved = await manager.moveToPreviousList(todo_1);
 
           expect(moved, isFalse);
-          expect(manager.getListByScope(ListScope.daily)!.todos.length, 1);
-          expect(manager.getListByScope(ListScope.daily)!.todos.first, todo_1);
-          expect(manager.getListByScope(ListScope.weekly)!.todos.length, 1);
-          expect(manager.getListByScope(ListScope.weekly)!.todos.first, todo_2);
+          expect(manager.getListByScope(ListScope.day)!.todos.length, 1);
+          expect(manager.getListByScope(ListScope.day)!.todos.first, todo_1);
+          expect(manager.getListByScope(ListScope.week)!.todos.length, 1);
+          expect(manager.getListByScope(ListScope.week)!.todos.first, todo_2);
         },
       );
 
       test('ListManager moveAndUpdateTodo sucessfully moves todo', () async {
         final manager = ListManager([]);
         final todo = HiveTodo(title: 'todo to move to next list');
-        manager.getListByScope(ListScope.daily)!.addTodo(todo);
+        manager.getListByScope(ListScope.day)!.addTodo(todo);
         final expectedDate = DateTime.now().endOfDay.add(Duration(days: 365));
 
         final moved = await manager.moveAndUpdateTodo(
           todo: todo,
-          destination: ListScope.yearly,
+          destination: ListScope.year,
         );
 
         expect(moved, isTrue);
-        expect(manager.getListByScope(ListScope.daily)!.todos.length, 0);
-        expect(manager.getListByScope(ListScope.yearly)!.todos.length, 1);
-        expect(manager.getListByScope(ListScope.yearly)!.todos.first, todo);
+        expect(manager.getListByScope(ListScope.day)!.todos.length, 0);
+        expect(manager.getListByScope(ListScope.year)!.todos.length, 1);
+        expect(manager.getListByScope(ListScope.year)!.todos.first, todo);
         expect(
-          manager.getListByScope(ListScope.yearly)!.todos.first.expirationDate,
+          manager.getListByScope(ListScope.year)!.todos.first.expirationDate,
           expectedDate,
         );
       });
@@ -902,7 +902,7 @@ void main() {
         () async {
           final manager = ListManager([]);
           final todo = HiveTodo(title: 'todo to move to next list');
-          manager.getListByScope(ListScope.daily)!.addTodo(todo);
+          manager.getListByScope(ListScope.day)!.addTodo(todo);
           final updatedTodo = todo.copyWith(
             title: 'updated title',
             description: 'updated description',
@@ -911,14 +911,14 @@ void main() {
           final moved = await manager.moveAndUpdateTodo(
             oldTodo: todo,
             todo: updatedTodo,
-            destination: ListScope.yearly,
+            destination: ListScope.year,
           );
 
           expect(moved, isTrue);
-          expect(manager.getListByScope(ListScope.daily)!.todos.length, 0);
-          expect(manager.getListByScope(ListScope.yearly)!.todos.length, 1);
+          expect(manager.getListByScope(ListScope.day)!.todos.length, 0);
+          expect(manager.getListByScope(ListScope.year)!.todos.length, 1);
           expect(
-            manager.getListByScope(ListScope.yearly)!.todos.first,
+            manager.getListByScope(ListScope.year)!.todos.first,
             updatedTodo,
           );
         },
@@ -930,22 +930,22 @@ void main() {
           final manager = ListManager(
             [],
             activeScopes: {
-              ListScope.daily,
-              ListScope.weekly,
-              ListScope.yearly,
+              ListScope.day,
+              ListScope.week,
+              ListScope.year,
               ListScope.backlog,
             },
           );
           final todo = HiveTodo(title: 'todo to move to next list');
-          manager.getListByScope(ListScope.daily)!.addTodo(todo);
+          manager.getListByScope(ListScope.day)!.addTodo(todo);
 
           final moved = await manager.moveAndUpdateTodo(
             todo: todo,
-            destination: ListScope.monthly,
+            destination: ListScope.month,
           );
 
           expect(moved, isFalse);
-          expect(manager.getListByScope(ListScope.daily)!.todos.length, 1);
+          expect(manager.getListByScope(ListScope.day)!.todos.length, 1);
         },
       );
     });

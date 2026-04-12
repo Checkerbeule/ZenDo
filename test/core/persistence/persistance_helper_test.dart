@@ -48,7 +48,7 @@ void main() {
     });
 
     test('save and load a list with one todo', () async {
-      final scope = ListScope.daily;
+      final scope = ListScope.day;
       final list = TodoList(scope);
       final title = 'test todo';
       final description = 'test description';
@@ -58,14 +58,14 @@ void main() {
       await PersistenceHelper.saveList(list);
       final loadedList = await PersistenceHelper.loadList(scope);
 
-      expect(loadedList.scope, ListScope.daily);
+      expect(loadedList.scope, ListScope.day);
       expect(loadedList.todos.length, 1);
       expect(loadedList.todos.first.title, title);
       expect(loadedList.todos.first.description, description);
     });
 
     test('save a list, update it, retreive updated data', () async {
-      final scope = ListScope.daily;
+      final scope = ListScope.day;
       final list = TodoList(scope);
 
       final initialTodo = HiveTodo(title: 'initial todo');

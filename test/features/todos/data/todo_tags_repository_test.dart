@@ -37,7 +37,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
@@ -80,7 +80,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
@@ -124,7 +124,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
@@ -168,7 +168,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
@@ -219,7 +219,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
@@ -240,17 +240,29 @@ void main() {
           color: Colors.red.toARGB32(),
         );
       });
-      await todoTagsRepo.addTagToTodo(todoUuid: todo.uuid, tagUuid: tag_1.uuid);
+      final tag_3 = await entityRepo.createWithEntity(EntityType.tag, (
+        Entity e,
+      ) async {
+        return await tagRepo.create(
+          uuid: e.uuid,
+          name: 'Test Tag 3',
+          color: Colors.red.toARGB32(),
+        );
+      });
+      await todoTagsRepo.addAllTagsToTodo(
+        todoUuid: todo.uuid,
+        tagUuids: {tag_1.uuid, tag_2.uuid},
+      );
 
       await todoTagsRepo.updateTags(
         todoUuid: todo.uuid,
-        newTagUuids: {tag_1.uuid, tag_2.uuid},
+        newTagUuids: {tag_1.uuid, tag_3.uuid},
       );
 
       final tags = await todoTagsRepo.readTagsFromTodo(todo.uuid);
       expect(tags.length, 2);
-      expect(tags.contains(tag_1), isTrue);
-      expect(tags.contains(tag_2), isTrue);
+      expect(tags, contains(tag_1));
+      expect(tags, contains(tag_3));
     },
   );
 
@@ -263,7 +275,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
@@ -306,7 +318,7 @@ void main() {
         return await todoRepo.create(
           uuid: e.uuid,
           title: 'Test todo',
-          scope: ListScope.daily,
+          scope: ListScope.day,
         );
       });
       final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (

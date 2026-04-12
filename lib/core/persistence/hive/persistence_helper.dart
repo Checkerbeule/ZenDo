@@ -84,8 +84,8 @@ class PersistenceHelper {
     await _runListOperationSafely(() async {
       final box = await _getListBox();
       for (final list in lists) {
-        await box.delete(list.scope.name);
-        await box.put(list.scope.name, list);
+        await box.delete(list.scope.legacyName);
+        await box.put(list.scope.legacyName, list);
       }
     });
   }
@@ -98,8 +98,8 @@ class PersistenceHelper {
   static Future<void> saveList(TodoList list) async {
     await _runListOperationSafely(() async {
       final box = await _getListBox();
-      await box.delete(list.scope.name);
-      await box.put(list.scope.name, list);
+      await box.delete(list.scope.legacyName);
+      await box.put(list.scope.legacyName, list);
     });
   }
 
@@ -112,7 +112,7 @@ class PersistenceHelper {
       final lists = <TodoList>[];
 
       for (final scope in ListScope.values) {
-        final list = box.get(scope.name);
+        final list = box.get(scope.legacyName);
         if (list != null) {
           list.initMaxOrderAfterLoad();
           lists.add(list);
