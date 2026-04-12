@@ -43,7 +43,10 @@ class SharedPrefsAppSettingsService implements AppSettingsService {
   static const String _activeListScopesPrefKey = 'todo.manager.activeScopes';
 
   @override
-  Future<void> saveSortOption(ListScope scope, TodoSortOption sortOption) async {
+  Future<void> saveSortOption(
+    ListScope scope,
+    TodoSortOption sortOption,
+  ) async {
     await _sortOptionLock.synchronized(
       () async =>
           await prefs.setInt(_getSortOptionPrefKey(scope), sortOption.index),
@@ -85,7 +88,12 @@ class SharedPrefsAppSettingsService implements AppSettingsService {
     final List<String>? scopeNames = prefs.getStringList(
       _activeListScopesPrefKey,
     );
-    return scopeNames?.map((n) => ListScope.values.byName(n)).toSet();
+    return scopeNames?.map((n) {
+      if (n[n.length - 1] == "y") {
+        return ListScope.fromLegacyName(n);
+      }
+      return ListScope.values.byName(n);
+    }).toSet();
   }
 
   @override
