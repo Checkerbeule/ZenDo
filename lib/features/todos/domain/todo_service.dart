@@ -27,11 +27,20 @@ class TodoService {
   });
 
   List<ListScope> get _sortedActiveScopes {
-    final activeScopes = <ListScope>[
-      ...settingsService.getActiveListScopes()?.toList() ?? [],
-    ];
+    final activeScopes = List<ListScope>.from(
+      settingsService.getActiveListScopes()?.toList() ?? [],
+    );
     activeScopes.sort();
     return activeScopes;
+  }
+
+  List<ListScope> get _scopesWithExpiry {
+    final activeScopesWithExpiry = List<ListScope>.from(
+      settingsService.getActiveListScopes() ?? {},
+    );
+    activeScopesWithExpiry.remove(ListScope.backlog);
+
+    return activeScopesWithExpiry;
   }
 
   /// Creates a new todo with the given attributes and persists it in the database.
@@ -150,6 +159,11 @@ class TodoService {
     }).distinct();
   }
 
+  /// Returns a reactive stream representing the amount of all expired todos in all lists.
+  Stream<int> watchExpiredCount() {
+    return todoRepo.watchExpiredCount(_scopesWithExpiry.toSet());
+  }
+
   /// Updates the given todo in the database and marks it as 'updated' to sync to cloud.<br>
   /// Returns true if succesfull, false otherwise.
   Future<bool> update(TodoDto todo) async {
@@ -181,20 +195,11 @@ class TodoService {
     return updated == 1;
   }
 
-  /// Returns a reactive stream representing the amount of all expired todos in all lists.
-  Stream<int> watchExpiredCount() {
-    return todoRepo.watchExpiredCount(
-      settingsService.getActiveListScopes() ?? ListScope.values.toSet(),
-    );
-  }
-
   /// Transferes all todos with an expiresAt date, that doesn't fit to the
   /// current scope anymore. In that case the most fitting scopes is determined
   /// and set to the todo. Also updates the updatedAt timestampt to trigger cloud sync.
   Future<void> transferTodos() async {
-    final scopesToTransferFrom = _sortedActiveScopes
-      ..remove(ListScope.backlog)
-      ..removeAt(0);
+    final scopesToTransferFrom = _scopesWithExpiry..removeAt(0);
     if (scopesToTransferFrom.isEmpty) return;
 
     await todoRepo.db.transaction(() async {

@@ -6,16 +6,13 @@ part 'todo_dto.freezed.dart';
 
 @freezed
 abstract class TodoDto with _$TodoDto {
-  bool get hasTags => tagUuids.isNotEmpty;
-  bool get isCompleted => completedAt != null;
-
   const TodoDto._();
 
   const factory TodoDto({
-    required String uuid,
+    required String $uuid,
+    required DateTime $createdAt,
     required String title,
     String? description,
-    required DateTime createdAt,
     DateTime? expiresAt,
     DateTime? completedAt,
     required ListScope scope,
@@ -30,10 +27,10 @@ abstract class TodoDto with _$TodoDto {
     Set<String> tagUuids = const {},
   }) {
     return TodoDto(
-      uuid: todo.uuid,
+      $uuid: todo.uuid,
+      $createdAt: entity.createdAt,
       title: todo.title,
       description: todo.description,
-      createdAt: entity.createdAt,
       expiresAt: todo.expiresAt,
       completedAt: todo.completedAt,
       scope: todo.scope,
@@ -41,6 +38,12 @@ abstract class TodoDto with _$TodoDto {
       tagUuids: tagUuids,
     );
   }
+
+  String get uuid => $uuid;
+  DateTime get createdAt => $createdAt;
+
+  bool get hasTags => tagUuids.isNotEmpty;
+  bool get isCompleted => completedAt != null;
 
   bool get isExpired {
     // TODO may not be required anymore if willBeTransferred is enough

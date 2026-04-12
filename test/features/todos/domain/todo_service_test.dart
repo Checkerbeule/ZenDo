@@ -447,23 +447,6 @@ void main() {
     },
   );
 
-  test(
-    'TodoService markAsCompleted successfully updates updatedAt timestamp',
-    () async {
-      final todo = await todoService.create(
-        title: 'Test todo',
-        scope: ListScope.daily,
-      );
-
-      await todoService.markAsCompleted(todo.uuid);
-
-      final entity = await entityRepo.read(todo.uuid);
-      final loadedTodo = await todoRepo.read(todo.uuid);
-      expect(loadedTodo!.completedAt, isNotNull);
-      expect(entity!.updatedAt.isAfter(entity.createdAt), isNotNull);
-    },
-  );
-
   test('TodoService watchExpiredCount ignores inactive ListScopes', () async {
     final activeScopes = Set<ListScope>.from(ListScope.values)
       ..remove(ListScope.monthly);
@@ -487,6 +470,70 @@ void main() {
 
     expect(expiredCount, 0);
   });
+
+  test(
+    'TodoService update successfully updates with new updatedAt timestamp',
+    () async {
+      // --- Arrange ----
+      final todo = await todoService.create(
+        title: 'Test todo',
+        scope: ListScope.monthly,
+      );
+
+      // --- Act ---
+      final updated = await todoService.update(
+        todo.copyWith(title: 'New title'),
+      );
+
+      // --- Assert ---
+      final loadedTodo = await todoRepo.read(todo.uuid);
+      final entity = await entityRepo.read(todo.uuid);
+      expect(updated, isTrue);
+      expect(loadedTodo!.title, 'New title');
+      expect(entity!.updatedAt.isAfter(entity.createdAt), isTrue);
+    },
+  );
+
+  test(
+    'TodoService markAsCompleted successfully updates updatedAt timestamp',
+    () async {
+      final todo = await todoService.create(
+        title: 'Test todo',
+        scope: ListScope.daily,
+      );
+
+      await todoService.markAsCompleted(todo.uuid);
+
+      final entity = await entityRepo.read(todo.uuid);
+      final loadedTodo = await todoRepo.read(todo.uuid);
+      expect(loadedTodo!.completedAt, isNotNull);
+      expect(entity!.updatedAt.isAfter(entity.createdAt), isTrue);
+    },
+  );
+
+  test(
+    'TodoService restore successfully updates updatedAt timestamp',
+    () async {
+      // --- Arrange ---
+      final todo = await todoService.create(
+        title: 'Test todo',
+        scope: ListScope.daily,
+      );
+      await todoService.markAsCompleted(todo.uuid);
+      final updatedAtAfterCompleted = (await entityRepo.read(
+        todo.uuid,
+      ))!.updatedAt;
+
+      // --- Act ---
+      final restored = await todoService.restore(todo.uuid);
+
+      final entity = await entityRepo.read(todo.uuid);
+      final loadedTodo = await todoRepo.read(todo.uuid);
+      expect(restored, isTrue);
+      expect(loadedTodo!.completedAt, isNull);
+      expect(entity!.updatedAt.isAfter(updatedAtAfterCompleted), isTrue);
+    },
+  );
 
   group('TodoService transferTodos tests', () {
     setUp(() {

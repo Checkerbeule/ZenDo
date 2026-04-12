@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TodoDto {
 
- String get uuid; String get title; String? get description; DateTime get createdAt; DateTime? get expiresAt; DateTime? get completedAt; ListScope get scope; String get customOrder; Set<String> get tagUuids; bool get willBeTransferred;
+ String get $uuid; DateTime get $createdAt; String get title; String? get description; DateTime? get expiresAt; DateTime? get completedAt; ListScope get scope; String get customOrder; Set<String> get tagUuids; bool get willBeTransferred;
 /// Create a copy of TodoDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $TodoDtoCopyWith<TodoDto> get copyWith => _$TodoDtoCopyWithImpl<TodoDto>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TodoDto&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.customOrder, customOrder) || other.customOrder == customOrder)&&const DeepCollectionEquality().equals(other.tagUuids, tagUuids)&&(identical(other.willBeTransferred, willBeTransferred) || other.willBeTransferred == willBeTransferred));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TodoDto&&(identical(other.$uuid, $uuid) || other.$uuid == $uuid)&&(identical(other.$createdAt, $createdAt) || other.$createdAt == $createdAt)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.customOrder, customOrder) || other.customOrder == customOrder)&&const DeepCollectionEquality().equals(other.tagUuids, tagUuids)&&(identical(other.willBeTransferred, willBeTransferred) || other.willBeTransferred == willBeTransferred));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,title,description,createdAt,expiresAt,completedAt,scope,customOrder,const DeepCollectionEquality().hash(tagUuids),willBeTransferred);
+int get hashCode => Object.hash(runtimeType,$uuid,$createdAt,title,description,expiresAt,completedAt,scope,customOrder,const DeepCollectionEquality().hash(tagUuids),willBeTransferred);
 
 @override
 String toString() {
-  return 'TodoDto(uuid: $uuid, title: $title, description: $description, createdAt: $createdAt, expiresAt: $expiresAt, completedAt: $completedAt, scope: $scope, customOrder: $customOrder, tagUuids: $tagUuids, willBeTransferred: $willBeTransferred)';
+  return 'TodoDto(\$uuid: ${$uuid}, \$createdAt: ${$createdAt}, title: $title, description: $description, expiresAt: $expiresAt, completedAt: $completedAt, scope: $scope, customOrder: $customOrder, tagUuids: $tagUuids, willBeTransferred: $willBeTransferred)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $TodoDtoCopyWith<$Res>  {
   factory $TodoDtoCopyWith(TodoDto value, $Res Function(TodoDto) _then) = _$TodoDtoCopyWithImpl;
 @useResult
 $Res call({
- String uuid, String title, String? description, DateTime createdAt, DateTime? expiresAt, DateTime? completedAt, ListScope scope, String customOrder, Set<String> tagUuids, bool willBeTransferred
+ String $uuid, DateTime $createdAt, String title, String? description, DateTime? expiresAt, DateTime? completedAt, ListScope scope, String customOrder, Set<String> tagUuids, bool willBeTransferred
 });
 
 
@@ -62,13 +62,13 @@ class _$TodoDtoCopyWithImpl<$Res>
 
 /// Create a copy of TodoDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? title = null,Object? description = freezed,Object? createdAt = null,Object? expiresAt = freezed,Object? completedAt = freezed,Object? scope = null,Object? customOrder = null,Object? tagUuids = null,Object? willBeTransferred = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? $uuid = null,Object? $createdAt = null,Object? title = null,Object? description = freezed,Object? expiresAt = freezed,Object? completedAt = freezed,Object? scope = null,Object? customOrder = null,Object? tagUuids = null,Object? willBeTransferred = null,}) {
   return _then(_self.copyWith(
-uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
-as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+$uuid: null == $uuid ? _self.$uuid : $uuid // ignore: cast_nullable_to_non_nullable
+as String,$createdAt: null == $createdAt ? _self.$createdAt : $createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,expiresAt: freezed == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
+as String?,expiresAt: freezed == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
 as ListScope,customOrder: null == customOrder ? _self.customOrder : customOrder // ignore: cast_nullable_to_non_nullable
@@ -159,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String title,  String? description,  DateTime createdAt,  DateTime? expiresAt,  DateTime? completedAt,  ListScope scope,  String customOrder,  Set<String> tagUuids,  bool willBeTransferred)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String $uuid,  DateTime $createdAt,  String title,  String? description,  DateTime? expiresAt,  DateTime? completedAt,  ListScope scope,  String customOrder,  Set<String> tagUuids,  bool willBeTransferred)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _TodoDto() when $default != null:
-return $default(_that.uuid,_that.title,_that.description,_that.createdAt,_that.expiresAt,_that.completedAt,_that.scope,_that.customOrder,_that.tagUuids,_that.willBeTransferred);case _:
+return $default(_that.$uuid,_that.$createdAt,_that.title,_that.description,_that.expiresAt,_that.completedAt,_that.scope,_that.customOrder,_that.tagUuids,_that.willBeTransferred);case _:
   return orElse();
 
 }
@@ -180,10 +180,10 @@ return $default(_that.uuid,_that.title,_that.description,_that.createdAt,_that.e
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String title,  String? description,  DateTime createdAt,  DateTime? expiresAt,  DateTime? completedAt,  ListScope scope,  String customOrder,  Set<String> tagUuids,  bool willBeTransferred)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String $uuid,  DateTime $createdAt,  String title,  String? description,  DateTime? expiresAt,  DateTime? completedAt,  ListScope scope,  String customOrder,  Set<String> tagUuids,  bool willBeTransferred)  $default,) {final _that = this;
 switch (_that) {
 case _TodoDto():
-return $default(_that.uuid,_that.title,_that.description,_that.createdAt,_that.expiresAt,_that.completedAt,_that.scope,_that.customOrder,_that.tagUuids,_that.willBeTransferred);case _:
+return $default(_that.$uuid,_that.$createdAt,_that.title,_that.description,_that.expiresAt,_that.completedAt,_that.scope,_that.customOrder,_that.tagUuids,_that.willBeTransferred);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -200,10 +200,10 @@ return $default(_that.uuid,_that.title,_that.description,_that.createdAt,_that.e
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String title,  String? description,  DateTime createdAt,  DateTime? expiresAt,  DateTime? completedAt,  ListScope scope,  String customOrder,  Set<String> tagUuids,  bool willBeTransferred)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String $uuid,  DateTime $createdAt,  String title,  String? description,  DateTime? expiresAt,  DateTime? completedAt,  ListScope scope,  String customOrder,  Set<String> tagUuids,  bool willBeTransferred)?  $default,) {final _that = this;
 switch (_that) {
 case _TodoDto() when $default != null:
-return $default(_that.uuid,_that.title,_that.description,_that.createdAt,_that.expiresAt,_that.completedAt,_that.scope,_that.customOrder,_that.tagUuids,_that.willBeTransferred);case _:
+return $default(_that.$uuid,_that.$createdAt,_that.title,_that.description,_that.expiresAt,_that.completedAt,_that.scope,_that.customOrder,_that.tagUuids,_that.willBeTransferred);case _:
   return null;
 
 }
@@ -215,13 +215,13 @@ return $default(_that.uuid,_that.title,_that.description,_that.createdAt,_that.e
 
 
 class _TodoDto extends TodoDto {
-  const _TodoDto({required this.uuid, required this.title, this.description, required this.createdAt, this.expiresAt, this.completedAt, required this.scope, required this.customOrder, final  Set<String> tagUuids = const {}, this.willBeTransferred = false}): _tagUuids = tagUuids,super._();
+  const _TodoDto({required this.$uuid, required this.$createdAt, required this.title, this.description, this.expiresAt, this.completedAt, required this.scope, required this.customOrder, final  Set<String> tagUuids = const {}, this.willBeTransferred = false}): _tagUuids = tagUuids,super._();
   
 
-@override final  String uuid;
+@override final  String $uuid;
+@override final  DateTime $createdAt;
 @override final  String title;
 @override final  String? description;
-@override final  DateTime createdAt;
 @override final  DateTime? expiresAt;
 @override final  DateTime? completedAt;
 @override final  ListScope scope;
@@ -245,16 +245,16 @@ _$TodoDtoCopyWith<_TodoDto> get copyWith => __$TodoDtoCopyWithImpl<_TodoDto>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TodoDto&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.customOrder, customOrder) || other.customOrder == customOrder)&&const DeepCollectionEquality().equals(other._tagUuids, _tagUuids)&&(identical(other.willBeTransferred, willBeTransferred) || other.willBeTransferred == willBeTransferred));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TodoDto&&(identical(other.$uuid, $uuid) || other.$uuid == $uuid)&&(identical(other.$createdAt, $createdAt) || other.$createdAt == $createdAt)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.customOrder, customOrder) || other.customOrder == customOrder)&&const DeepCollectionEquality().equals(other._tagUuids, _tagUuids)&&(identical(other.willBeTransferred, willBeTransferred) || other.willBeTransferred == willBeTransferred));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,uuid,title,description,createdAt,expiresAt,completedAt,scope,customOrder,const DeepCollectionEquality().hash(_tagUuids),willBeTransferred);
+int get hashCode => Object.hash(runtimeType,$uuid,$createdAt,title,description,expiresAt,completedAt,scope,customOrder,const DeepCollectionEquality().hash(_tagUuids),willBeTransferred);
 
 @override
 String toString() {
-  return 'TodoDto(uuid: $uuid, title: $title, description: $description, createdAt: $createdAt, expiresAt: $expiresAt, completedAt: $completedAt, scope: $scope, customOrder: $customOrder, tagUuids: $tagUuids, willBeTransferred: $willBeTransferred)';
+  return 'TodoDto(\$uuid: ${$uuid}, \$createdAt: ${$createdAt}, title: $title, description: $description, expiresAt: $expiresAt, completedAt: $completedAt, scope: $scope, customOrder: $customOrder, tagUuids: $tagUuids, willBeTransferred: $willBeTransferred)';
 }
 
 
@@ -265,7 +265,7 @@ abstract mixin class _$TodoDtoCopyWith<$Res> implements $TodoDtoCopyWith<$Res> {
   factory _$TodoDtoCopyWith(_TodoDto value, $Res Function(_TodoDto) _then) = __$TodoDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String uuid, String title, String? description, DateTime createdAt, DateTime? expiresAt, DateTime? completedAt, ListScope scope, String customOrder, Set<String> tagUuids, bool willBeTransferred
+ String $uuid, DateTime $createdAt, String title, String? description, DateTime? expiresAt, DateTime? completedAt, ListScope scope, String customOrder, Set<String> tagUuids, bool willBeTransferred
 });
 
 
@@ -282,13 +282,13 @@ class __$TodoDtoCopyWithImpl<$Res>
 
 /// Create a copy of TodoDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? title = null,Object? description = freezed,Object? createdAt = null,Object? expiresAt = freezed,Object? completedAt = freezed,Object? scope = null,Object? customOrder = null,Object? tagUuids = null,Object? willBeTransferred = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? $uuid = null,Object? $createdAt = null,Object? title = null,Object? description = freezed,Object? expiresAt = freezed,Object? completedAt = freezed,Object? scope = null,Object? customOrder = null,Object? tagUuids = null,Object? willBeTransferred = null,}) {
   return _then(_TodoDto(
-uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
-as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
+$uuid: null == $uuid ? _self.$uuid : $uuid // ignore: cast_nullable_to_non_nullable
+as String,$createdAt: null == $createdAt ? _self.$createdAt : $createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
-as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,expiresAt: freezed == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
+as String?,expiresAt: freezed == expiresAt ? _self.expiresAt : expiresAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
 as ListScope,customOrder: null == customOrder ? _self.customOrder : customOrder // ignore: cast_nullable_to_non_nullable

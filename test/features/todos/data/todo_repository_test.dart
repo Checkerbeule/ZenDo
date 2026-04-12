@@ -34,6 +34,23 @@ void main() {
     await db.close();
   });
 
+  Future<Todo> setupTodo({
+    required String title,
+    required ListScope scope,
+    String? description,
+    DateTime? expiry,
+  }) async {
+    return await entityRepo.createWithEntity(EntityType.todo, (Entity e) async {
+      return todoRepo.create(
+        uuid: e.uuid,
+        title: title,
+        scope: scope,
+        description: description,
+        expiresAt: expiry,
+      );
+    });
+  }
+
   group('TodoRepository create tests', () {
     test('TodoRepository create todo successfully', () async {
       final title = 'Title';
@@ -488,8 +505,55 @@ void main() {
     );
   });
 
-  group('TodoRepository update tests', () {
-    test('TodoRepository update new values successfully', () async {
+  test(
+    'TodoRepository readAllOpenByScopes successfully reads open todos and ignores inactive scopes',
+    () async {
+      // --- Arrange ---
+      final dailyTodo = await setupTodo(title: 'Daily', scope: ListScope.daily);
+      final weeklyTodo = await setupTodo(
+        title: 'Weekly',
+        scope: ListScope.weekly,
+      );
+      final monthlyTodo = await setupTodo(
+        title: 'Monthly',
+        scope: ListScope.monthly,
+      );
+      final yearlyTodo = await setupTodo(
+        title: 'Yearly',
+        scope: ListScope.yearly,
+      );
+      final backlogTodo = await setupTodo(
+        title: 'Backlog',
+        scope: ListScope.backlog,
+      );
+      final completedTodo = await setupTodo(
+        title: 'Completed',
+        scope: ListScope.daily,
+      );
+      final deletedTodo = await setupTodo(
+        title: 'Deleted',
+        scope: ListScope.daily,
+      );
+
+      await todoRepo.markAsCompleted(completedTodo.uuid);
+      await entityRepo.markAsDeleted(deletedTodo.uuid);
+
+      // --- Act ---
+      final activeScopes = Set<ListScope>.from(ListScope.values)
+        ..remove(ListScope.monthly);
+      final loadedTodos = await todoRepo.readAllOpenByScopes(activeScopes);
+
+      // --- Assert ---
+      expect(loadedTodos, hasLength(4));
+      expect(loadedTodos, contains(dailyTodo));
+      expect(loadedTodos, contains(weeklyTodo));
+      expect(loadedTodos, contains(yearlyTodo));
+      expect(loadedTodos, contains(backlogTodo));
+    },
+  );
+
+  group('TodoRepository updateDto tests', () {
+    test('TodoRepository updateDto new values successfully', () async {
       late final Entity entity;
       final Todo initialTodo = await entityRepo.createWithEntity(
         EntityType.todo,
@@ -522,7 +586,7 @@ void main() {
       expect(updatedTodo.customOrder, 'a2');
     });
 
-    test('TodoRepository update set values to null successfully', () async {
+    test('TodoRepository updateDto set values to null successfully', () async {
       late final Entity entity;
       final Todo initialTodo = await entityRepo.createWithEntity(
         EntityType.todo,
@@ -556,16 +620,93 @@ void main() {
       expect(updatedTodo.expiresAt, isNull);
     });
 
-    test('TodoRepository update on non existing todo fails', () async {
+    test('TodoRepository updateDto on non existing todo fails', () async {
       final nonExistinTodo = TodoDto(
+        $uuid: Uuid().v4(),
+        title: 'Not existing todo',
+        scope: ListScope.daily,
+        customOrder: 'a0',
+        $createdAt: DateTime.now().toUtc(),
+      );
+
+      final updated = await todoRepo.updateDto(nonExistinTodo);
+      final updatedTodo = await todoRepo.read(nonExistinTodo.uuid);
+
+      expect(updated, false);
+      expect(updatedTodo, isNull);
+    });
+
+    test('TodoRepository update new values successfully', () async {
+      final Todo initialTodo = await entityRepo.createWithEntity(
+        EntityType.todo,
+        (Entity e) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Todo',
+            scope: ListScope.daily,
+          );
+        },
+      );
+      final now = DateTime.now().toUtc();
+      final todoToUpdate = initialTodo.copyWith(
+        title: 'New title',
+        description: Value('Desc'),
+        scope: ListScope.yearly,
+        completedAt: Value(now),
+        customOrder: 'a2',
+      );
+
+      todoRepo.update(todoToUpdate);
+      final updatedTodo = await todoRepo.read(todoToUpdate.uuid);
+
+      expect(updatedTodo, isNotNull);
+      expect(updatedTodo!.title, 'New title');
+      expect(updatedTodo.description, 'Desc');
+      expect(updatedTodo.scope, ListScope.yearly);
+      expect(updatedTodo.completedAt, now);
+      expect(updatedTodo.customOrder, 'a2');
+    });
+
+    test('TodoRepository updateDto set values to null successfully', () async {
+      final Todo initialTodo = await entityRepo.createWithEntity(
+        EntityType.todo,
+        (Entity e) async {
+          return await todoRepo.create(
+            uuid: e.uuid,
+            title: 'Todo',
+            description: 'Desc',
+            scope: ListScope.daily,
+            expiresAt: DateTime.now().toUtc(),
+          );
+        },
+      );
+      final todoToUpdate = initialTodo.copyWith(
+        title: 'New title',
+        description: Value(null),
+        scope: ListScope.backlog,
+        expiresAt: Value(null),
+      );
+
+      final updated = await todoRepo.update(todoToUpdate);
+      final updatedTodo = await todoRepo.read(todoToUpdate.uuid);
+
+      expect(updated, true);
+      expect(updatedTodo, isNotNull);
+      expect(updatedTodo!.title, 'New title');
+      expect(updatedTodo.description, isNull);
+      expect(updatedTodo.scope, ListScope.backlog);
+      expect(updatedTodo.expiresAt, isNull);
+    });
+
+    test('TodoRepository updateDto on non existing todo fails', () async {
+      final nonExistinTodo = Todo(
         uuid: Uuid().v4(),
         title: 'Not existing todo',
         scope: ListScope.daily,
         customOrder: 'a0',
-        createdAt: DateTime.now().toUtc(),
       );
 
-      final updated = await todoRepo.updateDto(nonExistinTodo);
+      final updated = await todoRepo.update(nonExistinTodo);
       final updatedTodo = await todoRepo.read(nonExistinTodo.uuid);
 
       expect(updated, false);

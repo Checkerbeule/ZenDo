@@ -69,6 +69,7 @@ class TodoRepository {
               innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
             ])..where(
               db.entities.isDeleted.equals(false) &
+                  db.todos.completedAt.isNull() &
                   db.todos.scope.isIn(scopeNames),
             ))
             .get();
