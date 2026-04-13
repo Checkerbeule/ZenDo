@@ -85,6 +85,7 @@ class SharedPrefsAppSettingsService implements AppSettingsService {
 
   @override
   Set<ListScope>? getActiveListScopes() {
+    // TODO move to drift db
     final List<String>? scopeNames = prefs.getStringList(
       _activeListScopesPrefKey,
     );

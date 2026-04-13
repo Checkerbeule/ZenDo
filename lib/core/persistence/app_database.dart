@@ -42,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -146,7 +146,6 @@ class AppDatabase extends _$AppDatabase {
                   createdAt: timeStamp,
                   updatedAt: timeStamp,
                 ),
-                mode: InsertMode.insertOrIgnore,
               );
             }
           });
@@ -172,29 +171,6 @@ class AppDatabase extends _$AppDatabase {
         }
 
         if (from < 5) {
-          final List<TableInfo> tables = [entities, tags];
-          for (final table in tables) {
-            final dateTimeColumns = table.$columns.where(
-              (c) => c.type == DriftSqlType.dateTime,
-            );
-
-            if (dateTimeColumns.isNotEmpty) {
-              await m.alterTable(
-                TableMigration(
-                  table,
-                  columnTransformer: {
-                    for (final column in dateTimeColumns)
-                      column: CustomExpression<DateTime>(
-                        "COALESCE(datetime(${column.name}, 'unixepoch'), CURRENT_TIMESTAMP)",
-                      ),
-                  },
-                ),
-              );
-            }
-          }
-        }
-
-        if (from < 6) {
           await m.createTable(todos);
           await m.createIndex(
             Index(

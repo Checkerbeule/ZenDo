@@ -26,6 +26,7 @@ enum ListScope implements Comparable<ListScope> {
 
   // Hilfsmethode für die Migration
   static ListScope fromLegacyName(String name) {
+    // TODO remove on release
     return switch (name.toLowerCase()) {
       'daily' => ListScope.day,
       'weekly' => ListScope.week,
@@ -36,6 +37,7 @@ enum ListScope implements Comparable<ListScope> {
   }
 
   String get legacyName {
+    // TODO remove on release
     return switch (this) {
       ListScope.day => 'daily',
       ListScope.week => 'weekly',
