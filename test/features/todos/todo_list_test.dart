@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/core/persistence/hive/file_lock_helper.dart';
 import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
@@ -26,50 +26,50 @@ void main() {
 
     test('TodoList: backlog compareTo yearlyList is 1', () {
       final backlog_1 = TodoList(ListScope.backlog);
-      final yealrlyList = TodoList(ListScope.yearly);
+      final yealrlyList = TodoList(ListScope.year);
 
       expect(backlog_1.compareTo(yealrlyList), 1);
     });
 
     test('TodoList: yearlyList compareTo backlog is -1', () {
       final backlog_1 = TodoList(ListScope.backlog);
-      final yealrlyList = TodoList(ListScope.yearly);
+      final yealrlyList = TodoList(ListScope.year);
 
       expect(yealrlyList.compareTo(backlog_1), -1);
     });
 
     test('TodoList: weeklyList compareTo weeklyList is 0', () {
-      final weeklyList_1 = TodoList(ListScope.weekly);
-      final weeklyList_2 = TodoList(ListScope.weekly);
+      final weeklyList_1 = TodoList(ListScope.week);
+      final weeklyList_2 = TodoList(ListScope.week);
 
       expect(weeklyList_1.compareTo(weeklyList_2), 0);
     });
 
     test('TodoList: weeklyList compareTo itself is 0', () {
-      final weeklyList = TodoList(ListScope.weekly);
+      final weeklyList = TodoList(ListScope.week);
 
       expect(weeklyList.compareTo(weeklyList), 0);
     });
 
     test('TodoList: dailyList compareTo weeklyList is -1', () {
-      final dailyList = TodoList(ListScope.daily);
-      final weeklyList = TodoList(ListScope.weekly);
+      final dailyList = TodoList(ListScope.day);
+      final weeklyList = TodoList(ListScope.week);
 
       expect(dailyList.compareTo(weeklyList), -1);
     });
 
     test('TodoList: monthlyList compareTo weeklyList is 1', () {
-      final monthlyList = TodoList(ListScope.monthly);
-      final weeklyList = TodoList(ListScope.weekly);
+      final monthlyList = TodoList(ListScope.month);
+      final weeklyList = TodoList(ListScope.week);
 
       expect(monthlyList.compareTo(weeklyList), 1);
     });
 
     test('TodoList: sorted TodoList list', () {
-      final dailyList = TodoList(ListScope.daily);
-      final weeklyList = TodoList(ListScope.weekly);
-      final monthlyList = TodoList(ListScope.monthly);
-      final yearlyList = TodoList(ListScope.yearly);
+      final dailyList = TodoList(ListScope.day);
+      final weeklyList = TodoList(ListScope.week);
+      final monthlyList = TodoList(ListScope.month);
+      final yearlyList = TodoList(ListScope.year);
       final backlog = TodoList(ListScope.backlog);
 
       var lists = [weeklyList, yearlyList, backlog, dailyList, monthlyList];
@@ -112,9 +112,9 @@ void main() {
       test(
         'TodoList: addTodo: insertion of 2 todos with same title not possible',
         () async {
-          final list = TodoList(ListScope.daily);
-          final todo_1 = Todo(title: 'same title');
-          final todo_2 = Todo(title: 'same title');
+          final list = TodoList(ListScope.day);
+          final todo_1 = HiveTodo(title: 'same title');
+          final todo_2 = HiveTodo(title: 'same title');
 
           final firstInsertion = await list.addTodo(todo_1);
           final secondInsertion = await list.addTodo(todo_2);
@@ -128,8 +128,8 @@ void main() {
       test(
         'TodoList: addTodo: insertion of 2 equal todos not possible',
         () async {
-          final list = TodoList(ListScope.daily);
-          final todo = Todo(title: 'same title');
+          final list = TodoList(ListScope.day);
+          final todo = HiveTodo(title: 'same title');
 
           final firstInsertion = await list.addTodo(todo);
           final secondInsertion = await list.addTodo(todo);
@@ -143,9 +143,9 @@ void main() {
       test(
         'TodoList: addAll: insertion of 2 todos with same title not possible',
         () {
-          final list = TodoList(ListScope.daily);
-          final todo_1 = Todo(title: 'same title');
-          final todo_2 = Todo(title: 'same title');
+          final list = TodoList(ListScope.day);
+          final todo_1 = HiveTodo(title: 'same title');
+          final todo_2 = HiveTodo(title: 'same title');
 
           list.addAll([todo_1, todo_2]);
 
@@ -158,10 +158,10 @@ void main() {
       test(
         'TodoList: inserted todo to dailyList gets expirationDate tomorrow',
         () {
-          final dailyList = TodoList(ListScope.daily);
-          final todo = Todo(title: 'todo expires tomorrow');
+          final dailyList = TodoList(ListScope.day);
+          final todo = HiveTodo(title: 'todo expires tomorrow');
           dailyList.addTodo(todo);
-          final expectedDate = DateTime.now().add(Duration(days: 1)).normalized;
+          final expectedDate = DateTime.now().add(Duration(days: 1)).endOfDay;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -171,8 +171,8 @@ void main() {
       test(
         'TodoList: inserted todo to dailyList usind addAll gets no expirationDate',
         () {
-          final dailyList = TodoList(ListScope.daily);
-          final todo = Todo(title: 'todo expires tomorrow');
+          final dailyList = TodoList(ListScope.day);
+          final todo = HiveTodo(title: 'todo expires tomorrow');
           dailyList.addAll([todo]);
 
           expect(todo.expirationDate, null);
@@ -182,10 +182,10 @@ void main() {
       test(
         'TodoList: inserted todo to weekyList gets expirationDate in 7 days',
         () {
-          final weeklyList = TodoList(ListScope.weekly);
-          final todo = Todo(title: 'todo expires in 7 days');
+          final weeklyList = TodoList(ListScope.week);
+          final todo = HiveTodo(title: 'todo expires in 7 days');
           weeklyList.addTodo(todo);
-          final expectedDate = DateTime.now().add(Duration(days: 7)).normalized;
+          final expectedDate = DateTime.now().add(Duration(days: 7)).endOfDay;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -195,12 +195,12 @@ void main() {
       test(
         'TodoList: inserted todo to monthlyList gets expirationDate in 30 days',
         () {
-          final monthlyList = TodoList(ListScope.monthly);
-          final todo = Todo(title: 'todo expires in 30 days');
+          final monthlyList = TodoList(ListScope.month);
+          final todo = HiveTodo(title: 'todo expires in 30 days');
           monthlyList.addTodo(todo);
           final expectedDate = DateTime.now()
               .add(Duration(days: 30))
-              .normalized;
+              .endOfDay;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -210,12 +210,12 @@ void main() {
       test(
         'TodoList: inserted todo to yearlyList gets expirationDate in 365 days',
         () {
-          final yearlyList = TodoList(ListScope.yearly);
-          final todo = Todo(title: 'todo expires in 365 days');
+          final yearlyList = TodoList(ListScope.year);
+          final todo = HiveTodo(title: 'todo expires in 365 days');
           yearlyList.addTodo(todo);
           final expectedDate = DateTime.now()
               .add(Duration(days: 365))
-              .normalized;
+              .endOfDay;
 
           expect(todo.expirationDate != null, true);
           expect(todo.expirationDate, expectedDate);
@@ -224,7 +224,7 @@ void main() {
 
       test('TodoList: inserted todo to backlog gets no expirationDate', () {
         final backlog = TodoList(ListScope.backlog);
-        final todo = Todo(title: 'todo expires tomorrow');
+        final todo = HiveTodo(title: 'todo expires tomorrow');
         backlog.addTodo(todo);
 
         expect(todo.expirationDate == null, true);
@@ -233,9 +233,9 @@ void main() {
       test(
         'TodoList: inserted todo with expirationDate keps expirationDate',
         () async {
-          final list = TodoList(ListScope.daily);
-          final todo = Todo(title: 'todo with custom expirationDate');
-          final now = DateTime.now().normalized;
+          final list = TodoList(ListScope.day);
+          final todo = HiveTodo(title: 'todo with custom expirationDate');
+          final now = DateTime.now().endOfDay;
           todo.expirationDate = now;
 
           final added = await list.addTodo(todo);
@@ -248,9 +248,9 @@ void main() {
       test(
         'TodoList: inserted todo with expirationDate keps expirationDate',
         () async {
-          final list = TodoList(ListScope.daily);
-          final todo = Todo(title: 'todo with custom expirationDate');
-          final now = DateTime.now().add(Duration(days: 1)).normalized;
+          final list = TodoList(ListScope.day);
+          final todo = HiveTodo(title: 'todo with custom expirationDate');
+          final now = DateTime.now().add(Duration(days: 1)).endOfDay;
           todo.expirationDate = now;
 
           final added = await list.addTodo(todo);
@@ -263,9 +263,9 @@ void main() {
       test(
         'TodoList: todo with expirationDate that does not fit the scope of the list fails to be added',
         () async {
-          final list = TodoList(ListScope.daily);
-          final todo = Todo(title: 'todo with custom expirationDate');
-          final now = DateTime.now().add(Duration(days: 2)).normalized;
+          final list = TodoList(ListScope.day);
+          final todo = HiveTodo(title: 'todo with custom expirationDate');
+          final now = DateTime.now().add(Duration(days: 2)).endOfDay;
           todo.expirationDate = now;
 
           final added = await list.addTodo(todo);
@@ -276,8 +276,8 @@ void main() {
       );
 
       test('TodoList: restored todo keeps expirationDate', () {
-        final yearlyList = TodoList(ListScope.yearly);
-        final todo = Todo(title: 'todo expires in 365 days');
+        final yearlyList = TodoList(ListScope.year);
+        final todo = HiveTodo(title: 'todo expires in 365 days');
         yearlyList.addTodo(todo);
         yearlyList.markAsDone(todo);
         final expirationDate = todo.expirationDate;
@@ -288,8 +288,8 @@ void main() {
       });
     });
     test('TodoList: done todo is saved in doneList', () {
-      final yearlyList = TodoList(ListScope.yearly);
-      final todo = Todo(title: 'todo expires in 365 days');
+      final yearlyList = TodoList(ListScope.year);
+      final todo = HiveTodo(title: 'todo expires in 365 days');
       yearlyList.addTodo(todo);
       yearlyList.markAsDone(todo);
 
@@ -300,8 +300,8 @@ void main() {
 
     group('TodoList: completionDate tests', () {
       test('TodoList: done todo gets completionDate', () {
-        final yearlyList = TodoList(ListScope.yearly);
-        final todo = Todo(title: 'done todo with completionDate');
+        final yearlyList = TodoList(ListScope.year);
+        final todo = HiveTodo(title: 'done todo with completionDate');
         yearlyList.addTodo(todo);
         yearlyList.markAsDone(todo);
 
@@ -309,8 +309,8 @@ void main() {
       });
 
       test('TodoList: restored todo has no completionDate', () {
-        final yearlyList = TodoList(ListScope.yearly);
-        final todo = Todo(title: 'restored todo without completionDate');
+        final yearlyList = TodoList(ListScope.year);
+        final todo = HiveTodo(title: 'restored todo without completionDate');
         yearlyList.addTodo(todo);
         yearlyList.markAsDone(todo);
         yearlyList.restoreTodo(todo);
@@ -323,11 +323,11 @@ void main() {
       test(
         'TodoList: replaceTodo replacement successfull and index of replacement stays the same',
         () async {
-          final list = TodoList(ListScope.daily);
-          final todo_1 = Todo(title: 'todo 1');
-          final todo_2 = Todo(title: 'todo 2');
-          final todo_3 = Todo(title: 'todo 3');
-          final newTodo = Todo(title: 'new todo');
+          final list = TodoList(ListScope.day);
+          final todo_1 = HiveTodo(title: 'todo 1');
+          final todo_2 = HiveTodo(title: 'todo 2');
+          final todo_3 = HiveTodo(title: 'todo 3');
+          final newTodo = HiveTodo(title: 'new todo');
 
           list.addAll([todo_1, todo_2, todo_3]);
           final isReplaced = await list.replaceTodo(todo_2, newTodo);
@@ -343,8 +343,8 @@ void main() {
       test(
         'TodoList: replaceTodo replacement with edited description successfull',
         () async {
-          final list = TodoList(ListScope.daily);
-          final original = Todo(title: 'todo 1');
+          final list = TodoList(ListScope.day);
+          final original = HiveTodo(title: 'todo 1');
           final copy = original.copyWith(description: 'new description');
 
           list.addTodo(original);
@@ -359,9 +359,9 @@ void main() {
       test(
         'TodoList: replaceTodo modified copy of todo successfully replaced',
         () async {
-          final list = TodoList(ListScope.daily);
-          final oldTodo = Todo(title: 'original');
-          final newTodo = Todo.copy(oldTodo);
+          final list = TodoList(ListScope.day);
+          final oldTodo = HiveTodo(title: 'original');
+          final newTodo = HiveTodo.copy(oldTodo);
           newTodo.title = 'new title';
           list.addTodo(oldTodo);
 
@@ -374,10 +374,10 @@ void main() {
       );
 
       test('TodoList: replaceTodo with copy not possible', () async {
-        final list = TodoList(ListScope.daily);
-        final oldTodo = Todo(title: 'original');
+        final list = TodoList(ListScope.day);
+        final oldTodo = HiveTodo(title: 'original');
         list.addTodo(oldTodo);
-        final copy = Todo.copy(oldTodo);
+        final copy = HiveTodo.copy(oldTodo);
 
         final isReplaced = await list.replaceTodo(oldTodo, copy);
 
@@ -387,8 +387,8 @@ void main() {
       });
 
       test('TodoList: replaceTodo with same not possible', () async {
-        final list = TodoList(ListScope.daily);
-        final oldTodo = Todo(title: 'original');
+        final list = TodoList(ListScope.day);
+        final oldTodo = HiveTodo(title: 'original');
         list.addTodo(oldTodo);
 
         final isReplaced = await list.replaceTodo(oldTodo, oldTodo);
@@ -399,9 +399,9 @@ void main() {
       });
 
       test('TodoList: replaceTodo with non existent fails', () async {
-        final list = TodoList(ListScope.daily);
-        final oldTodo = Todo(title: 'original');
-        final newTodo = Todo(title: 'original');
+        final list = TodoList(ListScope.day);
+        final oldTodo = HiveTodo(title: 'original');
+        final newTodo = HiveTodo(title: 'original');
 
         final isReplaced = await list.replaceTodo(oldTodo, newTodo);
 
@@ -410,12 +410,12 @@ void main() {
       });
 
       test('TodoList: replaceTodo with same titile fails', () async {
-        final list = TodoList(ListScope.daily);
+        final list = TodoList(ListScope.day);
         final title = 'title';
-        final oldTodo = Todo(title: 'todo to replace');
-        final newTodo = Todo(title: title);
-        final todo_1 = Todo(title: 'another todo');
-        final todoWithConflictingTitle = Todo(title: title);
+        final oldTodo = HiveTodo(title: 'todo to replace');
+        final newTodo = HiveTodo(title: title);
+        final todo_1 = HiveTodo(title: 'another todo');
+        final todoWithConflictingTitle = HiveTodo(title: title);
         list.addAll([todo_1, oldTodo, todoWithConflictingTitle]);
 
         final isReplaced = await list.replaceTodo(oldTodo, newTodo);
@@ -430,8 +430,8 @@ void main() {
 
     group('TodoList: delete todo tests', () {
       test('TodoList: deleteTodo: deleting existent todo successfull', () {
-        final list = TodoList(ListScope.daily);
-        final todo = Todo(title: 'title');
+        final list = TodoList(ListScope.day);
+        final todo = HiveTodo(title: 'title');
         list.addTodo(todo);
 
         list.deleteTodo(todo);
@@ -442,9 +442,9 @@ void main() {
       test(
         'TodoList: deleteTodo: deleting non existent todo does not effect list',
         () {
-          final list = TodoList(ListScope.daily);
-          final existingTodo = Todo(title: 'title');
-          final nonExistingTodo = Todo(title: 'not existent');
+          final list = TodoList(ListScope.day);
+          final existingTodo = HiveTodo(title: 'title');
+          final nonExistingTodo = HiveTodo(title: 'not existent');
           list.addTodo(existingTodo);
 
           list.deleteTodo(nonExistingTodo);
@@ -455,10 +455,10 @@ void main() {
       );
 
       test('TodoList: deleteAll: deleting existent todos successfull', () {
-        final list = TodoList(ListScope.daily);
-        final todo_1 = Todo(title: '1');
-        final todo_2 = Todo(title: '2');
-        final todo_3 = Todo(title: '3');
+        final list = TodoList(ListScope.day);
+        final todo_1 = HiveTodo(title: '1');
+        final todo_2 = HiveTodo(title: '2');
+        final todo_3 = HiveTodo(title: '3');
         list.addAll([todo_1, todo_2, todo_3]);
 
         list.deleteAll([todo_1, todo_3]);
@@ -470,10 +470,10 @@ void main() {
       test(
         'TodoList: deleteAll: deleting non existent todos does not effect list',
         () {
-          final list = TodoList(ListScope.daily);
-          final todo_1 = Todo(title: '1');
-          final todo_2 = Todo(title: '2');
-          final todo_3 = Todo(title: '3');
+          final list = TodoList(ListScope.day);
+          final todo_1 = HiveTodo(title: '1');
+          final todo_2 = HiveTodo(title: '2');
+          final todo_3 = HiveTodo(title: '3');
           list.addTodo(todo_2);
 
           list.deleteAll([todo_1, todo_3]);
@@ -486,8 +486,8 @@ void main() {
 
     group('TodoList: isTodoTitleVacant tests', () {
       test('TodoList: isTodoTitleVacant returns true', () {
-        final list = TodoList(ListScope.daily);
-        final todo = Todo(title: 'Title');
+        final list = TodoList(ListScope.day);
+        final todo = HiveTodo(title: 'Title');
         list.addTodo(todo);
 
         final isVacant = list.isTodoTitleVacant('Other title');
@@ -497,8 +497,8 @@ void main() {
 
       test('TodoList: isTodoTitleVacant returns false', () {
         final title = 'same title';
-        final list = TodoList(ListScope.daily);
-        final todo = Todo(title: title);
+        final list = TodoList(ListScope.day);
+        final todo = HiveTodo(title: title);
         list.addTodo(todo);
 
         final isVacant = list.isTodoTitleVacant(title);
@@ -510,8 +510,8 @@ void main() {
         'TodoList: isTodoTitleVacant returns false even with leading an tailing spaces',
         () {
           final title = 'same title';
-          final list = TodoList(ListScope.daily);
-          final todo = Todo(title: '   $title');
+          final list = TodoList(ListScope.day);
+          final todo = HiveTodo(title: '   $title');
           list.addTodo(todo);
 
           final isVacant = list.isTodoTitleVacant('$title   ');
@@ -525,10 +525,10 @@ void main() {
       test(
         'TodoList: initMaxOrderAfterLoad sets _currentMaxOrder correctly',
         () {
-          final list = TodoList(ListScope.daily);
-          final todo_1 = Todo(title: '1');
-          final todo_2 = Todo(title: '2');
-          final todo_3 = Todo(title: '3');
+          final list = TodoList(ListScope.day);
+          final todo_1 = HiveTodo(title: '1');
+          final todo_2 = HiveTodo(title: '2');
+          final todo_3 = HiveTodo(title: '3');
           list.addAll([todo_1, todo_2]);
 
           list.initMaxOrderAfterLoad();
@@ -539,10 +539,10 @@ void main() {
       );
 
       test('TodoList: addTodo sets order correctly', () {
-        final list = TodoList(ListScope.daily);
-        final todo_1 = Todo(title: '1');
-        final todo_2 = Todo(title: '2');
-        final todo_3 = Todo(title: '3');
+        final list = TodoList(ListScope.day);
+        final todo_1 = HiveTodo(title: '1');
+        final todo_2 = HiveTodo(title: '2');
+        final todo_3 = HiveTodo(title: '3');
 
         list.addTodo(todo_3);
         list.addTodo(todo_1);
@@ -557,10 +557,10 @@ void main() {
       });
 
       test('TodoList: addAll sets order correctly', () {
-        final list = TodoList(ListScope.daily);
-        final todo_1 = Todo(title: '1');
-        final todo_2 = Todo(title: '2');
-        final todo_3 = Todo(title: '3');
+        final list = TodoList(ListScope.day);
+        final todo_1 = HiveTodo(title: '1');
+        final todo_2 = HiveTodo(title: '2');
+        final todo_3 = HiveTodo(title: '3');
 
         list.addAll([todo_3, todo_1, todo_2]);
 
@@ -573,8 +573,8 @@ void main() {
       });
 
       test('TodoList: deleteTodo keeps order on todo', () {
-        final list = TodoList(ListScope.daily);
-        final todo = Todo(title: 'todo');
+        final list = TodoList(ListScope.day);
+        final todo = HiveTodo(title: 'todo');
 
         list.addTodo(todo);
         list.deleteTodo(todo);
@@ -583,9 +583,9 @@ void main() {
       });
 
       test('TodoList: deleteAll keeps order on todo', () {
-        final list = TodoList(ListScope.daily);
-        final todo_1 = Todo(title: '1');
-        final todo_2 = Todo(title: '2');
+        final list = TodoList(ListScope.day);
+        final todo_1 = HiveTodo(title: '1');
+        final todo_2 = HiveTodo(title: '2');
 
         list.addAll([todo_1, todo_2]);
         list.deleteAll([todo_1, todo_2]);
@@ -595,8 +595,8 @@ void main() {
       });
 
       test('TodoList: markAsDone keeps order on todo', () {
-        final list = TodoList(ListScope.daily);
-        final todo = Todo(title: 'todo');
+        final list = TodoList(ListScope.day);
+        final todo = HiveTodo(title: 'todo');
 
         list.addTodo(todo);
         list.markAsDone(todo);
@@ -605,9 +605,9 @@ void main() {
       });
 
       test('TodoList: restoreTodo keeps order on todo', () {
-        final list = TodoList(ListScope.daily);
-        final todo_1 = Todo(title: '1');
-        final todo_2 = Todo(title: '2');
+        final list = TodoList(ListScope.day);
+        final todo_1 = HiveTodo(title: '1');
+        final todo_2 = HiveTodo(title: '2');
 
         list.addAll([todo_1, todo_2]);
         list.markAsDone(todo_1);
@@ -619,8 +619,8 @@ void main() {
       test(
         'TodoList: reorder on moved todo that is not in list not possible',
         () {
-          final list = TodoList(ListScope.daily);
-          final todoNotInList = Todo(title: '0');
+          final list = TodoList(ListScope.day);
+          final todoNotInList = HiveTodo(title: '0');
 
           list.reorder(todoNotInList, null);
 
@@ -629,10 +629,10 @@ void main() {
       );
 
       test('TodoList: reorder successfull', () {
-        final list = TodoList(ListScope.daily);
-        final todo_1 = Todo(title: '1');
-        final todo_2 = Todo(title: '2');
-        final todo_3 = Todo(title: '3');
+        final list = TodoList(ListScope.day);
+        final todo_1 = HiveTodo(title: '1');
+        final todo_2 = HiveTodo(title: '2');
+        final todo_3 = HiveTodo(title: '3');
         list.addAll([todo_1, todo_2, todo_3]);
 
         list.reorder(todo_3, todo_1);
@@ -643,10 +643,10 @@ void main() {
       });
 
       test('TodoList: reorder to first elem successfull', () {
-        final list = TodoList(ListScope.daily);
-        final todo_1 = Todo(title: '1');
-        final todo_2 = Todo(title: '2');
-        final todo_3 = Todo(title: '3');
+        final list = TodoList(ListScope.day);
+        final todo_1 = HiveTodo(title: '1');
+        final todo_2 = HiveTodo(title: '2');
+        final todo_3 = HiveTodo(title: '3');
         list.addAll([todo_1, todo_2, todo_3]);
         list.reorder(todo_3, null);
 
@@ -656,10 +656,10 @@ void main() {
       });
 
       test('TodoList: reorder to last elem successfull', () {
-        final list = TodoList(ListScope.daily);
-        final todo_1 = Todo(title: '1');
-        final todo_2 = Todo(title: '2');
-        final todo_3 = Todo(title: '3');
+        final list = TodoList(ListScope.day);
+        final todo_1 = HiveTodo(title: '1');
+        final todo_2 = HiveTodo(title: '2');
+        final todo_3 = HiveTodo(title: '3');
         list.addAll([todo_1, todo_2, todo_3]);
         list.reorder(todo_2, todo_3);
 
@@ -669,10 +669,10 @@ void main() {
       });
 
       test('TodoList: reorder with _normalizeOrder successfull', () {
-        final list = TodoList(ListScope.daily);
-        final todo_1 = Todo(title: '1');
-        final todo_2 = Todo(title: '2');
-        final todo_3 = Todo(title: '3');
+        final list = TodoList(ListScope.day);
+        final todo_1 = HiveTodo(title: '1');
+        final todo_2 = HiveTodo(title: '2');
+        final todo_3 = HiveTodo(title: '3');
         list.addAll([todo_1, todo_2, todo_3]);
         todo_2.order = todo_1.order! + 1;
 

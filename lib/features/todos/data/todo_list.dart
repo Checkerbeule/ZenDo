@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:hive/hive.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 import 'package:zen_do/core/utils/time_util.dart';
 
@@ -15,10 +15,10 @@ class TodoList implements Comparable<TodoList> {
   final ListScope scope;
 
   @HiveField(1)
-  List<Todo> todos = [];
+  List<HiveTodo> todos = [];
 
   @HiveField(2)
-  List<Todo> doneTodos = [];
+  List<HiveTodo> doneTodos = [];
 
   @HiveField(3)
   TodoList(this.scope);
@@ -27,7 +27,7 @@ class TodoList implements Comparable<TodoList> {
     return doneTodos.length;
   }
 
-  List<Todo> get allTodos {
+  List<HiveTodo> get allTodos {
     return [...todos, ...doneTodos];
   }
 
@@ -47,11 +47,11 @@ class TodoList implements Comparable<TodoList> {
     if (scope == ListScope.backlog) {
       return null;
     } else {
-      return DateTime.now().add(scope.duration).normalized;
+      return DateTime.now().add(scope.duration).endOfDay;
     }
   }
 
-  void _setOrder(Todo todo) {
+  void _setOrder(HiveTodo todo) {
     _currentMaxOrder += 1000;
     todo.order = _currentMaxOrder;
   }
@@ -59,9 +59,9 @@ class TodoList implements Comparable<TodoList> {
   /// Adds the [todo] to the list.
   /// If the [todo] does not have an expirationDate, calculates the expirationDate based on the ListScope.
   /// Uses [PersistenceHelper] to store the list with the added [todo]
-  /// Returns true if the new [Todo] was successfully added.
-  /// Returns false if there allready exists a [Todo] with same title.
-  Future<bool> addTodo(Todo todo) async {
+  /// Returns true if the new [HiveTodo] was successfully added.
+  /// Returns false if there allready exists a [HiveTodo] with same title.
+  Future<bool> addTodo(HiveTodo todo) async {
     if (isTodoTitleVacant(todo.title)) {
       _setOrder(todo);
       todo.listScope = scope;
@@ -81,8 +81,8 @@ class TodoList implements Comparable<TodoList> {
   /// Adds all [todosToAdd] to the list.
   /// Does NOT calculate the expirationDate.
   /// Uses [PersistenceHelper] to store the list with the added [todosToAdd].
-  Future<List<Todo>> addAll(Iterable<Todo> todosToAdd) async {
-    List<Todo> addedTodos = [];
+  Future<List<HiveTodo>> addAll(Iterable<HiveTodo> todosToAdd) async {
+    List<HiveTodo> addedTodos = [];
     for (final todo in todosToAdd) {
       if (isTodoTitleVacant(todo.title)) {
         todos.add(todo);
@@ -97,7 +97,7 @@ class TodoList implements Comparable<TodoList> {
     return addedTodos;
   }
 
-  Future<bool> deleteTodo(Todo todo) async {
+  Future<bool> deleteTodo(HiveTodo todo) async {
     final isDeleted = todos.remove(todo);
     if (isDeleted) {
       await PersistenceHelper.saveList(this);
@@ -105,7 +105,7 @@ class TodoList implements Comparable<TodoList> {
     return isDeleted;
   }
 
-  Future<void> deleteAll(Iterable<Todo> todosToDelete) async {
+  Future<void> deleteAll(Iterable<HiveTodo> todosToDelete) async {
     final int initialLength = todos.length;
     for (final todo in todosToDelete) {
       todos.remove(todo);
@@ -115,7 +115,7 @@ class TodoList implements Comparable<TodoList> {
     }
   }
 
-  Future<void> markAsDone(Todo todo) async {
+  Future<void> markAsDone(HiveTodo todo) async {
     final bool removed = todos.remove(todo);
     if (removed) {
       doneTodos.add(todo);
@@ -124,7 +124,7 @@ class TodoList implements Comparable<TodoList> {
     }
   }
 
-  Future<bool> restoreTodo(Todo todo) async {
+  Future<bool> restoreTodo(HiveTodo todo) async {
     bool isRestorable = isTodoTitleVacant(todo.title);
     if (isRestorable) {
       todos.add(todo);
@@ -135,9 +135,9 @@ class TodoList implements Comparable<TodoList> {
     return isRestorable;
   }
 
-  /// Updates a [Todo] by replacing the [oldTodo] with [newTodo].
+  /// Updates a [HiveTodo] by replacing the [oldTodo] with [newTodo].
   /// Returns true if replacement was successful, otherwise false.
-  Future<bool> replaceTodo(Todo oldTodo, Todo newTodo) async {
+  Future<bool> replaceTodo(HiveTodo oldTodo, HiveTodo newTodo) async {
     bool isReplaced = false;
     if (todos.contains(oldTodo) && oldTodo != newTodo) {
       final indexOfOldTodo = todos.indexOf(oldTodo);
@@ -158,7 +158,7 @@ class TodoList implements Comparable<TodoList> {
     return isReplaced;
   }
 
-  Future<void> reorder(Todo moved, Todo? previous) async {
+  Future<void> reorder(HiveTodo moved, HiveTodo? previous) async {
     if (!allTodos.contains(moved)) return;
     final lowerOrder = previous?.order ?? 0;
     final upperOrder = _findNextHigher(lowerOrder)?.order ?? lowerOrder + 2000;
@@ -173,8 +173,8 @@ class TodoList implements Comparable<TodoList> {
     await PersistenceHelper.saveList(this);
   }
 
-  Todo? _findNextHigher(int lowerOrder) {
-    return allTodos.where((t) => (t.order ?? 0) > lowerOrder).fold<Todo?>(
+  HiveTodo? _findNextHigher(int lowerOrder) {
+    return allTodos.where((t) => (t.order ?? 0) > lowerOrder).fold<HiveTodo?>(
       null,
       (previous, elem) {
         if (previous == null || previous.order! > elem.order!) {
@@ -195,7 +195,7 @@ class TodoList implements Comparable<TodoList> {
     _currentMaxOrder = allTodos.isEmpty ? 0 : allTodos.last.order!;
   }
 
-  /// Checks wether a [Todo] allready exists with the given [title].
+  /// Checks wether a [HiveTodo] allready exists with the given [title].
   /// Returns true if the given [title] is not yet used, otherwise false.
   bool isTodoTitleVacant(String title) {
     return !todos.any((todo) => todo.title == title.trim());

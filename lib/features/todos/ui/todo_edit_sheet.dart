@@ -8,11 +8,11 @@ import 'package:zen_do/core/ui/base_bottom_sheet.dart';
 import 'package:zen_do/core/ui/dialog_helper.dart';
 import 'package:zen_do/core/ui/standard_buttons.dart';
 import 'package:zen_do/core/utils/time_util.dart';
-import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/l10n/tags_l10n_extension.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_manager.dart';
 import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
@@ -33,7 +33,7 @@ class TodoEditSheet extends StatefulWidget {
     required this.listScope,
   }) : todo = null;
 
-  final Todo? todo;
+  final HiveTodo? todo;
   final TodoState todoState;
   final ListScope? listScope;
 
@@ -42,7 +42,7 @@ class TodoEditSheet extends StatefulWidget {
 }
 
 class _TodoEditSheetState extends State<TodoEditSheet> {
-  late final Todo? todo;
+  late final HiveTodo? todo;
   late final ListManager manager;
   late final bool isNewTodo;
 
@@ -97,7 +97,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
   Widget build(BuildContext context) {
     //final loc = TodosLocalizations.of(context);
     final locale = Localizations.localeOf(context);
-    final TagRepository tagRepository = context.read<TagRepository>();
+    final TagService tagService = context.read<TagService>();
     final isTodoCompleted = todo?.completionDate != null;
 
     final List<DropdownMenuItem<ListScope>> listScopeDropDownItems = manager
@@ -354,7 +354,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
             ),
             const SizedBox(height: 5),
             StreamBuilder<List<Tag>>(
-              stream: tagRepository.watchTags(),
+              stream: tagService.watchAll(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   final tags = snapshot.data!;
@@ -424,12 +424,12 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
         onSavePressed: () async {
           if (isTodoEdited) {
             if (formKey.currentState!.validate()) {
-              late final Todo todoToReturn;
+              late final HiveTodo todoToReturn;
               final selectedExpirationDate = selectedScope == ListScope.backlog
                   ? null
                   : parseLocalized(expirationDateController.text, locale);
               if (isNewTodo) {
-                todoToReturn = Todo(
+                todoToReturn = HiveTodo(
                   title: titleController.text,
                   description: descriptionController.text,
                   expirationDate: selectedExpirationDate,

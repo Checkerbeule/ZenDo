@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:logger/logger.dart';
 import 'package:synchronized/synchronized.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/core/persistence/hive/file_lock_helper.dart';
 
@@ -84,8 +84,8 @@ class PersistenceHelper {
     await _runListOperationSafely(() async {
       final box = await _getListBox();
       for (final list in lists) {
-        await box.delete(list.scope.name);
-        await box.put(list.scope.name, list);
+        await box.delete(list.scope.legacyName);
+        await box.put(list.scope.legacyName, list);
       }
     });
   }
@@ -98,8 +98,8 @@ class PersistenceHelper {
   static Future<void> saveList(TodoList list) async {
     await _runListOperationSafely(() async {
       final box = await _getListBox();
-      await box.delete(list.scope.name);
-      await box.put(list.scope.name, list);
+      await box.delete(list.scope.legacyName);
+      await box.put(list.scope.legacyName, list);
     });
   }
 
@@ -112,7 +112,7 @@ class PersistenceHelper {
       final lists = <TodoList>[];
 
       for (final scope in ListScope.values) {
-        final list = box.get(scope.name);
+        final list = box.get(scope.legacyName);
         if (list != null) {
           list.initMaxOrderAfterLoad();
           lists.add(list);
