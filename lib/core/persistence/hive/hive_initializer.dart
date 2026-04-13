@@ -15,7 +15,7 @@ class HiveInitializer {
   }
 
   static void _registerAdapters() {
-    Hive.registerAdapter(TodoAdapter());
+    Hive.registerAdapter(HiveTodoAdapter());
     Hive.registerAdapter(TodoListAdapter());
     Hive.registerAdapter(ListScopeAdapter());
   }

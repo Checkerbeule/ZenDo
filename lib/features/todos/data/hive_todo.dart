@@ -46,13 +46,15 @@ class HiveTodo {
   Set<String> tagUuids;
 
   HiveTodo({
+    String? id,
     required String title,
     String? description,
     this.expirationDate,
+    DateTime? creationDate,
     this.listScope,
     Set<String>? tagUuids,
-  }) : id = Uuid().v4(),
-       creationDate = DateTime.now(),
+  }) : id = id ?? Uuid().v4(),
+       creationDate = creationDate ?? DateTime.now(),
        tagUuids = tagUuids != null ? Set.from(tagUuids) : {} {
     this.title = title;
     this.description = description;

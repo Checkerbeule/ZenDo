@@ -6,7 +6,7 @@ part of 'hive_todo.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class TodoAdapter extends TypeAdapter<HiveTodo> {
+class HiveTodoAdapter extends TypeAdapter<HiveTodo> {
   @override
   final int typeId = 0;
 
@@ -17,10 +17,12 @@ class TodoAdapter extends TypeAdapter<HiveTodo> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return HiveTodo(
-        title: fields[0] as String,
+        id: fields[7] as String?,
         expirationDate: fields[3] as DateTime?,
+        creationDate: fields[2] as DateTime?,
         listScope: fields[5] as ListScope?,
         tagUuids: (fields[8] as List?)?.cast<String>().toSet(),
+        title: fields[0] as String,
       )
       .._title = fields[0] as String
       .._description = fields[1] as String?
@@ -58,7 +60,7 @@ class TodoAdapter extends TypeAdapter<HiveTodo> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TodoAdapter &&
+      other is HiveTodoAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/persistence/entities.dart';
+import 'package:zen_do/core/utils/time_util.dart';
 import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_scope.dart';
@@ -35,11 +36,11 @@ class HiveToDriftMigrationService {
           sortedTodos.sort((a, b) => (a.order ?? -1).compareTo(b.order ?? -1));
 
           logger.i(
-            "Inserting ${list.allTodos.length} todos from hive list '${list.scope.name}' to Drift ...",
+            "Inserting ${sortedTodos.length} todos from hive list '${list.scope.name}' to Drift ...",
           );
 
           String lastOrder = 'a0';
-          for (final todo in list.allTodos) {
+          for (final todo in sortedTodos) {
             _createTodo(batch, todo, list.scope.name, lastOrder);
             lastOrder = FractionalIndexing.generateKeyBetween(lastOrder, null);
 
@@ -109,7 +110,7 @@ class HiveToDriftMigrationService {
         scope: Value(
           ListScope.fromLegacyName(todo.listScope?.name ?? scopeOfList),
         ),
-        expiresAt: Value(todo.expirationDate),
+        expiresAt: Value(todo.expirationDate?.endOfDay),
         completedAt: Value(todo.completionDate),
         customOrder: Value(lastOrder),
       ),
