@@ -9,11 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/domain/page_type.dart';
 import 'package:zen_do/core/l10n/app_l10n_extension.dart';
-import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 import 'package:zen_do/core/ui/loading_screen.dart';
-import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_manager.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/todo_list_screen.dart';
 import 'package:zen_do/main.dart';
@@ -50,6 +49,7 @@ class TodoState extends ChangeNotifier {
   }
 
   Future<void> _initData() async {
+    // TODO use provider to retreive settingsService
     final AppSettingsService settings =
         await SharedPrefsAppSettingsService.getInstance();
     final loadedScopes = settings.getActiveListScopes();
@@ -67,7 +67,7 @@ class TodoState extends ChangeNotifier {
     }
 
     try {
-      List<TodoList> loadedLists = await PersistenceHelper.loadAll();
+      List<TodoList> loadedLists = []; //await PersistenceHelper.loadAll();
       listManager = ListManager(loadedLists, activeScopes: activeScopes);
 
       var prefs = await SharedPreferences.getInstance();
@@ -77,8 +77,8 @@ class TodoState extends ChangeNotifier {
         logger.d(
           'Transfering todos on app start. Last run: $lastTransferDateString',
         );
-        listManager!.transferTodos();
-        await prefs.setString('lastTodoTransferDate', now);
+        //listManager!.transferTodos();
+        //await prefs.setString('lastTodoTransferDate', now);
       }
 
       isLoading = false;
@@ -147,60 +147,73 @@ class TodoScreen extends StatelessWidget {
     final loc = TodosLocalizations.of(context);
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
-        final listManager = todoState.listManager;
+        final listManager = todoState.listManager!;
         if (todoState.isLoadingDataFailed) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showLoadingErrorDialog(context, todoState.errorMessage!);
           });
         }
 
-        return todoState.isLoading
-            ? LoadingScreen(message: loc.loadingTodosIndicator)
-            : DefaultTabController(
-                initialIndex: 0,
-                length: listManager!.listCount,
-                child: Scaffold(
-                  appBar: AppBar(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer,
-                    toolbarHeight: 0,
-                    bottom: TabBar(
-                      labelPadding: const EdgeInsets.symmetric(horizontal: 15),
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.center,
-                      dividerColor: Theme.of(context).primaryColor,
-                      tabs: [
-                        for (var list in listManager.lists)
-                          Tab(
-                            height: 60,
-                            icon: Badge(
-                              isLabelVisible:
-                                  listManager.toBeTransferredOrExpiredCount(
-                                    list,
-                                  ) >
-                                  0,
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.tertiary,
-                              label: Text(
-                                '${listManager.toBeTransferredOrExpiredCount(list)}',
-                              ),
-                              child: Icon(list.scope.icon),
-                            ),
-                            text: list.scope.listName(context),
+        return Consumer<AppSettingsService>(
+          builder: (context, settingsService, child) {
+            return todoState.isLoading
+                ? LoadingScreen(message: loc.loadingTodosIndicator)
+                : DefaultTabController(
+                    initialIndex: 0,
+                    length: settingsService
+                        .getActiveListScopes()!
+                        .length, //listManager!.listCount,
+                    child: Scaffold(
+                      appBar: AppBar(
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer,
+                        toolbarHeight: 0,
+                        bottom: TabBar(
+                          labelPadding: const EdgeInsets.symmetric(
+                            horizontal: 15,
                           ),
-                      ],
+                          isScrollable: true,
+                          tabAlignment: TabAlignment.center,
+                          dividerColor: Theme.of(context).primaryColor,
+                          tabs: [
+                            for (var scope
+                                in settingsService.getActiveListScopes()!)
+                              Tab(
+                                height: 60,
+                                icon: Badge(
+                                  isLabelVisible: true,
+                                  // listManager.toBeTransferredOrExpiredCount(
+                                  //   list,
+                                  // ) >
+                                  // 0,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.tertiary,
+                                  label: Text(
+                                    'x',
+                                    //'${listManager.toBeTransferredOrExpiredCount(list)}',
+                                  ),
+                                  child: Icon(scope.icon),
+                                ),
+                                text: scope.listName(context),
+                              ),
+                          ],
+                        ),
+                      ),
+                      body: TabBarView(
+                        children: <Widget>[
+                          for (var list in listManager.lists)
+                            TodoListScreen(
+                              key: ValueKey(list.scope),
+                              list: list,
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                  body: TabBarView(
-                    children: <Widget>[
-                      for (var list in listManager.lists)
-                        TodoListScreen(list: list),
-                    ],
-                  ),
-                ),
-              );
+                  );
+          },
+        );
       },
     );
   }

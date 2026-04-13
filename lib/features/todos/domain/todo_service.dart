@@ -306,4 +306,9 @@ class TodoService {
     }
     return _sortedActiveScopes.elementAt(indexOfScope - 1);
   }
+
+  Future<int> delete(TodoDto todo) async {
+    // TODO differ if cloud sync is active or not
+    return await entityRepo.hardDelete(todo.uuid);
+  }
 }

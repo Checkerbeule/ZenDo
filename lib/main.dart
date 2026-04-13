@@ -2,6 +2,7 @@ import 'package:arb_utils/state_managers/l10n_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/domain/page_type.dart';
 import 'package:zen_do/core/domain/zen_do_lifecycle_listener.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
@@ -15,6 +16,9 @@ import 'package:zen_do/core/ui/coming_soon_screen.dart';
 import 'package:zen_do/features/settings/ui/settings_screen.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
 import 'package:zen_do/features/tags/domain/tag_service.dart';
+import 'package:zen_do/features/todos/data/todo_repository.dart';
+import 'package:zen_do/features/todos/data/todo_tags_repository.dart';
+import 'package:zen_do/features/todos/domain/todo_service.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
 Logger logger = Logger(level: Level.debug);
@@ -36,10 +40,17 @@ void main() async {
     logger.e("Migration from Hive to Drift failed: $e");
   }
 
+  final AppSettingsService settingsService = await SharedPrefsAppSettingsService.getInstance();
+
   runApp(
-    Provider<AppDatabase>(
-      create: (_) => database,
-      dispose: (_, db) => db.close(),
+    MultiProvider(
+      providers: [
+        Provider<AppDatabase>(
+          create: (_) => database,
+          dispose: (_, db) => db.close(),
+        ),
+        Provider<AppSettingsService>.value(value: settingsService),
+      ],
       child: const ZenDoApp(),
     ),
   );
@@ -59,9 +70,28 @@ class ZenDoApp extends StatelessWidget {
         ProxyProvider<AppDatabase, EntityRepository>(
           update: (_, db, _) => EntityRepository(db),
         ),
-        ProxyProvider2<AppDatabase, EntityRepository, TagService>(
-          update: (_, db, entityRepo, _) =>
-              TagService(tagRepo: TagRepository(db), entityRepo: entityRepo),
+        ProxyProvider<AppDatabase, TagRepository>(
+          update: (_, db, _) => TagRepository(db),
+        ),
+        ProxyProvider2<TagRepository, EntityRepository, TagService>(
+          update: (_, tagRepo, entityRepo, _) =>
+              TagService(tagRepo: tagRepo, entityRepo: entityRepo),
+        ),
+        ProxyProvider4<
+          AppDatabase,
+          EntityRepository,
+          TagRepository,
+          AppSettingsService,
+          TodoService
+        >(
+          update: (_, db, entityRepo, tagRepo, settingsService, _) =>
+              TodoService(
+                todoRepo: TodoRepository(db),
+                entityRepo: entityRepo,
+                todoTagsRepo: TodoTagsRepository(db),
+                tagRepo: tagRepo,
+                settingsService: settingsService,
+              ),
         ),
 
         ChangeNotifierProvider<ProviderL10n>(create: (_) => ProviderL10n()),

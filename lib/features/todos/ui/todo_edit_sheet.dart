@@ -15,6 +15,7 @@ import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_manager.dart';
+import 'package:zen_do/features/todos/domain/todo_dto.dart';
 import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
@@ -33,7 +34,7 @@ class TodoEditSheet extends StatefulWidget {
     required this.listScope,
   }) : todo = null;
 
-  final HiveTodo? todo;
+  final TodoDto? todo;
   final TodoState todoState;
   final ListScope? listScope;
 
@@ -42,7 +43,7 @@ class TodoEditSheet extends StatefulWidget {
 }
 
 class _TodoEditSheetState extends State<TodoEditSheet> {
-  late final HiveTodo? todo;
+  late final TodoDto? todo;
   late final ListManager manager;
   late final bool isNewTodo;
 
@@ -59,10 +60,10 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
     final locale = Localizations.localeOf(context);
     return todo!.title != titleController.text.trim() ||
         todo!.description != descriptionController.text.trim() ||
-        todo!.listScope != selectedScope ||
+        todo!.scope != selectedScope ||
         !setEquals(todo!.tagUuids, tagUuids) ||
         (selectedScope != ListScope.backlog &&
-            todo!.expirationDate !=
+            todo!.expiresAt !=
                 parseLocalized(expirationDateController.text, locale));
   }
 
@@ -74,7 +75,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
     manager = widget.todoState.listManager!;
     isNewTodo = todo == null;
 
-    selectedScope = todo?.listScope ?? widget.listScope!;
+    selectedScope = todo?.scope ?? widget.listScope!;
     titleController = TextEditingController(text: todo?.title ?? '');
     descriptionController = TextEditingController(
       text: todo?.description ?? '',
@@ -86,7 +87,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
       setState(() {
         final locale = Localizations.localeOf(context);
         expirationDateController.text =
-            todo?.expirationDate?.formatYmD(locale) ??
+            todo?.expiresAt?.formatYmD(locale) ??
             manager.calcExpirationDate(selectedScope)?.formatYmD(locale) ??
             ' - ';
       });
@@ -98,7 +99,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
     //final loc = TodosLocalizations.of(context);
     final locale = Localizations.localeOf(context);
     final TagService tagService = context.read<TagService>();
-    final isTodoCompleted = todo?.completionDate != null;
+    final isTodoCompleted = todo?.completedAt != null;
 
     final List<DropdownMenuItem<ListScope>> listScopeDropDownItems = manager
         .scopes
@@ -133,11 +134,12 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                     onPressed: () async {
                       try {
                         final TodoList list = manager.getListByScope(
-                          todo!.listScope!,
+                          todo!.scope,
                         )!;
-                        widget.todoState.performAcitionOnList<void>(
-                          () => list.markAsDone(todo!),
-                        );
+                        // TODO mark as done
+                        // widget.todoState.performAcitionOnList<void>(
+                        //   () => list.markAsDone(todo!),
+                        // );
                       } catch (e) {
                         logger.e(
                           'Error ${isTodoCompleted ? 'restoring' : 'completing'} todo: $todo\n${e.toString()}',
@@ -161,11 +163,12 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                     if (delete != null && delete) {
                       try {
                         final TodoList list = manager.getListByScope(
-                          todo!.listScope!,
+                          todo!.scope,
                         )!;
-                        widget.todoState.performAcitionOnList<bool>(
-                          () => list.deleteTodo(todo!),
-                        );
+                        // TODO delete
+                        // widget.todoState.performAcitionOnList<bool>(
+                        //   () => list.deleteTodo(todo!),
+                        // );
                         navigator.pop();
                       } catch (e) {
                         logger.e('Error deleting todo: $todo\n${e.toString()}');
@@ -279,7 +282,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                       icon: Icon(
                         Icons.edit_calendar,
                         color:
-                            todo?.expirationDate?.isBefore(DateTime.now()) ??
+                            todo?.expiresAt?.isBefore(DateTime.now()) ??
                                 false
                             ? Theme.of(context).colorScheme.error
                             : null,
@@ -406,13 +409,13 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
               const SizedBox(height: 16),
               Text(
                 '${context.todosL10n.createdOn}: '
-                '${todo!.creationDate.formatYmD(locale)}',
+                '${todo!.expiresAt!.formatYmD(locale)}',
               ),
               if (isTodoCompleted) ...[
                 const SizedBox(height: 5),
                 Text(
                   '${context.todosL10n.completedOn}: '
-                  '${todo!.completionDate!.formatYmD(locale)}',
+                  '${todo!.createdAt!.formatYmD(locale)}',
                 ),
               ],
             ],
@@ -437,13 +440,13 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                   tagUuids: Set.from(tagUuids),
                 );
               } else {
-                todoToReturn = todo!.copyWith(
-                  title: titleController.text,
-                  description: descriptionController.text,
-                  listScope: selectedScope,
-                  expirationDate: selectedExpirationDate,
-                  tagUuids: Set.from(tagUuids),
-                );
+                // todoToReturn = todo!.copyWith(
+                //   title: titleController.text,
+                //   description: descriptionController.text,
+                //   listScope: selectedScope,
+                //   expirationDate: selectedExpirationDate,
+                //   tagUuids: Set.from(tagUuids),
+                // );
               }
               Navigator.of(context).pop(todoToReturn);
             }

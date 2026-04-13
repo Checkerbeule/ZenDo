@@ -6,14 +6,15 @@ import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/theme/theme.dart';
 import 'package:zen_do/core/ui/dialog_helper.dart';
 import 'package:zen_do/features/tags/domain/tag_service.dart';
-import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
+import 'package:zen_do/features/todos/domain/todo_dto.dart';
+import 'package:zen_do/features/todos/domain/todo_service.dart';
 import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
 import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
 class TodoWidget extends StatefulWidget {
-  final HiveTodo todo;
+  final TodoDto todo;
   final TodoList list;
 
   const TodoWidget({super.key, required this.todo, required this.list});
@@ -48,11 +49,13 @@ class _TodoWidgetState extends State<TodoWidget> {
   Widget build(BuildContext context) {
     final todoState = context.read<TodoState>();
     final listManager = todoState.listManager!;
-    final isExpiredOrToBeTransferred =
-        listManager.toBeTransferredTomorrow(widget.todo) ||
-        (widget.todo.expirationDate != null &&
-            widget.todo.expirationDate!.isBefore(DateTime.now()));
-    final isTodoCompleted = widget.todo.completionDate != null;
+
+    final todoService = context.read<TodoService>();
+    final isExpiredOrToBeTransferred = false;
+    // listManager.toBeTransferredTomorrow(widget.todo) ||
+    // (widget.todo.expiresAt != null &&
+    //     widget.todo.expiresAt!.isBefore(DateTime.now()));
+    final isTodoCompleted = widget.todo.isCompleted;
 
     return Card(
       shape: RoundedRectangleBorder(
@@ -91,33 +94,46 @@ class _TodoWidgetState extends State<TodoWidget> {
                   );
 
                   if (updatedTodo != null) {
-                    if (updatedTodo.listScope != widget.todo.listScope) {
-                      todoState.performAcitionOnList(
-                        () => listManager.moveAndUpdateTodo(
-                          oldTodo: widget.todo,
-                          todo: updatedTodo,
-                          destination: updatedTodo.listScope!,
-                        ),
+                    if (updatedTodo.listScope != widget.todo.scope) {
+                      // TODO move to EditSheet
+
+                      await todoService.moveToOtherList(
+                        widget.todo,
+                        widget.todo.scope,
                       );
+                      // todoState.performAcitionOnList(
+                      //   () =>
+                      // listManager.moveAndUpdateTodo(
+                      //   oldTodo: widget.todo,
+                      //   todo: updatedTodo,
+                      //   destination: updatedTodo.listScope!,
+                      // ),
+                      // );
                     } else {
-                      todoState.performAcitionOnList<bool>(
-                        () => listManager
-                            .getListByScope(updatedTodo.listScope!)!
-                            .replaceTodo(widget.todo, updatedTodo),
-                      );
+                      // TODO move to EditSheet
+                      await todoService.update(widget.todo);
+                      // todoState.performAcitionOnList<bool>(
+                      //   () => listManager
+                      //       .getListByScope(updatedTodo.listScope!)!
+                      //       .replaceTodo(widget.todo, updatedTodo),
+                      // );
                     }
                   }
                 },
           leading: IconButton(
-            onPressed: () => isTodoCompleted
-                ? todoState.performAcitionOnList<bool>(
-                    () => widget.list.restoreTodo(widget.todo),
-                  )
-                : {
-                    todoState.performAcitionOnList<void>(
-                      () => widget.list.markAsDone(widget.todo),
-                    ),
-                  },
+            onPressed: () async {
+              if (isTodoCompleted) {
+                await todoService.restore(widget.todo.uuid);
+                // todoState.performAcitionOnList<bool>(
+                //     () => widget.list.restoreTodo(widget.todo),
+                //   )
+              } else {
+                await todoService.markAsCompleted(widget.todo.uuid);
+                //   todoState.performAcitionOnList<void>(
+                //     () => widget.list.markAsDone(widget.todo),
+                //   ),
+              }
+            },
             icon: Icon(
               isTodoCompleted ? Icons.check_circle : Icons.circle_outlined,
               color: Theme.of(context).colorScheme.primary,
@@ -182,9 +198,10 @@ class _TodoWidgetState extends State<TodoWidget> {
                       ),
                     );
                     if (delete != null && delete) {
-                      todoState.performAcitionOnList<bool>(
-                        () => widget.list.deleteTodo(widget.todo),
-                      );
+                      await todoService.delete(widget.todo);
+                      // todoState.performAcitionOnList<bool>(
+                      //   () => widget.list.deleteTodo(widget.todo),
+                      // );
                     }
                   },
                   icon: const Icon(Icons.delete_forever),

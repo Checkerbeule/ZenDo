@@ -107,9 +107,7 @@ class HiveToDriftMigrationService {
         uuid: Value(todo.id),
         title: Value(todo.title),
         description: Value(todo.description),
-        scope: Value(
-          ListScope.fromLegacyName(todo.listScope?.name ?? scopeOfList),
-        ),
+        scope: Value(todo.listScope ?? ListScope.values.byName(scopeOfList)),
         expiresAt: Value(todo.expirationDate?.endOfDay),
         completedAt: Value(todo.completionDate),
         customOrder: Value(lastOrder),
