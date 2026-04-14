@@ -165,11 +165,10 @@ class EntityRepository {
   }
 
   /// Permanently removes an entity from the local database.
-  /// Only call this after the server has confirmed the deletion.
+  /// Only call this after the server has confirmed the deletion or cloud sync is disabled.
   Future<int> hardDelete(String uuid) async {
-    return await (db.delete(db.entities)..where(
-          (entity) => entity.uuid.equals(uuid) & entity.isDeleted.equals(true),
-        ))
-        .go();
+    return await (db.delete(
+      db.entities,
+    )..where((entity) => entity.uuid.equals(uuid))).go();
   }
 }

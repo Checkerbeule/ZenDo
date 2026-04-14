@@ -434,7 +434,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                         children: [
                           const Divider(),
                           StreamBuilder(
-                            stream: todoService!.watchAllCompletedByScope(
+                            stream: todoService.watchAllCompletedByScope(
                               scope: listScope,
                             ),
                             builder: (context, snapshot) {
@@ -478,10 +478,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
                   HiveTodo? newTodo = await showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    builder: (context) => TodoEditSheet.newTodo(
-                      todoState: todoState,
-                      listScope: listScope,
-                    ),
+                    builder: (context) =>
+                        TodoEditSheet.newTodo(listScope: listScope),
                   );
                   if (newTodo != null) {
                     todoState.performAcitionOnList<bool>(

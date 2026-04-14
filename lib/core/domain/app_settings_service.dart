@@ -12,7 +12,7 @@ abstract class AppSettingsService {
 
   // TODO move critical settings about todos to drift DB
   Future<void> saveActiveListScopes(Set<ListScope> activeScopes);
-  Set<ListScope>? getActiveListScopes();
+  Set<ListScope> getActiveListScopes();
   Future<void> addActiveScope(ListScope activeScope);
   Future<void> removeActiveScope(ListScope activeScope);
 }
@@ -84,12 +84,12 @@ class SharedPrefsAppSettingsService implements AppSettingsService {
   }
 
   @override
-  Set<ListScope>? getActiveListScopes() {
+  Set<ListScope> getActiveListScopes() {
     // TODO move to drift db
-    final List<String>? scopeNames = prefs.getStringList(
-      _activeListScopesPrefKey,
-    );
-    return scopeNames?.map((n) {
+    final List<String> scopeNames =
+        prefs.getStringList(_activeListScopesPrefKey) ?? [];
+
+    return scopeNames.map((n) {
       if (n[n.length - 1] == "y") {
         return ListScope.fromLegacyName(n);
       }

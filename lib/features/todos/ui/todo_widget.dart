@@ -11,7 +11,6 @@ import 'package:zen_do/features/todos/domain/todo_dto.dart';
 import 'package:zen_do/features/todos/domain/todo_service.dart';
 import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
 import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
-import 'package:zen_do/features/todos/ui/todo_screen.dart';
 
 class TodoWidget extends StatefulWidget {
   final TodoDto todo;
@@ -47,9 +46,6 @@ class _TodoWidgetState extends State<TodoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final todoState = context.read<TodoState>();
-    final listManager = todoState.listManager!;
-
     final todoService = context.read<TodoService>();
     final isExpiredOrToBeTransferred = false;
     // listManager.toBeTransferredTomorrow(widget.todo) ||
@@ -84,41 +80,12 @@ class _TodoWidgetState extends State<TodoWidget> {
           onTap: isTodoCompleted
               ? null
               : () async {
-                  final updatedTodo = await showModalBottomSheet(
+                  await showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    builder: (context) => TodoEditSheet.editTodo(
-                      todo: widget.todo,
-                      todoState: todoState,
-                    ),
+                    builder: (context) =>
+                        TodoEditSheet.editTodo(todo: widget.todo),
                   );
-
-                  if (updatedTodo != null) {
-                    if (updatedTodo.listScope != widget.todo.scope) {
-                      // TODO move to EditSheet
-
-                      await todoService.moveToOtherList(
-                        widget.todo,
-                        widget.todo.scope,
-                      );
-                      // todoState.performAcitionOnList(
-                      //   () =>
-                      // listManager.moveAndUpdateTodo(
-                      //   oldTodo: widget.todo,
-                      //   todo: updatedTodo,
-                      //   destination: updatedTodo.listScope!,
-                      // ),
-                      // );
-                    } else {
-                      // TODO move to EditSheet
-                      await todoService.update(widget.todo);
-                      // todoState.performAcitionOnList<bool>(
-                      //   () => listManager
-                      //       .getListByScope(updatedTodo.listScope!)!
-                      //       .replaceTodo(widget.todo, updatedTodo),
-                      // );
-                    }
-                  }
                 },
           leading: IconButton(
             onPressed: () async {

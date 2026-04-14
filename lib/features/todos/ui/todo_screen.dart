@@ -161,7 +161,7 @@ class TodoScreen extends StatelessWidget {
                 : DefaultTabController(
                     initialIndex: 0,
                     length: settingsService
-                        .getActiveListScopes()!
+                        .getActiveListScopes()
                         .length, //listManager!.listCount,
                     child: Scaffold(
                       appBar: AppBar(

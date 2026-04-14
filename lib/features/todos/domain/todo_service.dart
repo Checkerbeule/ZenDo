@@ -51,6 +51,7 @@ class TodoService {
     required ListScope scope,
     String? description,
     Set<String>? tagUuids,
+    DateTime? expiresAt,
   }) async {
     return await entityRepo.createWithEntity(EntityType.todo, (
       Entity entity,
@@ -59,7 +60,7 @@ class TodoService {
         uuid: entity.uuid,
         title: title,
         scope: scope,
-        expiresAt: calcExpiry(scope),
+        expiresAt: expiresAt ?? calcExpiry(scope),
         description: description,
       );
 
