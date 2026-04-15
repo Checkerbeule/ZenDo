@@ -257,32 +257,41 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                           ),
                         ),
                         onTap: () async {
-                          final selectedDate = tryParseLocalized(
-                            expirationDateController.text,
-                            locale,
-                          );
-
-                          final activeScopes = settingsService
-                              .getActiveListScopes();
-                          if (activeScopes.last == ListScope.backlog &&
-                              activeScopes.length <= 1) {
-                            return; // no date selection possible for backlog
-                          }
+                          if (selectedScope == ListScope.backlog) return;
+                          // final activeScopes = settingsService
+                          //     .getActiveListScopes();
+                          // if (activeScopes.last == ListScope.backlog &&
+                          //     activeScopes.length <= 1) {
+                          //   return; // no date selection possible for backlog
+                          // }
 
                           final nextScope = todoService.getNextScope(
                             selectedScope,
                           );
                           final firstDate = nextScope == null
                               ? DateTime.now()
-                              : todoService
-                                    .calcExpiry(nextScope)!
-                                    .add(Duration(days: 1));
+                              : todoService.calcExpiry(nextScope)!;
+
+                          final lastDate = todoService.calcExpiry(
+                            selectedScope,
+                          )!;
+
+                          DateTime? selectedDate =
+                              tryParseLocalized(
+                                expirationDateController.text,
+                                locale,
+                              ) ??
+                              DateTime.now();
+                          if (selectedDate.isBefore(firstDate) ||
+                              selectedDate.isAfter(lastDate)) {
+                            selectedDate = null;
+                          }
 
                           final DateTime? pickedDate = await showDatePicker(
                             context: context,
-                            initialDate: selectedDate ?? DateTime.now(),
+                            initialDate: selectedDate,
                             firstDate: firstDate,
-                            lastDate: todoService.calcExpiry(selectedScope)!,
+                            lastDate: lastDate,
                           );
                           if (pickedDate != null) {
                             expirationDateController.value = TextEditingValue(
@@ -379,7 +388,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                   const SizedBox(height: 16),
                   Text(
                     '${context.todosL10n.createdOn}: '
-                    '${todo!.expiresAt!.formatYmD(locale)}',
+                    '${todo!.expiresAt?.formatYmD(locale) ?? ' - '}',
                   ),
                   if (isTodoCompleted) ...[
                     const SizedBox(height: 5),

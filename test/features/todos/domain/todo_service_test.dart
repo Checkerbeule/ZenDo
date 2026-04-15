@@ -63,79 +63,97 @@ void main() {
     });
   }
 
-  test('TodoService create successfully', () async {
-    final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
-      Entity e,
-    ) async {
-      return await tagRepo.create(
-        uuid: e.uuid,
-        name: 'Test Tag 1',
-        color: Colors.red.toARGB32(),
+  group('TodoService create tests', () {
+    test('TodoService create successfully', () async {
+      final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
+        Entity e,
+      ) async {
+        return await tagRepo.create(
+          uuid: e.uuid,
+          name: 'Test Tag 1',
+          color: Colors.red.toARGB32(),
+        );
+      });
+      final tag_2 = await entityRepo.createWithEntity(EntityType.tag, (
+        Entity e,
+      ) async {
+        return await tagRepo.create(
+          uuid: e.uuid,
+          name: 'Test Tag 2',
+          color: Colors.green.toARGB32(),
+        );
+      });
+
+      final dto = await todoService.create(
+        title: 'Test Todo',
+        scope: ListScope.day,
+        description: 'Desc',
+        tagUuids: {tag_1.uuid, tag_2.uuid},
       );
+
+      final todo = await todoRepo.read(dto.uuid);
+      final todoTags = await todoTagsRepo.readTagsFromTodo(dto.uuid);
+      expect(dto.title, 'Test Todo');
+      expect(dto.description, 'Desc');
+      expect(dto.scope, ListScope.day);
+      expect(dto.expiresAt, isNotNull);
+      expect(dto.createdAt, isNotNull);
+      expect(dto.hasTags, isTrue);
+      expect(dto.isCompleted, isFalse);
+      expect(dto.completedAt, isNull);
+      expect(dto.customOrder, 'a0');
+      expect(todo, isNotNull);
+      expect(todo!.uuid, dto.uuid);
+      expect(todoTags.length, 2);
+      expect(todoTags.contains(tag_1), isTrue);
+      expect(todoTags.contains(tag_2), isTrue);
     });
-    final tag_2 = await entityRepo.createWithEntity(EntityType.tag, (
-      Entity e,
-    ) async {
-      return await tagRepo.create(
-        uuid: e.uuid,
-        name: 'Test Tag 2',
-        color: Colors.green.toARGB32(),
+
+    test('TodoService create successfully calculates expiresAt date', () async {
+      final dailyTodo = await todoService.create(
+        title: 'Test Todo',
+        scope: ListScope.day,
       );
+      final weeklyTodo = await todoService.create(
+        title: 'Test Todo',
+        scope: ListScope.week,
+      );
+      final monthlyTodo = await todoService.create(
+        title: 'Test Todo',
+        scope: ListScope.month,
+      );
+      final yearlyTodo = await todoService.create(
+        title: 'Test Todo',
+        scope: ListScope.year,
+      );
+      final backlogTodo = await todoService.create(
+        title: 'Test Todo',
+        scope: ListScope.backlog,
+      );
+
+      final now = DateTime.now();
+      expect(dailyTodo.expiresAt, now.add(Duration(days: 1)).endOfDay);
+      expect(weeklyTodo.expiresAt, now.add(Duration(days: 7)).endOfDay);
+      expect(monthlyTodo.expiresAt, now.add(Duration(days: 30)).endOfDay);
+      expect(yearlyTodo.expiresAt, now.add(Duration(days: 365)).endOfDay);
+      expect(backlogTodo.expiresAt, isNull);
     });
 
-    final dto = await todoService.create(
-      title: 'Test Todo',
-      scope: ListScope.day,
-      description: 'Desc',
-      tagUuids: {tag_1.uuid, tag_2.uuid},
-    );
+    test('TodoService create successfully takes expiresAt', () async {
+      // --- Arrange ---
+      final now = DateTime.now();
 
-    final todo = await todoRepo.read(dto.uuid);
-    final todoTags = await todoTagsRepo.readTagsFromTodo(dto.uuid);
-    expect(dto.title, 'Test Todo');
-    expect(dto.description, 'Desc');
-    expect(dto.scope, ListScope.day);
-    expect(dto.expiresAt, isNotNull);
-    expect(dto.createdAt, isNotNull);
-    expect(dto.hasTags, isTrue);
-    expect(dto.isCompleted, isFalse);
-    expect(dto.completedAt, isNull);
-    expect(dto.customOrder, 'a0');
-    expect(todo, isNotNull);
-    expect(todo!.uuid, dto.uuid);
-    expect(todoTags.length, 2);
-    expect(todoTags.contains(tag_1), isTrue);
-    expect(todoTags.contains(tag_2), isTrue);
-  });
+      // --- Act ---
+      final todo = await todoService.create(
+        title: 'Test todo',
+        scope: ListScope.week,
+        expiresAt: now,
+      );
 
-  test('TodoService create successfully calculates expiresAt date', () async {
-    final dailyTodo = await todoService.create(
-      title: 'Test Todo',
-      scope: ListScope.day,
-    );
-    final weeklyTodo = await todoService.create(
-      title: 'Test Todo',
-      scope: ListScope.week,
-    );
-    final monthlyTodo = await todoService.create(
-      title: 'Test Todo',
-      scope: ListScope.month,
-    );
-    final yearlyTodo = await todoService.create(
-      title: 'Test Todo',
-      scope: ListScope.year,
-    );
-    final backlogTodo = await todoService.create(
-      title: 'Test Todo',
-      scope: ListScope.backlog,
-    );
-
-    final now = DateTime.now();
-    expect(dailyTodo.expiresAt, now.add(Duration(days: 1)).endOfDay);
-    expect(weeklyTodo.expiresAt, now.add(Duration(days: 7)).endOfDay);
-    expect(monthlyTodo.expiresAt, now.add(Duration(days: 30)).endOfDay);
-    expect(yearlyTodo.expiresAt, now.add(Duration(days: 365)).endOfDay);
-    expect(backlogTodo.expiresAt, isNull);
+      // --- Assert ---
+      expect(todo.expiresAt, now);
+    });
+    ;
   });
 
   group('TodoService watchAllOpendByScope tests', () {
@@ -414,9 +432,7 @@ void main() {
         db.todos,
       )..where((t) => db.todos.uuid.equals(willBeTransfered.uuid))).write(
         TodosCompanion(
-          expiresAt: Value(
-            DateTime.now().add(ListScope.day.duration).endOfDay,
-          ),
+          expiresAt: Value(DateTime.now().add(ListScope.day.duration).endOfDay),
         ),
       );
       final notTransfered = await entityRepo.createWithEntity(EntityType.todo, (
@@ -733,8 +749,7 @@ void main() {
       'TodoService transferTodos: skip or ignore missing ListScope',
       () async {
         // --- Arrange ---
-        final activeScopes = ListScope.values.toSet()
-          ..remove(ListScope.month);
+        final activeScopes = ListScope.values.toSet()..remove(ListScope.month);
         when(
           () => settingsServiceMock.getActiveListScopes(),
         ).thenReturn(activeScopes);

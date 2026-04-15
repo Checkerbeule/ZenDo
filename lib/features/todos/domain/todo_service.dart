@@ -12,23 +12,23 @@ import 'package:zen_do/features/todos/domain/todo_dto.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
 class TodoService {
-  final TodoRepository todoRepo;
-  final EntityRepository entityRepo;
-  final TodoTagsRepository todoTagsRepo;
-  final TagRepository tagRepo;
-  final AppSettingsService settingsService;
+  final TodoRepository _todoRepo;
+  final EntityRepository _entityRepo;
+  final TodoTagsRepository _todoTagsRepo;
+  final TagRepository _tagRepo;
+  final AppSettingsService _settingsService;
 
   TodoService({
-    required this.todoRepo,
-    required this.entityRepo,
-    required this.todoTagsRepo,
-    required this.tagRepo,
-    required this.settingsService,
-  });
+    required TodoRepository todoRepo,
+    required EntityRepository entityRepo,
+    required TodoTagsRepository todoTagsRepo,
+    required TagRepository tagRepo,
+    required AppSettingsService settingsService,
+  }) : _todoRepo = todoRepo, _entityRepo = entityRepo, _todoTagsRepo = todoTagsRepo, _tagRepo = tagRepo, _settingsService = settingsService;
 
   List<ListScope> get _sortedActiveScopes {
     final activeScopes = List<ListScope>.from(
-      settingsService.getActiveListScopes()?.toList() ?? [],
+      _settingsService.getActiveListScopes(),
     );
     activeScopes.sort();
     return activeScopes;
@@ -36,7 +36,7 @@ class TodoService {
 
   List<ListScope> get _scopesWithExpiry {
     final activeScopesWithExpiry = List<ListScope>.from(
-      settingsService.getActiveListScopes() ?? {},
+      _settingsService.getActiveListScopes(),
     );
     activeScopesWithExpiry.remove(ListScope.backlog);
 
@@ -53,10 +53,10 @@ class TodoService {
     Set<String>? tagUuids,
     DateTime? expiresAt,
   }) async {
-    return await entityRepo.createWithEntity(EntityType.todo, (
+    return await _entityRepo.createWithEntity(EntityType.todo, (
       Entity entity,
     ) async {
-      final todo = await todoRepo.create(
+      final todo = await _todoRepo.create(
         uuid: entity.uuid,
         title: title,
         scope: scope,
@@ -66,10 +66,10 @@ class TodoService {
 
       Set<String> validTagUuids = {};
       if (tagUuids != null && tagUuids.isNotEmpty) {
-        final validTags = await tagRepo.readAllByUuids(tagUuids);
+        final validTags = await _tagRepo.readAllByUuids(tagUuids);
         validTagUuids = validTags.map((tag) => tag.uuid).toSet();
 
-        await todoTagsRepo.addAllTagsToTodo(
+        await _todoTagsRepo.addAllTagsToTodo(
           todoUuid: todo.uuid,
           tagUuids: validTagUuids,
         );
@@ -95,7 +95,7 @@ class TodoService {
     SortOrder? sortOrder,
     Set<String>? tagUuidsFilter,
   }) {
-    final todoStream = todoRepo.watchDtosByScope(
+    final todoStream = _todoRepo.watchDtosByScope(
       scope: scope,
       isCompleted: false,
       sortOption: sortOption,
@@ -115,7 +115,7 @@ class TodoService {
     required ListScope scope,
     Set<String>? tagUuidsFilter,
   }) {
-    return todoRepo.watchDtosByScope(
+    return _todoRepo.watchDtosByScope(
       scope: scope,
       isCompleted: true,
       sortOption: TodoSortOption.completionDate,
@@ -153,7 +153,7 @@ class TodoService {
   /// and returns the value in a stream.<br>
   /// Use this method to fill the badges on each todo list.
   Stream<int> watchWillBeTransfered(ListScope scope) {
-    return todoRepo.watchAllOpenByScope(scope).map((todos) {
+    return _todoRepo.watchAllOpenByScope(scope).map((todos) {
       return todos
           .where((todo) => _calcWillBeTransfered(todo.scope, todo.expiresAt))
           .length;
@@ -162,15 +162,15 @@ class TodoService {
 
   /// Returns a reactive stream representing the amount of all expired todos in all lists.
   Stream<int> watchExpiredCount() {
-    return todoRepo.watchExpiredCount(_scopesWithExpiry.toSet());
+    return _todoRepo.watchExpiredCount(_scopesWithExpiry.toSet());
   }
 
   /// Updates the given todo in the database and marks it as 'updated' to sync to cloud.<br>
   /// Returns true if succesfull, false otherwise.
   Future<bool> update(TodoDto todo) async {
-    return await entityRepo.updateWithTouch(todo.uuid, () async {
-      final isTodoUpdated = await todoRepo.updateDto(todo);
-      await todoTagsRepo.updateTags(
+    return await _entityRepo.updateWithTouch(todo.uuid, () async {
+      final isTodoUpdated = await _todoRepo.updateDto(todo);
+      await _todoTagsRepo.updateTags(
         todoUuid: todo.uuid,
         newTagUuids: todo.tagUuids,
       );
@@ -181,8 +181,8 @@ class TodoService {
   /// Marks the todo with the given uuid as completed
   /// and updates the updatedAt timestamp to trigger cloud sync.
   Future<bool> markAsCompleted(String uuid) async {
-    final updated = await entityRepo.updateWithTouch(uuid, () async {
-      return await todoRepo.markAsCompleted(uuid);
+    final updated = await _entityRepo.updateWithTouch(uuid, () async {
+      return await _todoRepo.markAsCompleted(uuid);
     });
     return updated == 1;
   }
@@ -190,8 +190,8 @@ class TodoService {
   /// Restores the todo with the given uuid by removing the completedAt timestamp
   /// and updates the updatedAt timestamp to trigger cloud sync.
   Future<bool> restore(String uuid) async {
-    final updated = await entityRepo.updateWithTouch(uuid, () async {
-      return await todoRepo.restore(uuid);
+    final updated = await _entityRepo.updateWithTouch(uuid, () async {
+      return await _todoRepo.restore(uuid);
     });
     return updated == 1;
   }
@@ -203,8 +203,8 @@ class TodoService {
     final scopesToTransferFrom = _scopesWithExpiry..removeAt(0);
     if (scopesToTransferFrom.isEmpty) return;
 
-    await todoRepo.db.transaction(() async {
-      final todos = await todoRepo.readAllOpenByScopes(
+    await _todoRepo.db.transaction(() async {
+      final todos = await _todoRepo.readAllOpenByScopes(
         scopesToTransferFrom.toSet(),
       );
 
@@ -217,8 +217,8 @@ class TodoService {
         final nextScopeExpiry = calcExpiry(nextScope);
         if (todo.expiresAt!.isBefore(nextScopeExpiry!)) {
           final fittingScope = calcFittingScope(todo.expiresAt!);
-          await entityRepo.updateWithTouch(todo.uuid, () async {
-            await todoRepo.update(todo.copyWith(scope: fittingScope));
+          await _entityRepo.updateWithTouch(todo.uuid, () async {
+            await _todoRepo.update(todo.copyWith(scope: fittingScope));
           });
         }
       }
@@ -263,8 +263,8 @@ class TodoService {
     );
     if (indexOfDestinationScope < 0) return false;
 
-    return await entityRepo.updateWithTouch(todo.uuid, () async {
-      return todoRepo.updateDto(todo.copyWith(scope: destinationScope));
+    return await _entityRepo.updateWithTouch(todo.uuid, () async {
+      return _todoRepo.updateDto(todo.copyWith(scope: destinationScope));
     });
   }
 
@@ -310,6 +310,6 @@ class TodoService {
 
   Future<int> delete(TodoDto todo) async {
     // TODO differ if cloud sync is active or not
-    return await entityRepo.hardDelete(todo.uuid);
+    return await _entityRepo.hardDelete(todo.uuid);
   }
 }

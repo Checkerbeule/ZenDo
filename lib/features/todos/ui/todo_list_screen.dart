@@ -17,7 +17,7 @@ import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
-import 'package:zen_do/features/todos/ui/todo_widget.dart';
+import 'package:zen_do/features/todos/ui/todo_card.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -419,7 +419,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                           );
                                         }
                                       },
-                                      child: TodoWidget(todo: todo, list: list),
+                                      child: TodoCard(todo: todo),
                                     ),
                                   );
                                 },
@@ -458,7 +458,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                     todoState.toggleExpansion(listScope),
                                 children: [
                                   for (var todo in snapshot.data ?? [])
-                                    TodoWidget(todo: todo, list: list),
+                                    TodoCard(todo: todo),
                                 ],
                               );
                             },
