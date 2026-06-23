@@ -153,7 +153,6 @@ void main() {
       // --- Assert ---
       expect(todo.expiresAt, now);
     });
-    ;
   });
 
   group('TodoService watchAllOpendByScope tests', () {

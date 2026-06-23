@@ -8,12 +8,13 @@ import 'package:sliver_tools/sliver_tools.dart';
 import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/l10n/app_localizations.dart';
+import 'package:zen_do/core/ui/loading_screen.dart';
 import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/domain/todo_service.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
-import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
+import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
 import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
 import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
@@ -22,9 +23,9 @@ import 'package:zen_do/features/todos/ui/todo_card.dart';
 Logger logger = Logger(level: Level.debug);
 
 class TodoListScreen extends StatefulWidget {
-  const TodoListScreen({super.key, required this.list});
+  const TodoListScreen({super.key, required this.listScope});
 
-  final TodoList list;
+  final ListScope listScope;
 
   @override
   State<TodoListScreen> createState() => _TodoListScreenState();
@@ -36,7 +37,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
   SortOrder sortOrder = SortOrder.ascending;
 
   List<HiveTodo> getSortedAndFilteredTodos(Set<String> tagFilter) {
-    final todos = List<HiveTodo>.from(widget.list.todos);
+    final List<HiveTodo> todos =
+        []; // List<HiveTodo>.from(widget.listScope.todos);
     if (tagFilter.isNotEmpty) {
       todos.retainWhere(
         (t) => t.tagUuids.any((tagUuid) => tagFilter.contains(tagUuid)),
@@ -80,8 +82,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
     if (!mounted) return;
 
     settings = settingsService;
-    final loadedSortOption = settingsService.getSortOption(widget.list.scope);
-    final loadedSortOrder = settingsService.getSortOrder(widget.list.scope);
+    final loadedSortOption = settingsService.getSortOption(widget.listScope);
+    final loadedSortOrder = settingsService.getSortOrder(widget.listScope);
 
     if (!mounted) return;
     setState(() {
@@ -98,11 +100,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = TodosLocalizations.of(context);
-    final list = widget.list;
-    final listScope = list.scope;
-    final Set<TodoSortOption> excludedSortOptions =
-        listScope == ListScope.backlog ? {TodoSortOption.expirationDate} : {};
+    final listScope = widget.listScope;
     final tagFilter = context.watch<TodoState>().tagFilter;
 
     return Consumer<TodoService>(
@@ -125,7 +123,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                     key: PageStorageKey('sort_filter_bar_${listScope.name}'),
                     sortOption: sortOption,
                     sortOrder: sortOrder,
-                    excludedOptions: excludedSortOptions,
+                    excludedOptions: listScope == ListScope.backlog
+                        ? {TodoSortOption.expirationDate}
+                        : {},
                     onSortChanged: (option, order) {
                       setState(() {
                         sortOption = option;
@@ -147,7 +147,15 @@ class _TodoListScreenState extends State<TodoListScreen> {
                     builder: (context, snapshot) {
                       return SliverAnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
-                        child: !snapshot.hasData
+                        child: snapshot.connectionState.index <= 1
+                            ? SliverToBoxAdapter(
+                                key: const ValueKey('loading_state'),
+                                child: LoadingScreen(
+                                  message:
+                                      context.todosL10n.loadingTodosIndicator,
+                                ),
+                              )
+                            : !snapshot.hasData
                             ? SliverToBoxAdapter(
                                 key: const ValueKey('empty_state'),
                                 child: Padding(
@@ -170,7 +178,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                       ),
                                       const SizedBox(height: 12),
                                       Text(
-                                        loc.noTodosFound,
+                                        context.todosL10n.noTodosFound,
                                         textAlign: TextAlign.center,
                                         style: Theme.of(
                                           context,
@@ -178,8 +186,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                       ),
                                       Text(
                                         tagFilter.isNotEmpty
-                                            ? loc.checkTodoFilters
-                                            : loc.everythingDone,
+                                            ? context.todosL10n.checkTodoFilters
+                                            : context.todosL10n.everythingDone,
                                         textAlign: TextAlign.center,
                                       ),
                                     ],
@@ -206,17 +214,19 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                 },
                                 onReorder: (oldIndex, newIndex) {
                                   if (sortOption == TodoSortOption.custom) {
-                                    setState(() {
-                                      final moved = getSortedAndFilteredTodos(
-                                        tagFilter,
-                                      )[oldIndex];
-                                      final previous = newIndex == 0
-                                          ? null
-                                          : getSortedAndFilteredTodos(
-                                              tagFilter,
-                                            )[newIndex - 1];
-                                      list.reorder(moved, previous);
-                                    });
+                                    // TODO andle reorder with Drift
+
+                                    // setState(() {
+                                    //   final moved = getSortedAndFilteredTodos(
+                                    //     tagFilter,
+                                    //   )[oldIndex];
+                                    //   final previous = newIndex == 0
+                                    //       ? null
+                                    //       : getSortedAndFilteredTodos(
+                                    //           tagFilter,
+                                    //         )[newIndex - 1];
+                                    //   //list.reorder(moved, previous);
+                                    // });
                                   }
                                 },
                                 itemBuilder: (context, index) {
@@ -245,7 +255,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                                     MainAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    '${loc.moveTo}\n'
+                                                    '${context.todosL10n.moveTo}\n'
                                                     '${previousListScope.listName(context)}',
                                                   ),
                                                   const SizedBox(width: 10),
@@ -281,7 +291,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                                   ),
                                                   const SizedBox(width: 10),
                                                   Text(
-                                                    '${loc.moveTo}\n'
+                                                    '${context.todosL10n.moveTo}\n'
                                                     '${nextListScope.listName(context)}',
                                                     textAlign: TextAlign.end,
                                                   ),
@@ -297,6 +307,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                           ? DismissDirection.endToStart
                                           : DismissDirection.horizontal,
                                       confirmDismiss: (direction) async {
+                                        // TODO neccessary after migration to drift? vacant title doesn't matter anymore!
                                         late final bool isMovable;
                                         late final TodoList? destinationList;
                                         if (direction ==
@@ -321,7 +332,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                           ).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                loc.shiftNotPossible,
+                                                context
+                                                    .todosL10n
+                                                    .shiftNotPossible,
                                               ),
                                             ),
                                           );
@@ -330,6 +343,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                         return true;
                                       },
                                       onDismissed: (direction) async {
+                                        // TODO handle todo shift with Drift
                                         final todoToMove =
                                             getSortedAndFilteredTodos(
                                               tagFilter,
@@ -350,10 +364,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                             DismissDirection.startToEnd) {
                                           destination =
                                               listManager
-                                                  .getPreviousList(list.scope)
+                                                  .getPreviousList(listScope)
                                                   ?.scope
                                                   .listName(context) ??
-                                              loc.next;
+                                              context.todosL10n.next;
                                           isMoved = await todoState
                                               .performAcitionOnList<bool>(
                                                 () => listManager
@@ -365,10 +379,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                             DismissDirection.endToStart) {
                                           destination =
                                               listManager
-                                                  .getNextList(list.scope)
+                                                  .getNextList(listScope)
                                                   ?.scope
                                                   .listName(context) ??
-                                              loc.previous;
+                                              context.todosL10n.previous;
                                           isMoved = await todoState
                                               .performAcitionOnList<bool>(
                                                 () => listManager
@@ -384,7 +398,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                             SnackBar(
                                               persist: false,
                                               content: Text(
-                                                loc.todoMovedToX(destination),
+                                                context.todosL10n.todoMovedToX(
+                                                  destination,
+                                                ),
                                               ),
                                               action: SnackBarAction(
                                                 label: appLocalizations.undo,
@@ -439,27 +455,38 @@ class _TodoListScreenState extends State<TodoListScreen> {
                             ),
                             builder: (context, snapshot) {
                               return ExpansionTile(
-                                title: Text(loc.completedTodos),
-                                subtitle: Text(
-                                  '${list.doneCount} ${loc.completed}',
-                                ),
+                                title: Text(context.todosL10n.completedTodos),
+                                subtitle: snapshot.connectionState.index <= 1
+                                    ? Text(
+                                        context.todosL10n.loadingTodosIndicator,
+                                      )
+                                    : Text(
+                                        'X ${context.todosL10n.completed}',
+                                        //'${list.doneCount} ${context.todosL10n.completed}',
+                                      ),
                                 shape: const RoundedRectangleBorder(
                                   side: BorderSide.none,
                                 ),
                                 collapsedIconColor: Theme.of(
                                   context,
                                 ).primaryColor,
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
                                 initiallyExpanded:
                                     todoState.doneTodosExpanded[listScope] ??
                                     false,
                                 onExpansionChanged: (bool expanding) =>
                                     todoState.toggleExpansion(listScope),
-                                children: [
-                                  for (var todo in snapshot.data ?? [])
-                                    TodoCard(todo: todo),
-                                ],
+                                children: snapshot.connectionState.index <= 1
+                                    ? [
+                                        LoadingScreen(
+                                          message: context
+                                              .todosL10n
+                                              .loadingTodosIndicator,
+                                        ),
+                                      ]
+                                    : [
+                                        for (var todo in snapshot.data ?? [])
+                                          TodoCard(todo: todo),
+                                      ],
                               );
                             },
                           ),
@@ -471,7 +498,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
               ),
 
               floatingActionButton: FloatingActionButton(
-                tooltip: loc.addNewTodo,
+                tooltip: context.todosL10n.addNewTodo,
                 mini: true,
                 child: const Icon(Icons.add),
                 onPressed: () async {

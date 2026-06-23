@@ -32,8 +32,8 @@ class _ListsSettingsScreenState extends State<ListsSettingsScreen> {
     if (!mounted) return;
 
     setState(() {
-      final Set<ListScope>? activeScopes = settings.getActiveListScopes();
-      if (activeScopes != null) {
+      final Set<ListScope> activeScopes = settings.getActiveListScopes();
+      if (activeScopes.isEmpty) {
         for (final scope in activeScopes) {
           activeLists[scope] = true;
         }

@@ -147,7 +147,6 @@ class TodoScreen extends StatelessWidget {
     final loc = TodosLocalizations.of(context);
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
-        final listManager = todoState.listManager!;
         if (todoState.isLoadingDataFailed) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _showLoadingErrorDialog(context, todoState.errorMessage!);
@@ -178,7 +177,7 @@ class TodoScreen extends StatelessWidget {
                           dividerColor: Theme.of(context).primaryColor,
                           tabs: [
                             for (var scope
-                                in settingsService.getActiveListScopes()!)
+                                in settingsService.getActiveListScopes())
                               Tab(
                                 height: 60,
                                 icon: Badge(
@@ -203,10 +202,10 @@ class TodoScreen extends StatelessWidget {
                       ),
                       body: TabBarView(
                         children: <Widget>[
-                          for (var list in listManager.lists)
+                          for (var list in todoState.listManager!.lists)
                             TodoListScreen(
                               key: ValueKey(list.scope),
-                              list: list,
+                              listScope: list.scope,
                             ),
                         ],
                       ),
