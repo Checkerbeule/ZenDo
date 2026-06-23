@@ -13,6 +13,7 @@ import 'package:zen_do/core/ui/loading_screen.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_manager.dart';
 import 'package:zen_do/features/todos/domain/list_scope.dart';
+import 'package:zen_do/features/todos/domain/todo_service.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/todo_list_screen.dart';
 import 'package:zen_do/main.dart';
@@ -162,53 +163,64 @@ class TodoScreen extends StatelessWidget {
                     length: settingsService
                         .getActiveListScopes()
                         .length, //listManager!.listCount,
-                    child: Scaffold(
-                      appBar: AppBar(
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.primaryContainer,
-                        toolbarHeight: 0,
-                        bottom: TabBar(
-                          labelPadding: const EdgeInsets.symmetric(
-                            horizontal: 15,
-                          ),
-                          isScrollable: true,
-                          tabAlignment: TabAlignment.center,
-                          dividerColor: Theme.of(context).primaryColor,
-                          tabs: [
-                            for (var scope
-                                in settingsService.getActiveListScopes())
-                              Tab(
-                                height: 60,
-                                icon: Badge(
-                                  isLabelVisible: true,
-                                  // listManager.toBeTransferredOrExpiredCount(
-                                  //   list,
-                                  // ) >
-                                  // 0,
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.tertiary,
-                                  label: Text(
-                                    'x',
-                                    //'${listManager.toBeTransferredOrExpiredCount(list)}',
-                                  ),
-                                  child: Icon(scope.icon),
+                    child: Consumer<TodoService>(
+                      builder: (context, todoService, child) {
+                        return Scaffold(
+                          appBar: PreferredSize(
+                            preferredSize: const Size.fromHeight(
+                              65.0,
+                            ), // Erhöhe den Wert, bis der Fehler verschwindet
+                            child: AppBar(
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.primaryContainer,
+                              bottom: TabBar(
+                                labelPadding: const EdgeInsets.symmetric(
+                                  horizontal: 15,
                                 ),
-                                text: scope.listName(context),
+                                isScrollable: true,
+                                tabAlignment: TabAlignment.center,
+                                dividerColor: Theme.of(context).primaryColor,
+                                tabs: [
+                                  for (var scope
+                                      in settingsService.getActiveListScopes())
+                                    StreamBuilder<int>(
+                                      stream: todoService.watchWillBeTransfered(
+                                        scope,
+                                      ),
+                                      builder: (context, snapshot) {
+                                        return Tab(
+                                          height: 60,
+                                          icon: Badge(
+                                            isLabelVisible:
+                                                snapshot.hasData &&
+                                                snapshot.data! > 0,
+                                            backgroundColor: Theme.of(
+                                              context,
+                                            ).colorScheme.tertiary,
+                                            label: Text('${snapshot.data}'),
+                                            child: Icon(scope.icon),
+                                          ),
+                                          text: scope.listName(context),
+                                        );
+                                      },
+                                    ),
+                                ],
                               ),
-                          ],
-                        ),
-                      ),
-                      body: TabBarView(
-                        children: <Widget>[
-                          for (var list in todoState.listManager!.lists)
-                            TodoListScreen(
-                              key: ValueKey(list.scope),
-                              listScope: list.scope,
                             ),
-                        ],
-                      ),
+                          ),
+                          body: TabBarView(
+                            children: <Widget>[
+                              for (var scope
+                                  in settingsService.getActiveListScopes())
+                                TodoListScreen(
+                                  key: ValueKey(scope),
+                                  listScope: scope,
+                                ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   );
           },

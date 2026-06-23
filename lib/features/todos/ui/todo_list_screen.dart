@@ -461,7 +461,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                         context.todosL10n.loadingTodosIndicator,
                                       )
                                     : Text(
-                                        'X ${context.todosL10n.completed}',
+                                        '${snapshot.data?.length ?? 0} ${context.todosL10n.completed}',
                                         //'${list.doneCount} ${context.todosL10n.completed}',
                                       ),
                                 shape: const RoundedRectangleBorder(
