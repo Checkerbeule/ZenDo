@@ -31,7 +31,8 @@ class TodoListScreen extends StatefulWidget {
   State<TodoListScreen> createState() => _TodoListScreenState();
 }
 
-class _TodoListScreenState extends State<TodoListScreen> {
+class _TodoListScreenState extends State<TodoListScreen>
+    with AutomaticKeepAliveClientMixin {
   late final AppSettingsService settings;
   TodoSortOption sortOption = TodoSortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
@@ -98,8 +99,14 @@ class _TodoListScreenState extends State<TodoListScreen> {
     _loadSettings();
   }
 
+  // TODO: use controller to manage stream states for clean architecture
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final listScope = widget.listScope;
     final tagFilter = context.watch<TodoState>().tagFilter;
 
