@@ -62,6 +62,6 @@ extension DateTimeX on DateTime {
   }
 
   /// Sets hours, minutes and seconds to the end of the day.
-  /// Exampele: 2024-06-15 14:30:45.123 -> 2024-06-15 23:59:59.000
-  DateTime get endOfDay => DateTime(year, month, day, 23, 59, 59);
+  /// Exampele: 2024-06-15 14:30:45.123 -> 2024-06-15 23:59:59.999
+  DateTime get endOfDay => DateTime(year, month, day, 23, 59, 59, 999);
 }

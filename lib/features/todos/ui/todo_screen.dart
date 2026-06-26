@@ -185,7 +185,7 @@ class TodoScreen extends StatelessWidget {
                                   for (var scope
                                       in settingsService.getActiveListScopes())
                                     StreamBuilder<int>(
-                                      stream: todoService.watchWillBeTransfered(
+                                      stream: todoService.watchWillBeTransferedOrExpiredCount(
                                         scope,
                                       ),
                                       builder: (context, snapshot) {

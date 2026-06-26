@@ -99,7 +99,7 @@ class _TodoListScreenState extends State<TodoListScreen>
     _loadSettings();
   }
 
-  // TODO: use controller to manage stream states for clean architecture
+  // TODO [#124]: implement controller to manage stream states for clean architecture
   @override
   bool get wantKeepAlive => true;
 

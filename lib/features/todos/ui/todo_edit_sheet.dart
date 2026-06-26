@@ -416,7 +416,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                       title: titleController.text,
                       scope: selectedScope,
                       description: descriptionController.text,
-                      expiresAt: selectedExpirationDate,
+                      expiresAt: selectedExpirationDate?.endOfDay,
                       tagUuids: tagUuids,
                     );
                   } else {
@@ -425,7 +425,7 @@ class _TodoEditSheetState extends State<TodoEditSheet> {
                         title: titleController.text,
                         scope: selectedScope,
                         description: descriptionController.text,
-                        expiresAt: selectedExpirationDate,
+                        expiresAt: selectedExpirationDate?.endOfDay,
                         tagUuids: tagUuids,
                       ),
                     );

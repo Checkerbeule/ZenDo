@@ -24,7 +24,11 @@ class TodoService {
     required TodoTagsRepository todoTagsRepo,
     required TagRepository tagRepo,
     required AppSettingsService settingsService,
-  }) : _todoRepo = todoRepo, _entityRepo = entityRepo, _todoTagsRepo = todoTagsRepo, _tagRepo = tagRepo, _settingsService = settingsService;
+  }) : _todoRepo = todoRepo,
+       _entityRepo = entityRepo,
+       _todoTagsRepo = todoTagsRepo,
+       _tagRepo = tagRepo,
+       _settingsService = settingsService;
 
   List<ListScope> get _sortedActiveScopes {
     final activeScopes = List<ListScope>.from(
@@ -60,7 +64,7 @@ class TodoService {
         uuid: entity.uuid,
         title: title,
         scope: scope,
-        expiresAt: expiresAt ?? calcExpiry(scope),
+        expiresAt: expiresAt?.endOfDay ?? calcExpiry(scope),
         description: description,
       );
 
@@ -138,7 +142,7 @@ class TodoService {
     if (expiresAt == null) return false;
 
     final indexOfList = _sortedActiveScopes.indexOf(scope);
-    if (indexOfList < 0) {
+    if (indexOfList < 1) {
       return false;
     }
 
@@ -152,11 +156,12 @@ class TodoService {
   /// Calculates the amount of todos that will be transferred or are expired for the given [scope]
   /// and returns the value in a stream.<br>
   /// Use this method to fill the badges on each todo list.
-  Stream<int> watchWillBeTransfered(ListScope scope) {
+  Stream<int> watchWillBeTransferedOrExpiredCount(ListScope scope) {
     return _todoRepo.watchAllOpenByScope(scope).map((todos) {
-      return todos
-          .where((todo) => _calcWillBeTransfered(todo.scope, todo.expiresAt))
-          .length;
+      return todos.where((todo) {
+        return todo.expiresAt?.isBefore(DateTime.now()) ??
+            false || _calcWillBeTransfered(scope, todo.expiresAt);
+      }).length;
     }).distinct();
   }
 

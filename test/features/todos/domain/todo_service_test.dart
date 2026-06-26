@@ -454,7 +454,7 @@ void main() {
 
       // --- Act ---
       final completedTodos = await todoService
-          .watchWillBeTransfered(ListScope.week)
+          .watchWillBeTransferedOrExpiredCount(ListScope.week)
           .first;
 
       // --- Assert ---
