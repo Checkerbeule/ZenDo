@@ -62,7 +62,7 @@ void main() {
 
   group('TimeUtil normalized DateTime tests', () {
     test(
-      'TimeUtil endOfDay successfully sets hours, minutes and seconds to the end of the day',
+      'TimeUtil endOfDay successfully sets hours, minutes, seconds and milliseconds to the end of the day',
       () {
         // --- Arrange ---
         final now = DateTime.now();
@@ -73,6 +73,7 @@ void main() {
           23,
           59,
           59,
+          999
         );
 
         // --- Act ---

@@ -169,7 +169,7 @@ class TodoScreen extends StatelessWidget {
                           appBar: PreferredSize(
                             preferredSize: const Size.fromHeight(
                               65.0,
-                            ), // Erhöhe den Wert, bis der Fehler verschwindet
+                            ),
                             child: AppBar(
                               backgroundColor: Theme.of(
                                 context,

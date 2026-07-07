@@ -129,7 +129,7 @@ class TodoService {
   }
 
   /// Sets the 'willBeTransferred' flag on the given [todo] if it will be
-  /// transfered tomorrow, or is expired.
+  /// transfered tomorrow.
   TodoDto _setWillBeTransfered(TodoDto todo) {
     final willBeTransfered = _calcWillBeTransfered(todo.scope, todo.expiresAt);
 
@@ -137,7 +137,7 @@ class TodoService {
   }
 
   /// Calculates if a todo with the given pair of [scope] and [expiresAt] will be
-  /// transfered tomorrow, or is expired.
+  /// transfered tomorrow.
   bool _calcWillBeTransfered(ListScope scope, DateTime? expiresAt) {
     if (expiresAt == null) return false;
 
@@ -159,8 +159,8 @@ class TodoService {
   Stream<int> watchWillBeTransferedOrExpiredCount(ListScope scope) {
     return _todoRepo.watchAllOpenByScope(scope).map((todos) {
       return todos.where((todo) {
-        return todo.expiresAt?.isBefore(DateTime.now()) ??
-            false || _calcWillBeTransfered(scope, todo.expiresAt);
+        return (todo.expiresAt?.isBefore(DateTime.now()) ?? false) ||
+            _calcWillBeTransfered(scope, todo.expiresAt);
       }).length;
     }).distinct();
   }

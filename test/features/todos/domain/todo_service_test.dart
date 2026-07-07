@@ -139,23 +139,32 @@ void main() {
       expect(backlogTodo.expiresAt, isNull);
     });
 
-    test('TodoService create successfully takes expiresAt', () async {
-      // --- Arrange ---
-      final now = DateTime.now();
+    test(
+      'TodoService create successfully takes expiresAt and sets it to end of day',
+      () async {
+        // --- Arrange ---
+        final now = DateTime.now();
 
-      // --- Act ---
-      final todo = await todoService.create(
-        title: 'Test todo',
-        scope: ListScope.week,
-        expiresAt: now,
-      );
+        // --- Act ---
+        final todo = await todoService.create(
+          title: 'Test todo',
+          scope: ListScope.week,
+          expiresAt: now,
+        );
 
-      // --- Assert ---
-      expect(todo.expiresAt, now);
-    });
+        // --- Assert ---
+        expect(todo.expiresAt, now.endOfDay);
+      },
+    );
   });
 
   group('TodoService watchAllOpendByScope tests', () {
+    setUp(() {
+      when(
+        () => settingsServiceMock.getActiveListScopes(),
+      ).thenReturn(Set<ListScope>.from(ListScope.values));
+    });
+
     test(
       'TodoService watchAllOpendByScope successfully retreives open todos',
       () async {
@@ -183,9 +192,11 @@ void main() {
     test(
       'TodoService watchAllOpendByScope properly sets willBeTransferred on todos with daily scope',
       () async {
+        // --- Arrange ---
         when(
           () => settingsServiceMock.getActiveListScopes(),
         ).thenReturn(Set<ListScope>.from(ListScope.values));
+
         final expired = await todoService.create(
           title: 'Expired Todo',
           scope: ListScope.day,
@@ -200,12 +211,15 @@ void main() {
           ),
         );
 
+        // --- Act ---
         final openTodos = await todoService
             .watchAllOpenByScope(scope: ListScope.day)
             .first;
 
+        // --- Assert ---
         expect(openTodos.length, 2);
-        expect(openTodos.first.willBeTransferred, isTrue);
+        expect(openTodos.first.willBeTransferred, isFalse);
+        expect(openTodos.first.isExpired, isTrue);
         expect(openTodos.last.willBeTransferred, isFalse);
       },
     );
@@ -217,7 +231,7 @@ void main() {
         when(
           () => settingsServiceMock.getActiveListScopes(),
         ).thenReturn(Set<ListScope>.from(ListScope.values));
-        final expired = await todoService.create(
+        final toTransfer = await todoService.create(
           title: 'Expired Todo',
           scope: ListScope.week,
         );
@@ -226,7 +240,7 @@ void main() {
           scope: ListScope.week,
         );
         await todoRepo.updateDto(
-          expired.copyWith(
+          toTransfer.copyWith(
             expiresAt: DateTime.now().endOfDay.add(ListScope.day.duration),
           ),
         );
@@ -249,7 +263,7 @@ void main() {
         when(
           () => settingsServiceMock.getActiveListScopes(),
         ).thenReturn(Set<ListScope>.from(ListScope.values));
-        final expired = await todoService.create(
+        final toTransfer = await todoService.create(
           title: 'Expired Todo',
           scope: ListScope.month,
         );
@@ -258,7 +272,7 @@ void main() {
           scope: ListScope.month,
         );
         await todoRepo.updateDto(
-          expired.copyWith(
+          toTransfer.copyWith(
             expiresAt: DateTime.now().endOfDay.add(ListScope.week.duration),
           ),
         );
@@ -279,7 +293,7 @@ void main() {
         when(
           () => settingsServiceMock.getActiveListScopes(),
         ).thenReturn(Set<ListScope>.from(ListScope.values));
-        final expired = await todoService.create(
+        final toTransfer = await todoService.create(
           title: 'Expired Todo',
           scope: ListScope.year,
         );
@@ -288,7 +302,7 @@ void main() {
           scope: ListScope.year,
         );
         await todoRepo.updateDto(
-          expired.copyWith(
+          toTransfer.copyWith(
             expiresAt: DateTime.now().endOfDay.add(ListScope.month.duration),
           ),
         );
@@ -453,12 +467,12 @@ void main() {
       );
 
       // --- Act ---
-      final completedTodos = await todoService
+      final expiredOrTransferableTodos = await todoService
           .watchWillBeTransferedOrExpiredCount(ListScope.week)
           .first;
 
       // --- Assert ---
-      expect(completedTodos, 2);
+      expect(expiredOrTransferableTodos, 2);
     },
   );
 

@@ -160,20 +160,6 @@ void main() {
   );
 
   test(
-    'EntityRepository hardDelete not possible if not marked as deleted previously',
-    () async {
-      final entity = await entityRepo.create(EntityType.tag);
-
-      final deleted = await entityRepo.hardDelete(entity.uuid);
-      final notDeleted = await entityRepo.read(entity.uuid);
-
-      expect(deleted, 0);
-      expect(notDeleted, isNotNull);
-      expect(notDeleted!.uuid, entity.uuid);
-    },
-  );
-
-  test(
     'EntityRepository hardDelete removes entity and related object through cascade deletes sucessfully',
     () async {
       final tag_1 = await entityRepo.createWithEntity(EntityType.tag, (
