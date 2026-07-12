@@ -46,7 +46,6 @@ abstract class TodoDto with _$TodoDto {
   bool get isCompleted => completedAt != null;
 
   bool get isExpired {
-    // TODO may not be required anymore if willBeTransferred is enough
     if (expiresAt == null) {
       return false;
     } else {

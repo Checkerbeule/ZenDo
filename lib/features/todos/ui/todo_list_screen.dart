@@ -150,7 +150,12 @@ class _TodoListScreenState extends State<TodoListScreen>
                   ),
 
                   StreamBuilder(
-                    stream: todoService.watchAllOpenByScope(scope: listScope),
+                    stream: todoService.watchAllOpenByScope(
+                      scope: listScope,
+                      tagUuidsFilter: tagFilter,
+                      sortOption: sortOption,
+                      sortOrder: sortOrder,
+                    ),
                     builder: (context, snapshot) {
                       return SliverAnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
@@ -221,7 +226,7 @@ class _TodoListScreenState extends State<TodoListScreen>
                                 },
                                 onReorder: (oldIndex, newIndex) {
                                   if (sortOption == TodoSortOption.custom) {
-                                    // TODO andle reorder with Drift
+                                    // TODO handle reorder with Drift
 
                                     // setState(() {
                                     //   final moved = getSortedAndFilteredTodos(
