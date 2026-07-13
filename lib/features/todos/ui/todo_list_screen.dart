@@ -7,18 +7,17 @@ import 'package:provider/provider.dart';
 import 'package:sliver_tools/sliver_tools.dart';
 import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/domain/sort_order.dart';
-import 'package:zen_do/core/l10n/app_localizations.dart';
+import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 import 'package:zen_do/core/ui/loading_screen.dart';
 import 'package:zen_do/features/todos/data/hive_todo.dart';
-import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/domain/todo_service.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 import 'package:zen_do/features/todos/l10n/todos_l10n_extension.dart';
 import 'package:zen_do/features/todos/ui/sliver_todo_sort_filter_app_bar.dart';
+import 'package:zen_do/features/todos/ui/todo_card.dart';
 import 'package:zen_do/features/todos/ui/todo_edit_sheet.dart';
 import 'package:zen_do/features/todos/ui/todo_screen.dart';
-import 'package:zen_do/features/todos/ui/todo_card.dart';
 
 Logger logger = Logger(level: Level.debug);
 
@@ -318,88 +317,40 @@ class _TodoListScreenState extends State<TodoListScreen>
                                           : isLastList
                                           ? DismissDirection.endToStart
                                           : DismissDirection.horizontal,
-                                      confirmDismiss: (direction) async {
-                                        // TODO neccessary after migration to drift? vacant title doesn't matter anymore!
-                                        late final bool isMovable;
-                                        late final TodoList? destinationList;
-                                        if (direction ==
-                                            DismissDirection.startToEnd) {
-                                          destinationList = listManager
-                                              .getPreviousList(listScope);
-                                        } else if (direction ==
-                                            DismissDirection.endToStart) {
-                                          destinationList = listManager
-                                              .getNextList(listScope);
-                                        }
-                                        isMovable =
-                                            destinationList?.isTodoTitleVacant(
-                                              getSortedAndFilteredTodos(
-                                                tagFilter,
-                                              )[index].title,
-                                            ) ??
-                                            false;
-                                        if (!isMovable) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                context
-                                                    .todosL10n
-                                                    .shiftNotPossible,
-                                              ),
-                                            ),
-                                          );
-                                          return false;
-                                        }
-                                        return true;
-                                      },
                                       onDismissed: (direction) async {
                                         // TODO handle todo shift with Drift
-                                        final todoToMove =
-                                            getSortedAndFilteredTodos(
-                                              tagFilter,
-                                            )[index];
-                                        final retainedExpirationDate =
-                                            todoToMove.expirationDate;
-                                        final retainedOrder = todoToMove.order;
+                                        final retainedExpiry = todo.expiresAt;
+                                        final retainedOrder = todo.customOrder;
 
                                         final messenger = ScaffoldMessenger.of(
                                           context,
                                         );
-                                        final appLocalizations =
-                                            AppLocalizations.of(context);
+                                        final appL10n = context.appL10n;
+                                        final todosL10n = context.todosL10n;
 
-                                        String destination = '';
+                                        String destinationName = '';
                                         bool isMoved = false;
+
                                         if (direction ==
                                             DismissDirection.startToEnd) {
-                                          destination =
-                                              listManager
-                                                  .getPreviousList(listScope)
-                                                  ?.scope
-                                                  .listName(context) ??
-                                              context.todosL10n.next;
-                                          isMoved = await todoState
-                                              .performAcitionOnList<bool>(
-                                                () => listManager
-                                                    .moveToPreviousList(
-                                                      todoToMove,
-                                                    ),
-                                              );
+                                          destinationName =
+                                              todoService
+                                                  .getPreviousScope(listScope)
+                                                  ?.listName(context) ??
+                                              todosL10n.next;
+
+                                          isMoved = await todoService
+                                              .moveToPreviousList(todo);
                                         } else if (direction ==
                                             DismissDirection.endToStart) {
-                                          destination =
-                                              listManager
-                                                  .getNextList(listScope)
-                                                  ?.scope
-                                                  .listName(context) ??
-                                              context.todosL10n.previous;
-                                          isMoved = await todoState
-                                              .performAcitionOnList<bool>(
-                                                () => listManager
-                                                    .moveToNextList(todoToMove),
-                                              );
+                                          destinationName =
+                                              todoService
+                                                  .getNextScope(listScope)
+                                                  ?.listName(context) ??
+                                              todosL10n.next;
+
+                                          isMoved = await todoService
+                                              .moveToNextList(todo);
                                         }
 
                                         if (isMoved) {
@@ -410,32 +361,31 @@ class _TodoListScreenState extends State<TodoListScreen>
                                             SnackBar(
                                               persist: false,
                                               content: Text(
-                                                context.todosL10n.todoMovedToX(
-                                                  destination,
+                                                todosL10n.todoMovedToX(
+                                                  destinationName,
                                                 ),
                                               ),
                                               action: SnackBarAction(
-                                                label: appLocalizations.undo,
+                                                label: appL10n.undo,
                                                 onPressed: () async {
-                                                  final isUndone = await todoState
-                                                      .performAcitionOnList<
-                                                        bool
-                                                      >(
-                                                        () => listManager
-                                                            .moveAndUpdateTodo(
-                                                              todo: todoToMove,
-                                                              destination:
-                                                                  listScope,
-                                                            ),
-                                                      );
+                                                  final isUndone =
+                                                      await todoService
+                                                          .moveToOtherList(
+                                                            todo,
+                                                            listScope,
+                                                          );
+
                                                   if (isUndone) {
-                                                    setState(() {
-                                                      todoToMove
-                                                              .expirationDate =
-                                                          retainedExpirationDate;
-                                                      todoToMove.order =
-                                                          retainedOrder;
-                                                    });
+                                                    // Note: This triggers an unnecessary sync since data hasn't changed.
+                                                    // We accept this to keep the code simple and ensure data integrity.
+                                                    await todoService.update(
+                                                      todo.copyWith(
+                                                        expiresAt:
+                                                            retainedExpiry,
+                                                        customOrder:
+                                                            retainedOrder,
+                                                      ),
+                                                    );
                                                   }
                                                 },
                                               ),

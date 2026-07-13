@@ -260,21 +260,29 @@ class TodoService {
     }
   }
 
-  /// Sets the given [destinationScope] to the given [todo] and returns 'true' when
-  /// successful, false otherwise.
+  /// Sets the given [destinationScope] to the given [todo] and calculates the new expiry based on the new [ListScope].<br>
+  /// Returns 'true' when successful, false otherwise.
   Future<bool> moveToOtherList(TodoDto todo, ListScope destinationScope) async {
     final indexOfDestinationScope = _sortedActiveScopes.indexOf(
       destinationScope,
     );
-    if (indexOfDestinationScope < 0) return false;
+    if (indexOfDestinationScope < 0 ||
+        indexOfDestinationScope >= _sortedActiveScopes.length) {
+      return false;
+    }
 
     return await _entityRepo.updateWithTouch(todo.uuid, () async {
-      return _todoRepo.updateDto(todo.copyWith(scope: destinationScope));
+      return _todoRepo.updateDto(
+        todo.copyWith(
+          scope: destinationScope,
+          expiresAt: calcExpiry(destinationScope),
+        ),
+      );
     });
   }
 
-  /// Sets the next [ListScope] to the given [todo] and returns 'true' when
-  /// successful, false otherwise.
+  /// Sets the next [ListScope] to the given [todo] and and calculates the new expiry based on the new [ListScope].<br>
+  /// Returns 'true' when successful, false otherwise.
   Future<bool> moveToNextList(TodoDto todo) async {
     final nextScope = getNextScope(todo.scope);
     if (nextScope == null) return false;
@@ -282,8 +290,8 @@ class TodoService {
     return moveToOtherList(todo, nextScope);
   }
 
-  /// Sets the previous [ListScope] to the given [todo] and returns 'true' when
-  /// successful, false otherwise.
+  /// Sets the previous [ListScope] to the given [todo] and and calculates the new expiry based on the new [ListScope].<br>
+  /// Returns 'true' when successful, false otherwise.
   Future<bool> moveToPreviousList(TodoDto todo) async {
     final previousScope = getPreviousScope(todo.scope);
     if (previousScope == null) return false;

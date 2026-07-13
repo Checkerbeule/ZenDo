@@ -45,7 +45,7 @@ class _TodoCardState extends State<TodoCard> {
   @override
   Widget build(BuildContext context) {
     final todoService = context
-        .read<TodoService>(); // TODO user consumer widget
+        .read<TodoService>(); // TODO use consumer widget
     final todo = widget.todo;
 
     return Card(
