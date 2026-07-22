@@ -9,19 +9,19 @@ import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/persistence/entities.dart';
 import 'package:zen_do/core/persistence/entity_repository.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
-import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_repository.dart';
 import 'package:zen_do/features/todos/data/todo_tags_repository.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/domain/todo_dto.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
-void main() {
-  late AppDatabase db;
-  late TodoRepository todoRepo;
-  late EntityRepository entityRepo;
-  late TagRepository tagRepo;
-  late TodoTagsRepository todoTagsRepo;
+late AppDatabase db;
+late TodoRepository todoRepo;
+late EntityRepository entityRepo;
+late TagRepository tagRepo;
+late TodoTagsRepository todoTagsRepo;
 
+void main() {
   setUp(() {
     db = AppDatabase.test(NativeDatabase.memory());
     todoRepo = TodoRepository(db);
@@ -82,25 +82,13 @@ void main() {
     test(
       'TodoRepository create todo generates correct fractional index',
       () async {
-        final todo_1 = await entityRepo.createWithEntity(EntityType.todo, (
-          Entity entity,
-        ) async {
-          return await todoRepo.create(
-            uuid: entity.uuid,
-            title: 'Todo 1',
-            scope: ListScope.day,
-          );
-        });
-
-        final todo_2 = await entityRepo.createWithEntity(EntityType.todo, (
-          Entity entity,
-        ) async {
-          return await todoRepo.create(
-            uuid: entity.uuid,
-            title: 'Todo 1',
-            scope: ListScope.day,
-          );
-        });
+        // --- Arrange ---
+        final todo_1 = await _createTestTodo("Todo 1", ListScope.day);
+        final deletedTodo = await _createTestTodo("deleted", ListScope.day);
+        final completedTodo = await _createTestTodo("completed", ListScope.day);
+        await entityRepo.markAsDeleted(deletedTodo.uuid);
+        await todoRepo.markAsCompleted(completedTodo.uuid);
+        final todo_2 = await _createTestTodo("Todo 2", ListScope.day);
 
         expect(todo_1.uuid, isNotNull);
         expect(todo_1.uuid, isNotEmpty);
@@ -495,59 +483,57 @@ void main() {
           );
         });
 
-        final loaded = await todoRepo
-            .watchAllOpenByScope(ListScope.day)
-            .first;
+        final loaded = await todoRepo.watchAllOpenByScope(ListScope.day).first;
 
         expect(loaded.length, 1);
         expect(loaded.first.uuid, openTodo.uuid);
       },
     );
+
+    test(
+      'TodoRepository readAllOpenByScopes successfully reads open todos and ignores inactive scopes',
+      () async {
+        // --- Arrange ---
+        final dailyTodo = await setupTodo(title: 'Daily', scope: ListScope.day);
+        final weeklyTodo = await setupTodo(
+          title: 'Weekly',
+          scope: ListScope.week,
+        );
+        await setupTodo(title: 'Monthly', scope: ListScope.month);
+        final yearlyTodo = await setupTodo(
+          title: 'Yearly',
+          scope: ListScope.year,
+        );
+        final backlogTodo = await setupTodo(
+          title: 'Backlog',
+          scope: ListScope.backlog,
+        );
+        final completedTodo = await setupTodo(
+          title: 'Completed',
+          scope: ListScope.day,
+        );
+        final deletedTodo = await setupTodo(
+          title: 'Deleted',
+          scope: ListScope.day,
+        );
+
+        await todoRepo.markAsCompleted(completedTodo.uuid);
+        await entityRepo.markAsDeleted(deletedTodo.uuid);
+
+        // --- Act ---
+        final activeScopes = Set<ListScope>.from(ListScope.values)
+          ..remove(ListScope.month);
+        final loadedTodos = await todoRepo.readAllOpenByScopes(activeScopes);
+
+        // --- Assert ---
+        expect(loadedTodos, hasLength(4));
+        expect(loadedTodos, contains(dailyTodo));
+        expect(loadedTodos, contains(weeklyTodo));
+        expect(loadedTodos, contains(yearlyTodo));
+        expect(loadedTodos, contains(backlogTodo));
+      },
+    );
   });
-
-  test(
-    'TodoRepository readAllOpenByScopes successfully reads open todos and ignores inactive scopes',
-    () async {
-      // --- Arrange ---
-      final dailyTodo = await setupTodo(title: 'Daily', scope: ListScope.day);
-      final weeklyTodo = await setupTodo(
-        title: 'Weekly',
-        scope: ListScope.week,
-      );
-      await setupTodo(title: 'Monthly', scope: ListScope.month);
-      final yearlyTodo = await setupTodo(
-        title: 'Yearly',
-        scope: ListScope.year,
-      );
-      final backlogTodo = await setupTodo(
-        title: 'Backlog',
-        scope: ListScope.backlog,
-      );
-      final completedTodo = await setupTodo(
-        title: 'Completed',
-        scope: ListScope.day,
-      );
-      final deletedTodo = await setupTodo(
-        title: 'Deleted',
-        scope: ListScope.day,
-      );
-
-      await todoRepo.markAsCompleted(completedTodo.uuid);
-      await entityRepo.markAsDeleted(deletedTodo.uuid);
-
-      // --- Act ---
-      final activeScopes = Set<ListScope>.from(ListScope.values)
-        ..remove(ListScope.month);
-      final loadedTodos = await todoRepo.readAllOpenByScopes(activeScopes);
-
-      // --- Assert ---
-      expect(loadedTodos, hasLength(4));
-      expect(loadedTodos, contains(dailyTodo));
-      expect(loadedTodos, contains(weeklyTodo));
-      expect(loadedTodos, contains(yearlyTodo));
-      expect(loadedTodos, contains(backlogTodo));
-    },
-  );
 
   group('TodoRepository updateDto tests', () {
     test('TodoRepository updateDto new values successfully', () async {
@@ -732,23 +718,20 @@ void main() {
   );
 
   test(
-    'TodoRepository restore successfully removes completedAt timestamp',
+    'TodoRepository restore successfully removes completedAt timestamp and sets new customOrder',
     () async {
-      final todo = await entityRepo.createWithEntity(EntityType.todo, (
-        Entity e,
-      ) async {
-        return await todoRepo.create(
-          uuid: e.uuid,
-          title: 'Test Todo',
-          scope: ListScope.day,
-        );
-      });
+      // -- Arrange ---
+      final todo = await _createTestTodo("Test Todo", ListScope.day);
       await todoRepo.markAsCompleted(todo.uuid);
 
-      final result = await todoRepo.restore(todo.uuid);
+      // --- Act ---
+      final result = await todoRepo.restore(todo.uuid, "x");
 
+      // --- Assert ---
+      final restoredTodo = await todoRepo.read(todo.uuid);
       expect(result, 1);
-      expect((await todoRepo.read(todo.uuid))!.completedAt, isNull);
+      expect(restoredTodo!.completedAt, isNull);
+      expect(restoredTodo.customOrder, equals("x"));
     },
   );
 
@@ -854,5 +837,133 @@ void main() {
         expect(expiredCount, 0);
       },
     );
+  });
+
+  group("TodoRepository findNext findPreviousOrder tests", () {
+    test(
+      "TodoRepository findPreviousOrder returns correct previous order",
+      () async {
+        // --- Arrange ---
+        final first = await _createTestTodo("first", ListScope.day);
+        final second = await _createTestTodo("second", ListScope.day);
+        await _createTestTodo("last", ListScope.day);
+
+        // --- Act ---
+        final previous = await todoRepo.findPreviousOrder(
+          second.scope,
+          second.customOrder,
+        );
+
+        // --- Assert ---
+        expect(previous, isNotNull);
+        expect(previous, equals(first.customOrder));
+      },
+    );
+
+    test("TodoRepository findPreviousOrder returns null", () async {
+      // --- Arrange ---
+      final first = await _createTestTodo("first", ListScope.day);
+      await _createTestTodo("second", ListScope.day);
+
+      // --- Act ---
+      final previous = await todoRepo.findPreviousOrder(
+        first.scope,
+        first.customOrder,
+      );
+
+      // --- Assert ---
+      expect(previous, isNull);
+    });
+
+    test(
+      "TodoRepository findPreviousOrder returns ignores deleted an completed todos",
+      () async {
+        // --- Arrange ---
+        final first = await _createTestTodo("first", ListScope.day);
+        final deleted = await _createTestTodo("deleted", ListScope.day);
+        final completed = await _createTestTodo("completed", ListScope.day);
+        final secondVisible = await _createTestTodo("second", ListScope.day);
+        await _createTestTodo("last", ListScope.day);
+
+        await entityRepo.markAsDeleted(deleted.uuid);
+        await todoRepo.markAsCompleted(completed.uuid);
+
+        // --- Act ---
+        final previous = await todoRepo.findPreviousOrder(
+          secondVisible.scope,
+          secondVisible.customOrder,
+        );
+
+        // --- Assert ---
+        expect(previous, isNotNull);
+        expect(previous, equals(first.customOrder));
+      },
+    );
+
+    test(
+      "TodoRepository findNextOrder returns correct previous order",
+      () async {
+        // --- Arrange ---
+        await _createTestTodo("first", ListScope.day);
+        final second = await _createTestTodo("second", ListScope.day);
+        final last = await _createTestTodo("last", ListScope.day);
+
+        // --- Act ---
+        final previous = await todoRepo.findNextOrder(
+          second.scope,
+          second.customOrder,
+        );
+
+        // --- Assert ---
+        expect(previous, isNotNull);
+        expect(previous, equals(last.customOrder));
+      },
+    );
+
+    test("TodoRepository findNextOrder returns null", () async {
+      // --- Arrange ---
+      await _createTestTodo("first", ListScope.day);
+      final last = await _createTestTodo("last", ListScope.day);
+
+      // --- Act ---
+      final previous = await todoRepo.findNextOrder(
+        last.scope,
+        last.customOrder,
+      );
+
+      // --- Assert ---
+      expect(previous, isNull);
+    });
+
+    test(
+      "TodoRepository findNextOrder returns ignores deleted an completed todos",
+      () async {
+        // --- Arrange ---
+        await _createTestTodo("first", ListScope.day);
+        final secondVisible = await _createTestTodo("second", ListScope.day);
+        final deleted = await _createTestTodo("deleted", ListScope.day);
+        final completed = await _createTestTodo("completed", ListScope.day);
+        final last = await _createTestTodo("last", ListScope.day);
+
+        await entityRepo.markAsDeleted(deleted.uuid);
+        await todoRepo.markAsCompleted(completed.uuid);
+
+        // --- Act ---
+        final previous = await todoRepo.findNextOrder(
+          secondVisible.scope,
+          secondVisible.customOrder,
+        );
+
+        // --- Assert ---
+        expect(previous, isNotNull);
+        expect(previous, equals(last.customOrder));
+      },
+    );
+  });
+}
+
+Future<Todo> _createTestTodo(String todoTitle, ListScope scope) async {
+  return await entityRepo.createWithEntity(EntityType.todo, (Entity e) async {
+    return await todoRepo.create(uuid: e.uuid, title: todoTitle, scope: scope);
   });
 }

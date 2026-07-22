@@ -1,3 +1,4 @@
+import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
 import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
@@ -5,9 +6,9 @@ import 'package:zen_do/core/persistence/entities.dart';
 import 'package:zen_do/core/persistence/entity_repository.dart';
 import 'package:zen_do/core/utils/time_util.dart';
 import 'package:zen_do/features/tags/data/tag_repository.dart';
-import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/data/todo_repository.dart';
 import 'package:zen_do/features/todos/data/todo_tags_repository.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/domain/todo_dto.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
 
@@ -192,11 +193,30 @@ class TodoService {
     return updated == 1;
   }
 
-  /// Restores the todo with the given uuid by removing the completedAt timestamp
-  /// and updates the updatedAt timestamp to trigger cloud sync.
-  Future<bool> restore(String uuid) async {
-    final updated = await _entityRepo.updateWithTouch(uuid, () async {
-      return await _todoRepo.restore(uuid);
+  /// Restores the todo with the given uuid and updates the updatedAt timestamp to trigger cloud sync.
+  Future<bool> restore(TodoDto todo) async {
+    final updated = await _entityRepo.updateWithTouch(todo.uuid, () async {
+      final isOrderVacant = await _todoRepo.isCustomOrderVacant(
+        todo.customOrder,
+        todo.scope,
+      );
+
+      String? newCustomOrder;
+      if (!isOrderVacant) {
+        final nextOrder = await _todoRepo.findNextOrder(
+          todo.scope,
+          todo.customOrder,
+        );
+        newCustomOrder = FractionalIndexing.generateKeyBetween(
+          todo.customOrder,
+          nextOrder,
+        );
+      }
+
+      return await _todoRepo.restore(
+        todo.uuid,
+        newCustomOrder ?? todo.customOrder,
+      );
     });
     return updated == 1;
   }
@@ -324,5 +344,51 @@ class TodoService {
   Future<int> delete(TodoDto todo) async {
     // TODO differ if cloud sync is active or not
     return await _entityRepo.hardDelete(todo.uuid);
+  }
+
+  Future<void> reorder(List<TodoDto> list, oldIndex, int newIndex) async {
+    if (oldIndex == newIndex) return;
+
+    final movedTodo = list[oldIndex];
+    final int targetIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
+    TodoDto? uiPrevious;
+    TodoDto? uiNext;
+    String? truePreviousOrder;
+    String? trueNextOrder;
+
+    if (targetIndex == 0) {
+      uiPrevious = null;
+      uiNext = list.first;
+      truePreviousOrder = await _todoRepo.findPreviousOrder(
+        movedTodo.scope,
+        uiNext.customOrder,
+      );
+    } else if (targetIndex >= list.length - 1) {
+      uiPrevious = list.last;
+      uiNext = null;
+      trueNextOrder = await _todoRepo.findNextOrder(
+        movedTodo.scope,
+        uiPrevious.customOrder,
+      );
+    } else {
+      if (oldIndex < targetIndex) {
+        uiPrevious = list[targetIndex];
+        uiNext = list[targetIndex + 1];
+      } else {
+        uiPrevious = list[targetIndex - 1];
+        uiNext = list[targetIndex];
+      }
+      trueNextOrder = await _todoRepo.findNextOrder(
+        movedTodo.scope,
+        uiPrevious.customOrder,
+      );
+    }
+
+    final newCustomOrder = FractionalIndexing.generateKeyBetween(
+      truePreviousOrder ?? uiPrevious?.customOrder,
+      trueNextOrder ?? uiNext?.customOrder,
+    );
+
+    await update(movedTodo.copyWith(customOrder: newCustomOrder));
   }
 }

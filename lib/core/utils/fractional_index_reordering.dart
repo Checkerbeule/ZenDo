@@ -12,17 +12,17 @@ class FractionalIndexReordering {
   /// Uses the `fractional_indexing_dart` library to generate the actual
   /// string key between the identified neighbors.
   ///
-  /// [list]: The current (potentially filtered) list where the reorder occurs.
+  /// [list]: The current (potentially filtered) list where the reorder occurs.<br>
   /// [unfilteredList]: (Optional) The complete, unfiltered list of all elements.
   ///   Required to ensure the moved element lands logically immediately after
-  ///   the chosen predecessor, even if some elements are currently hidden by filters.
-  /// [oldIndex]: The original index of the element in [list].
+  ///   the chosen predecessor, even if some elements are currently hidden by filters.<br>
+  /// [oldIndex]: The original index of the element in [list].<br>
   /// [newIndex]: The destination index provided by the reorder widget
-  ///   (e.g., `ReorderableListView`).
+  ///   (e.g., `ReorderableListView`).<br>
   /// [getIndex]: A callback function to extract the fractional index string
-  ///   from an element of type [T].
+  ///   from an element of type [T].<br>
   ///
-  /// Returns a [String] representing the new sortable index.
+  /// Returns a [String] representing the new fractional index.
   static String generateFractionalIndex<T>({
     required List<T> list,
     List<T>? unfilteredList,

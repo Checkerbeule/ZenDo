@@ -99,7 +99,7 @@ class _TodoCardState extends State<TodoCard> {
             ),
             onPressed: () async {
               if (todo.isCompleted) {
-                await todoService.restore(todo.uuid);
+                await todoService.restore(todo);
               } else {
                 await todoService.markAsCompleted(todo.uuid);
               }

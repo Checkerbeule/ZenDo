@@ -541,26 +541,35 @@ void main() {
   );
 
   test(
-    'TodoService restore successfully updates updatedAt timestamp',
+    'TodoService restore successfully updates updatedAt timestamp and sets new customOrder',
     () async {
       // --- Arrange ---
-      final todo = await todoService.create(
-        title: 'Test todo',
+      final first = await todoService.create(
+        title: 'first todo',
         scope: ListScope.day,
       );
-      await todoService.markAsCompleted(todo.uuid);
-      final updatedAtAfterCompleted = (await entityRepo.read(
-        todo.uuid,
-      ))!.updatedAt;
+      await todoService.markAsCompleted(first.uuid);
+      final completedEntity = (await entityRepo.read(first.uuid));
+
+      final last = await todoService.create(
+        title: 'last todo',
+        scope: ListScope.day,
+      );
 
       // --- Act ---
-      final restored = await todoService.restore(todo.uuid);
+      final result = await todoService.restore(first);
 
-      final entity = await entityRepo.read(todo.uuid);
-      final loadedTodo = await todoRepo.read(todo.uuid);
-      expect(restored, isTrue);
-      expect(loadedTodo!.completedAt, isNull);
-      expect(entity!.updatedAt.isAfter(updatedAtAfterCompleted), isTrue);
+      // --- Assert ---
+      final restoredEntity = await entityRepo.read(first.uuid);
+      final restoredTodo = await todoRepo.read(first.uuid);
+      expect(result, isTrue);
+      expect(restoredTodo!.completedAt, isNull);
+      expect(
+        restoredEntity!.updatedAt.isAfter(completedEntity!.updatedAt),
+        isTrue,
+      );
+      expect(last.customOrder, equals("a0"));
+      expect(restoredTodo.customOrder, isNot("a0"));
     },
   );
 

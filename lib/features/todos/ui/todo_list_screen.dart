@@ -223,21 +223,13 @@ class _TodoListScreenState extends State<TodoListScreen>
                                     },
                                   );
                                 },
-                                onReorder: (oldIndex, newIndex) {
+                                onReorder: (oldIndex, newIndex) async {
                                   if (sortOption == TodoSortOption.custom) {
-                                    // TODO handle reorder with Drift
-
-                                    // setState(() {
-                                    //   final moved = getSortedAndFilteredTodos(
-                                    //     tagFilter,
-                                    //   )[oldIndex];
-                                    //   final previous = newIndex == 0
-                                    //       ? null
-                                    //       : getSortedAndFilteredTodos(
-                                    //           tagFilter,
-                                    //         )[newIndex - 1];
-                                    //   //list.reorder(moved, previous);
-                                    // });
+                                    await todoService.reorder(
+                                      snapshot.data!,
+                                      oldIndex,
+                                      newIndex,
+                                    );
                                   }
                                 },
                                 itemBuilder: (context, index) {
@@ -318,7 +310,6 @@ class _TodoListScreenState extends State<TodoListScreen>
                                           ? DismissDirection.endToStart
                                           : DismissDirection.horizontal,
                                       onDismissed: (direction) async {
-                                        // TODO handle todo shift with Drift
                                         final retainedExpiry = todo.expiresAt;
                                         final retainedOrder = todo.customOrder;
 
@@ -397,7 +388,10 @@ class _TodoListScreenState extends State<TodoListScreen>
                                           );
                                         }
                                       },
-                                      child: TodoCard(todo: todo),
+                                      child: TodoCard(
+                                        todo: todo,
+                                        key: ValueKey(todo.uuid),
+                                      ),
                                     ),
                                   );
                                 },

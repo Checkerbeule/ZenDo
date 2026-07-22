@@ -23,15 +23,26 @@ class TodoRepository {
     String? description,
   }) async {
     return await db.transaction(() async {
-      final lastTodo =
-          await (db.select(db.todos)
-                ..where((todo) => todo.scope.equalsValue(scope))
-                ..orderBy([(todo) => OrderingTerm.desc(todo.customOrder)])
+      final lastVisibleTodo =
+          await (db.selectOnly(db.todos)
+                ..addColumns([db.todos.customOrder])
+                ..join([
+                  innerJoin(
+                    db.entities,
+                    db.entities.uuid.equalsExp(db.todos.uuid),
+                  ),
+                ])
+                ..where(
+                  db.todos.scope.equalsValue(scope) &
+                      db.todos.completedAt.isNull() &
+                      db.entities.isDeleted.equals(false),
+                )
+                ..orderBy([OrderingTerm.desc(db.todos.customOrder)])
                 ..limit(1))
               .getSingleOrNull();
 
       final newOrder = FractionalIndexing.generateKeyBetween(
-        lastTodo?.customOrder,
+        lastVisibleTodo?.read(db.todos.customOrder),
         null,
       );
 
@@ -184,13 +195,19 @@ class TodoRepository {
         .write(TodosCompanion(completedAt: Value(DateTime.now())));
   }
 
-  Future<int> restore(String uuid) async {
-    return await (db.update(db.todos)..where((todo) => todo.uuid.equals(uuid)))
-        .write(TodosCompanion(completedAt: Value(null)));
+  Future<int> restore(String uuid, String newCustomOrder) async {
+    return await (db.update(
+      db.todos,
+    )..where((todo) => todo.uuid.equals(uuid))).write(
+      TodosCompanion(
+        completedAt: Value(null),
+        customOrder: Value(newCustomOrder),
+      ),
+    );
   }
 
   Stream<int> watchExpiredCount(Set<ListScope> activeScopes) {
-    // TODO move active list scope settings to drift DB and select expiredCount via join on settings table
+    // TODO move active list scope settings to drift DB and use a join on settings table
     final scopeNames = activeScopes.map((scope) => scope.name);
     final query = db.selectOnly(db.todos).join([
       innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
@@ -237,5 +254,74 @@ class TodoRepository {
       completedAt: Value(dto.completedAt),
       expiresAt: Value(dto.expiresAt),
     );
+  }
+
+  /// Retrieves the [customOrder] value of the immediately preceding todo.
+  ///
+  /// Only considers active todos (neither deleted nor completed) within the specified [scope].
+  ///
+  /// Returns `null` if no preceding element exists.
+  Future<String?> findPreviousOrder(ListScope scope, String customOrder) async {
+    final query = db.selectOnly(db.todos)
+      ..addColumns([db.todos.customOrder])
+      ..join([
+        innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
+      ])
+      ..where(
+        db.todos.scope.equals(scope.name) &
+            db.entities.isDeleted.equals(false) &
+            db.todos.completedAt.isNull() &
+            db.todos.customOrder.isSmallerThanValue(customOrder),
+      )
+      ..orderBy([OrderingTerm.desc(db.todos.customOrder)])
+      ..limit(1);
+
+    final result = await query.getSingleOrNull();
+
+    return result?.read(db.todos.customOrder);
+  }
+
+  /// Retrieves the [customOrder] value of the immediately succeeding todo.
+  ///
+  /// Only considers active todos (neither deleted nor completed) within the specified [scope].
+  ///
+  /// Returns `null` if no succeeding element exists.
+  Future<String?> findNextOrder(ListScope scope, String customOrder) async {
+    final query = db.selectOnly(db.todos)
+      ..addColumns([db.todos.customOrder])
+      ..join([
+        innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
+      ])
+      ..where(
+        db.todos.scope.equals(scope.name) &
+            db.entities.isDeleted.equals(false) &
+            db.todos.completedAt.isNull() &
+            db.todos.customOrder.isBiggerThanValue(customOrder),
+      )
+      ..orderBy([OrderingTerm.asc(db.todos.customOrder)])
+      ..limit(1);
+
+    final result = await query.getSingleOrNull();
+
+    return result?.read(db.todos.customOrder);
+  }
+
+  /// Checks whether a given [customOrder] key is unused among active todos.
+  ///
+  /// Returns `true` if no non-deleted and uncompleted todo within the specified [scope]
+  /// currently occupies the provided [customOrder].
+  Future<bool> isCustomOrderVacant(String customOrder, ListScope scope) async {
+    final query =
+        db.todos.select().join([
+          innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),
+        ])..where(
+          db.entities.isDeleted.equals(false) &
+              db.todos.completedAt.isNull() &
+              db.todos.scope.equals(scope.name) &
+              db.todos.customOrder.equals(customOrder),
+        );
+    final result = await query.get();
+
+    return result.isEmpty;
   }
 }
