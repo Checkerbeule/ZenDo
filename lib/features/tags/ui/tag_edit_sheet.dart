@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:zen_do/core/persistence/app_database.dart';
 import 'package:zen_do/core/ui/base_bottom_sheet.dart';
 import 'package:zen_do/core/ui/standard_buttons.dart';
-import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/ui/tag_widget.dart';
 
 import '../l10n/tags_l10n_extension.dart';
 
 class TagEditSheet extends StatefulWidget {
   final Tag? initialTag;
-  final TagRepository repository;
+  final TagService tagService;
 
-  const TagEditSheet({this.initialTag, required this.repository, super.key});
+  const TagEditSheet({this.initialTag, required this.tagService, super.key});
 
   @override
   State<TagEditSheet> createState() => _TagEditSheetState();
@@ -55,12 +55,12 @@ class _TagEditSheetState extends State<TagEditSheet> {
     if (_nameController.text.isEmpty) return;
 
     if (widget.initialTag == null) {
-      widget.repository.createTag(
+      widget.tagService.create(
         name: _nameController.text.trim(),
         color: _selectedColor.toARGB32(),
       );
     } else {
-      widget.repository.updateTag(
+      widget.tagService.update(
         widget.initialTag!.copyWith(
           name: _nameController.text.trim(),
           color: _selectedColor.toARGB32(),

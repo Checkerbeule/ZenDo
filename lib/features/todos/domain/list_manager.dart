@@ -1,7 +1,7 @@
 import 'package:logger/logger.dart';
-import 'package:zen_do/core/app/app_settings_service.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/core/domain/app_settings_service.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/core/persistence/hive/persistence_helper.dart';
 
@@ -73,8 +73,8 @@ class ListManager {
     }
   }
 
-  List<Todo> getTodosToTransfer(
-    List<Todo> todosToTransfer,
+  List<HiveTodo> getTodosToTransfer(
+    List<HiveTodo> todosToTransfer,
     ListScope scopeOfNextList,
   ) {
     return todosToTransfer.where((todo) {
@@ -89,13 +89,13 @@ class ListManager {
   }
 
   /// Returns true if the given [todo] in the list of the given [currentScope] due to be transferred tomorrow.
-  /// Returns false if the given [todo] is located in [ListScope.backlog] or [ListScope.daily],
+  /// Returns false if the given [todo] is located in [ListScope.backlog] or [ListScope.day],
   ///  the [todo] has no expiration date or the [todo] has no listScope.
-  bool toBeTransferredTomorrow(Todo todo) {
+  bool toBeTransferredTomorrow(HiveTodo todo) {
     if (todo.expirationDate == null ||
         todo.listScope == null ||
         todo.listScope == ListScope.backlog ||
-        todo.listScope == ListScope.daily) {
+        todo.listScope == ListScope.day) {
       return false;
     }
 
@@ -139,7 +139,7 @@ class ListManager {
     return lists.elementAt(indexOfCurrentList - 1);
   }
 
-  Future<bool> moveToNextList(Todo todo) async {
+  Future<bool> moveToNextList(HiveTodo todo) async {
     if (todo.listScope == null) {
       return false;
     }
@@ -150,7 +150,7 @@ class ListManager {
     return await moveAndUpdateTodo(todo: todo, destination: nextList.scope);
   }
 
-  Future<bool> moveToPreviousList(Todo todo) async {
+  Future<bool> moveToPreviousList(HiveTodo todo) async {
     if (todo.listScope == null) {
       return false;
     }
@@ -170,8 +170,8 @@ class ListManager {
   /// 
   /// Returns true if successfull and false otherwise.
   Future<bool> moveAndUpdateTodo({
-    Todo? oldTodo,
-    required Todo todo,
+    HiveTodo? oldTodo,
+    required HiveTodo todo,
     required ListScope destination,
   }) async {
     String errorMessage =
@@ -180,7 +180,7 @@ class ListManager {
     final ListScope? originScope = oldTodo == null
         ? todo.listScope
         : oldTodo.listScope;
-    final Todo todoToUpdate = oldTodo ?? todo;
+    final HiveTodo todoToUpdate = oldTodo ?? todo;
     TodoList? originList;
     TodoList? destinationList;
     bool isDeleted = false;
@@ -237,7 +237,7 @@ class ListManager {
     return isAdded && isDeleted;
   }
 
-  /// Checks wether a [Todo] allready exists with the given title in the list of the given [ListScope].
+  /// Checks wether a [HiveTodo] allready exists with the given title in the list of the given [ListScope].
   bool isTodoTitleVacant(String title, ListScope scopeOfList) {
     final listOfScope = getListByScope(scopeOfList);
     if (listOfScope == null) {
@@ -270,7 +270,7 @@ class ListManager {
     return null;
   }
 
-  /// Returns the number of expired [Todo]s in all active lists.
+  /// Returns the number of expired [HiveTodo]s in all active lists.
   int get expiredTodosCount {
     int count = 0;
     final now = DateTime.now();

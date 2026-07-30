@@ -7,7 +7,7 @@ import 'package:zen_do/features/settings/l10n/settings_l10n_extension.dart';
 import 'package:zen_do/features/settings/ui/language_settings_screen.dart';
 import 'package:zen_do/features/settings/ui/lists_settings_screen.dart';
 import 'package:zen_do/features/settings/utils/locale_helper.dart';
-import 'package:zen_do/features/tags/data/tag_repository.dart';
+import 'package:zen_do/features/tags/domain/tag_service.dart';
 import 'package:zen_do/features/tags/ui/tag_management_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -134,7 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       context,
                       MaterialPageRoute<bool>(
                         builder: (context) => TagManagementScreen(
-                          repository: context.read<TagRepository>(),
+                          tagService: context.read<TagService>(),
                         ),
                       ),
                     );

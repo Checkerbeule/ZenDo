@@ -1,26 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'todo.dart';
+part of 'hive_todo.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class TodoAdapter extends TypeAdapter<Todo> {
+class HiveTodoAdapter extends TypeAdapter<HiveTodo> {
   @override
   final int typeId = 0;
 
   @override
-  Todo read(BinaryReader reader) {
+  HiveTodo read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Todo(
-        title: fields[0] as String,
+    return HiveTodo(
+        id: fields[7] as String?,
         expirationDate: fields[3] as DateTime?,
+        creationDate: fields[2] as DateTime?,
         listScope: fields[5] as ListScope?,
         tagUuids: (fields[8] as List?)?.cast<String>().toSet(),
+        title: fields[0] as String,
       )
       .._title = fields[0] as String
       .._description = fields[1] as String?
@@ -29,7 +31,7 @@ class TodoAdapter extends TypeAdapter<Todo> {
   }
 
   @override
-  void write(BinaryWriter writer, Todo obj) {
+  void write(BinaryWriter writer, HiveTodo obj) {
     writer
       ..writeByte(9)
       ..writeByte(7)
@@ -58,7 +60,7 @@ class TodoAdapter extends TypeAdapter<Todo> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TodoAdapter &&
+      other is HiveTodoAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

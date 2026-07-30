@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:mockito/mockito.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
-import 'package:zen_do/features/todos/data/todo.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
+import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/data/todo_list.dart';
 import 'package:zen_do/core/persistence/hive/file_lock_helper.dart';
 import 'package:zen_do/core/persistence/hive/hive_initializer.dart';
@@ -48,32 +48,32 @@ void main() {
     });
 
     test('save and load a list with one todo', () async {
-      final scope = ListScope.daily;
+      final scope = ListScope.day;
       final list = TodoList(scope);
       final title = 'test todo';
       final description = 'test description';
-      final todo = Todo(title: title, description: description);
+      final todo = HiveTodo(title: title, description: description);
       list.addTodo(todo);
 
       await PersistenceHelper.saveList(list);
       final loadedList = await PersistenceHelper.loadList(scope);
 
-      expect(loadedList.scope, ListScope.daily);
+      expect(loadedList.scope, ListScope.day);
       expect(loadedList.todos.length, 1);
       expect(loadedList.todos.first.title, title);
       expect(loadedList.todos.first.description, description);
     });
 
     test('save a list, update it, retreive updated data', () async {
-      final scope = ListScope.daily;
+      final scope = ListScope.day;
       final list = TodoList(scope);
 
-      final initialTodo = Todo(title: 'initial todo');
+      final initialTodo = HiveTodo(title: 'initial todo');
       list.addTodo(initialTodo);
       await PersistenceHelper.saveList(list);
 
       final updatedTitle = 'updated';
-      final updatedTodo = Todo(title: updatedTitle);
+      final updatedTodo = HiveTodo(title: updatedTitle);
       list.deleteTodo(initialTodo);
       list.addTodo(updatedTodo);
       await PersistenceHelper.saveList(list);

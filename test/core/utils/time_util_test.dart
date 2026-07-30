@@ -62,13 +62,24 @@ void main() {
 
   group('TimeUtil normalized DateTime tests', () {
     test(
-      'TimeUtil normalized DateTime removes hours, minutes, seconds and milliseconds DateTime',
+      'TimeUtil endOfDay successfully sets hours, minutes, seconds and milliseconds to the end of the day',
       () {
+        // --- Arrange ---
         final now = DateTime.now();
-        final nowNormalized = DateTime(now.year, now.month, now.day);
+        final nowNormalized = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          23,
+          59,
+          59,
+          999
+        );
 
-        final result = DateTime.now().normalized;
+        // --- Act ---
+        final result = DateTime.now().endOfDay;
 
+        // --- Assert ---
         expect(result, nowNormalized);
       },
     );

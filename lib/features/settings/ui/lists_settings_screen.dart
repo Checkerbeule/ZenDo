@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
-import 'package:zen_do/core/app/app_settings_service.dart';
+import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/ui/loading_screen.dart';
 import 'package:zen_do/features/settings/l10n/settings_l10n_extension.dart';
-import 'package:zen_do/features/todos/data/list_scope.dart';
+import 'package:zen_do/features/todos/domain/list_scope.dart';
 
 class ListsSettingsScreen extends StatefulWidget {
   const ListsSettingsScreen({super.key});
@@ -32,8 +32,8 @@ class _ListsSettingsScreenState extends State<ListsSettingsScreen> {
     if (!mounted) return;
 
     setState(() {
-      final Set<ListScope>? activeScopes = settings.getActiveListScopes();
-      if (activeScopes != null) {
+      final Set<ListScope> activeScopes = settings.getActiveListScopes();
+      if (activeScopes.isEmpty) {
         for (final scope in activeScopes) {
           activeLists[scope] = true;
         }
