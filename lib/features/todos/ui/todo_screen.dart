@@ -1,28 +1,19 @@
 import 'dart:async';
 
-import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zen_do/core/domain/app_settings_service.dart';
-import 'package:zen_do/core/domain/page_type.dart';
-import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 import 'package:zen_do/core/ui/loading_screen.dart';
-import 'package:zen_do/features/todos/data/todo_list.dart';
-import 'package:zen_do/features/todos/domain/list_manager.dart';
 import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/domain/todo_service.dart';
 import 'package:zen_do/features/todos/l10n/todos_localizations.dart';
 import 'package:zen_do/features/todos/ui/todo_list_screen.dart';
-import 'package:zen_do/main.dart';
 
 Logger logger = Logger(level: Level.debug);
 
 class TodoState extends ChangeNotifier {
-  ZenDoAppState? appState;
-  ListManager? listManager;
   bool isLoading = true;
   bool isLoadingDataFailed = false;
   String? errorMessage;
@@ -31,10 +22,6 @@ class TodoState extends ChangeNotifier {
 
   TodoState() {
     _initData();
-  }
-
-  void setAppState(ZenDoAppState appState) {
-    this.appState = appState;
   }
 
   Future<void> reload() async {
@@ -53,24 +40,9 @@ class TodoState extends ChangeNotifier {
     // TODO use provider to retreive settingsService
     final AppSettingsService settings =
         await SharedPrefsAppSettingsService.getInstance();
-    final loadedScopes = settings.getActiveListScopes();
-    final Set<ListScope> activeScopes;
-    if (loadedScopes != null) {
-      activeScopes = loadedScopes;
-    } else {
-      activeScopes = {
-        ListScope.day,
-        ListScope.week,
-        ListScope.year,
-        ListScope.backlog,
-      };
-      settings.saveActiveListScopes(activeScopes);
-    }
+    final activeScopes = settings.getActiveListScopes();
 
     try {
-      List<TodoList> loadedLists = []; //await PersistenceHelper.loadAll();
-      listManager = ListManager(loadedLists, activeScopes: activeScopes);
-
       var prefs = await SharedPreferences.getInstance();
       var lastTransferDateString = prefs.getString('lastTodoTransferDate');
       var now = DateTime.now().toIso8601String().substring(0, 10);
@@ -84,19 +56,13 @@ class TodoState extends ChangeNotifier {
 
       isLoading = false;
 
-      appState?.updateMessageCount(
-        PageType.todos,
-        listManager!.expiredTodosCount,
-      );
-
-      for (var l in listManager!.lists) {
-        doneTodosExpanded[l.scope] = false;
+      for (var scope in activeScopes) {
+        doneTodosExpanded[scope] = false;
       }
     } catch (e, s) {
       logger.e('Loading todo lists failed: : $e\n$s');
       isLoadingDataFailed = true;
       errorMessage = e.toString();
-      listManager = ListManager([], activeScopes: activeScopes);
     } finally {
       notifyListeners();
     }
@@ -114,30 +80,6 @@ class TodoState extends ChangeNotifier {
     tagFilters = updatedTagFilter;
     notifyListeners();
   }
-
-  Future<T> performAcitionOnList<T>(FutureOr<T> Function() action) async {
-    T result;
-    if (listManager != null) {
-      result = await action();
-      appState!.updateMessageCount(
-        PageType.todos,
-        listManager!.expiredTodosCount,
-      );
-      if (T is bool && result == false) {
-        return false as T;
-      }
-      notifyListeners();
-    } else if (T is bool) {
-      result = false as T;
-    } else if (T == Null) {
-      result = null as T;
-    } else {
-      throw Exception(
-        '[TodoState] Cannot perform action on list because ListManager is not initialized!',
-      );
-    }
-    return result;
-  }
 }
 
 class TodoScreen extends StatelessWidget {
@@ -148,12 +90,6 @@ class TodoScreen extends StatelessWidget {
     final loc = TodosLocalizations.of(context);
     return Consumer<TodoState>(
       builder: (context, todoState, child) {
-        if (todoState.isLoadingDataFailed) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _showLoadingErrorDialog(context, todoState.errorMessage!);
-          });
-        }
-
         return Consumer<AppSettingsService>(
           builder: (context, settingsService, child) {
             return todoState.isLoading
@@ -162,7 +98,7 @@ class TodoScreen extends StatelessWidget {
                     initialIndex: 0,
                     length: settingsService
                         .getActiveListScopes()
-                        .length, //listManager!.listCount,
+                        .length,
                     child: Consumer<TodoService>(
                       builder: (context, todoService, child) {
                         return Scaffold(
@@ -228,47 +164,4 @@ class TodoScreen extends StatelessWidget {
       },
     );
   }
-}
-
-void _showLoadingErrorDialog(BuildContext context, String errorMessage) async {
-  await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(context.appL10n.dataLoadErrorHeadline),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(errorMessage),
-            const SizedBox(height: 16),
-            Text(context.appL10n.dataLoadErrorMessage),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-            ),
-            child: Text(context.appL10n.openAppSettings),
-            onPressed: () {
-              AppSettings.openAppSettings(
-                type: AppSettingsType.settings,
-                asAnotherTask: false,
-              );
-            },
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-            ),
-            child: Text(context.appL10n.closeApp),
-            onPressed: () {
-              SystemNavigator.pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
 }

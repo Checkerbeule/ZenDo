@@ -9,7 +9,6 @@ import 'package:zen_do/core/domain/app_settings_service.dart';
 import 'package:zen_do/core/domain/sort_order.dart';
 import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 import 'package:zen_do/core/ui/loading_screen.dart';
-import 'package:zen_do/features/todos/data/hive_todo.dart';
 import 'package:zen_do/features/todos/domain/list_scope.dart';
 import 'package:zen_do/features/todos/domain/todo_service.dart';
 import 'package:zen_do/features/todos/domain/todo_sort_option.dart';
@@ -36,47 +35,6 @@ class _TodoListScreenState extends State<TodoListScreen>
   TodoSortOption sortOption = TodoSortOption.custom;
   SortOrder sortOrder = SortOrder.ascending;
 
-  List<HiveTodo> getSortedAndFilteredTodos(Set<String> tagFilter) {
-    final List<HiveTodo> todos =
-        []; // List<HiveTodo>.from(widget.listScope.todos);
-    if (tagFilter.isNotEmpty) {
-      todos.retainWhere(
-        (t) => t.tagUuids.any((tagUuid) => tagFilter.contains(tagUuid)),
-      );
-    }
-
-    switch (sortOption) {
-      case TodoSortOption.custom:
-        todos.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
-        break;
-      case TodoSortOption.title:
-        todos.sort(
-          (a, b) => sortOrder == SortOrder.ascending
-              ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
-              : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
-        );
-        break;
-      case TodoSortOption.expirationDate:
-        todos.sort(
-          (a, b) => sortOrder == SortOrder.ascending
-              ? a.expirationDate!.compareTo(b.expirationDate!)
-              : b.expirationDate!.compareTo(a.expirationDate!),
-        );
-        break;
-      case TodoSortOption.creationDate:
-        todos.sort(
-          (a, b) => sortOrder == SortOrder.ascending
-              ? a.creationDate.compareTo(b.creationDate)
-              : b.creationDate.compareTo(a.creationDate),
-        );
-        break;
-      default:
-        todos.sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
-        break;
-    }
-    return todos;
-  }
-
   Future<void> _loadSettings() async {
     final settingsService = await SharedPrefsAppSettingsService.getInstance();
     if (!mounted) return;
@@ -98,7 +56,7 @@ class _TodoListScreenState extends State<TodoListScreen>
     _loadSettings();
   }
 
-  // TODO [#124]: implement controller to manage stream states for clean architecture
+  // TODO [#73]: implement proper state management with controllers
   @override
   bool get wantKeepAlive => true;
 
@@ -113,15 +71,13 @@ class _TodoListScreenState extends State<TodoListScreen>
       builder: (context, todoService, child) {
         return Consumer<TodoState>(
           builder: (context, todoState, child) {
-            final listManager = todoState.listManager!;
-            final ListScope? nextListScope = listManager
-                .getNextList(listScope)
-                ?.scope;
-            final ListScope? previousListScope = listManager
-                .getPreviousList(listScope)
-                ?.scope;
+            ListScope? nextListScope = todoService.getNextScope(listScope);
+            ListScope? previousListScope = todoService.getPreviousScope(
+              listScope,
+            );
             final isFirstList = nextListScope == null;
             final isLastList = previousListScope == null;
+
             return Scaffold(
               body: CustomScrollView(
                 slivers: [
@@ -458,19 +414,12 @@ class _TodoListScreenState extends State<TodoListScreen>
                 mini: true,
                 child: const Icon(Icons.add),
                 onPressed: () async {
-                  HiveTodo? newTodo = await showModalBottomSheet(
+                  await showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
                     builder: (context) =>
                         TodoEditSheet.newTodo(listScope: listScope),
                   );
-                  if (newTodo != null) {
-                    todoState.performAcitionOnList<bool>(
-                      () => listManager
-                          .getListByScope(newTodo.listScope!)!
-                          .addTodo(newTodo),
-                    );
-                  }
                 },
               ),
             );

@@ -207,7 +207,7 @@ class TodoRepository {
   }
 
   Stream<int> watchExpiredCount(Set<ListScope> activeScopes) {
-    // TODO move active list scope settings to drift DB and use a join on settings table
+    // TODO [#130] move active list scope settings to drift DB and use a join on settings table
     final scopeNames = activeScopes.map((scope) => scope.name);
     final query = db.selectOnly(db.todos).join([
       innerJoin(db.entities, db.entities.uuid.equalsExp(db.todos.uuid)),

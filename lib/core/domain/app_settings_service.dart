@@ -10,7 +10,7 @@ abstract class AppSettingsService {
   Future<void> saveSortOrder(ListScope scope, SortOrder sortOrder);
   SortOrder? getSortOrder(ListScope scope);
 
-  // TODO move critical settings about todos to drift DB
+  // TODO [#130] move critical settings about todos to drift DB
   Future<void> saveActiveListScopes(Set<ListScope> activeScopes);
   Set<ListScope> getActiveListScopes();
   Future<void> addActiveScope(ListScope activeScope);
@@ -85,7 +85,7 @@ class SharedPrefsAppSettingsService implements AppSettingsService {
 
   @override
   Set<ListScope> getActiveListScopes() {
-    // TODO move to drift db
+    // TODO [#130] move to drift db
     final List<String> scopeNames =
         prefs.getStringList(_activeListScopesPrefKey) ?? [];
 

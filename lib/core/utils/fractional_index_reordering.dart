@@ -1,3 +1,5 @@
+// TODO: Most likely obsolete when proper state-management is implemented via controller [#73].
+//       Also has to be refactored after Flutter version update [#129].
 import 'package:fractional_indexing_dart/fractional_indexing_dart.dart';
 
 /// A utility class for calculating fractional indices when reordering elements in a list.

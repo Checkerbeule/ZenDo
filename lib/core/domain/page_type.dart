@@ -3,8 +3,8 @@ import 'package:zen_do/core/l10n/app_l10n_extension.dart';
 
 enum PageType {
   todos(),
-  habits(),
   notes(),
+  habits(),
   pomodoro();
 
   const PageType();

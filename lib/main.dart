@@ -40,7 +40,8 @@ void main() async {
     logger.e("Migration from Hive to Drift failed: $e");
   }
 
-  final AppSettingsService settingsService = await SharedPrefsAppSettingsService.getInstance();
+  final AppSettingsService settingsService =
+      await SharedPrefsAppSettingsService.getInstance();
 
   runApp(
     MultiProvider(
@@ -95,11 +96,7 @@ class ZenDoApp extends StatelessWidget {
         ),
 
         ChangeNotifierProvider<ProviderL10n>(create: (_) => ProviderL10n()),
-        ChangeNotifierProvider<ZenDoAppState>(create: (_) => ZenDoAppState()),
-        ChangeNotifierProxyProvider<ZenDoAppState, TodoState>(
-          create: (_) => TodoState(),
-          update: (_, appState, todoState) => todoState!..setAppState(appState),
-        ),
+        ChangeNotifierProvider<TodoState>(create: (_) => TodoState()),
       ],
       child: Consumer<ProviderL10n>(
         builder: (context, l10n, child) {
@@ -117,21 +114,6 @@ class ZenDoApp extends StatelessWidget {
   }
 }
 
-class ZenDoAppState extends ChangeNotifier {
-  Map<PageType, int> pageMessages = {
-    PageType.todos: 0,
-    PageType.habits: 0,
-    PageType.pomodoro: 0,
-    PageType.notes: 0,
-  };
-
-  void updateMessageCount(PageType page, int newCount) {
-    if (pageMessages[page] == newCount) return;
-    pageMessages[page] = newCount;
-    notifyListeners();
-  }
-}
-
 class ZenDoMainPage extends StatefulWidget {
   const ZenDoMainPage({super.key});
 
@@ -144,12 +126,12 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ZenDoAppState>(
-      builder: (context, appState, child) {
+    return Consumer<TodoService>(
+      builder: (context, todoService, child) {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              'ZenDo ꞏ ${appState.pageMessages.keys.elementAt(pageIndex).label(context)}',
+              'ZenDo ꞏ ${PageType.values.elementAt(pageIndex).label(context)}',
             ),
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             actions: [
@@ -175,9 +157,9 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
             index: pageIndex,
             children: [
               const TodoScreen(),
+              const ComingSoonScreen(feature: 'Notes'),
               const ComingSoonScreen(feature: 'Habit tracking'),
               const ComingSoonScreen(feature: 'Pomodoro timer'),
-              const ComingSoonScreen(feature: 'Notes'),
             ],
           ),
           bottomNavigationBar: NavigationBar(
@@ -188,25 +170,66 @@ class _ZenDoMainPageState extends State<ZenDoMainPage> {
               });
             },
             destinations: <Widget>[
-              for (var page in appState.pageMessages.entries)
-                NavigationDestination(
-                  icon: Badge(
-                    isLabelVisible: page.value > 0,
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                    label: Text('${page.value}'),
-                    child: Icon(page.key.icon),
-                  ),
-                  label: page.key.label(context),
-                  selectedIcon: Badge(
-                    isLabelVisible: page.value > 0,
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                    label: Text('${page.value}'),
-                    child: Icon(
-                      page.key.icon,
-                      color: Theme.of(context).colorScheme.primary,
+              // TODO [#73] implement proper state and page management
+              StreamBuilder<int>(
+                stream: todoService.watchExpiredCount(),
+                builder: (context, snapshot) {
+                  final hasExpiredTodos =
+                      snapshot.hasData && snapshot.data! > 0;
+                  return Badge(
+                    offset: Offset(-25, 5),
+                    isLabelVisible: hasExpiredTodos,
+                    label: Text(snapshot.data?.toString() ?? ""),
+                    child: NavigationDestination(
+                      icon: Icon(PageType.todos.icon),
+                      label: PageType.todos.label(context),
+                      selectedIcon: Icon(
+                        PageType.todos.icon,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
+                  );
+                },
+              ),
+              Badge(
+                offset: Offset(-25, 5),
+                isLabelVisible: false,
+                label: Text(PageType.notes.label(context)),
+                child: NavigationDestination(
+                  icon: Icon(PageType.notes.icon),
+                  label: PageType.notes.label(context),
+                  selectedIcon: Icon(
+                    PageType.notes.icon,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
+              ),
+              Badge(
+                offset: Offset(-25, 5),
+                isLabelVisible: false,
+                label: Text(PageType.habits.label(context)),
+                child: NavigationDestination(
+                  icon: Icon(PageType.habits.icon),
+                  label: PageType.habits.label(context),
+                  selectedIcon: Icon(
+                    PageType.habits.icon,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              Badge(
+                offset: Offset(-25, 5),
+                isLabelVisible: false,
+                label: Text(PageType.pomodoro.label(context)),
+                child: NavigationDestination(
+                  icon: Icon(PageType.pomodoro.icon),
+                  label: PageType.pomodoro.label(context),
+                  selectedIcon: Icon(
+                    PageType.pomodoro.icon,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
             ],
           ),
         );
